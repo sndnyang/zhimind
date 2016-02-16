@@ -1,1 +1,6 @@
 *.pyc
+Include
+Lib
+Scripts
+note.bak
+pip-selfcheck.json

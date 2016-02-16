@@ -1,24 +1,29 @@
-# A basic Flask quickstart 
-*With support for serving easy APIs and static content*
+# 知识导图
 
-[![Build Status](http://img.shields.io/travis/ryanj/flask-base.svg)](https://travis-ci.org/ryanj/flask-base) [![Deploy](https://img.shields.io/badge/Launch_on-OpenShift-brightgreen.svg)](https://openshift.redhat.com/app/console/application_type/custom?cartridges%5B%5D=python-2&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Fflask-base.git&name=flask)
+## 目标：
 
-[![Launch on OpenShift](http://launch-shifter.rhcloud.com/button.svg)](https://openshift.redhat.com/app/console/application_type/custom?cartridges%5B%5D=python-2.7&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Fflask-base.git&name=flask)
+一个更好的学习平台， 对思维导图进行提升。
 
-To deploy a clone of this application using the [`rhc` command line tool](http://rubygems.org/gems/rhc):
+加入进度控制（知识点掌握进度）、笔记、答疑、练习等功能， 让思维导图互联网化！
 
-    rhc app create flask python-2.7 --from-code=https://github.com/ryanj/flask-base.git
-    
-Or [link to a web-based clone+deploy](https://openshift.redhat.com/app/console/application_type/custom?cartridges%5B%5D=python-2.7&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Fflask-base.git) on [OpenShift Online](http://OpenShift.com) or on [your own OpenShift cloud](http://openshift.github.io): 
+## 后台：
 
-    https://openshift.redhat.com/app/console/application_type/custom?cartridges%5B%5D=python-2.7&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Fflask-base.git
+基于 openshift(免费) + python + flask.
 
-## Local server
-Start a local webserver by running:
+数据库暂定为 PostgreSQL 9.2
 
-```bash
-python app.py
-```
+## 前端
 
-## License
-This code is dedicated to the public domain to the maximum extent permitted by applicable law, pursuant to CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
+1. 开源的JS思维导图项目
+2. tryregex
+3. elevator saga
+4. skulpt 或 filbert 这种 js实现的python解析器
+
+一个全面、多方位的学习平台
+
+## 未来
+
+1. 也许还会考虑 ipython notebook 的加入， 但这个一般是VPS等空间才有的功能， 要钱不太想。
+2. 支持中国主流的C语言
+3. 视频定点
+4. 标准答案匹配，用于推导。 特别是手写公式输入很有用。

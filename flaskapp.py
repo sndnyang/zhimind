@@ -7,6 +7,7 @@ app = Flask(__name__)
 app.config.from_pyfile('flaskapp.cfg')
 
 @app.route('/')
+@app.route('/index')
 def index():
     return render_template('index.html')
 
@@ -18,5 +19,10 @@ def serveStaticResource(resource):
 def test():
     return "<strong>It's Alive!</strong>"
 
+@app.route('/login')
+@app.route('/login.html')
+def login():
+    return render_template('login.html')
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug = True)

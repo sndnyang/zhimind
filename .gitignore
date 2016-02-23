@@ -62,3 +62,8 @@ Lib
 Scripts
 note.bak
 pip-selfcheck.json
+
+*min*
+
+source/
+data

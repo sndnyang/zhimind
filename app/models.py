@@ -1,6 +1,8 @@
 #!/usr/bin/env python 
 #coding=utf-8 
  
+from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 
 from app import app
@@ -35,3 +37,18 @@ class User(db.Model):
  
     def __repr__(self):
         return '<User %r>' % (self.username)
+
+class Todo(db.Model):
+    __tablename__ = 'todos'
+    id = db.Column('todo_id', db.Integer, primary_key=True)
+    title = db.Column(db.String(60))
+    text = db.Column(db.String)
+    done = db.Column(db.Boolean)
+    pub_date = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+
+    def __init__(self, title, text):
+        self.title = title
+        self.text = text
+        self.done = False
+        self.pub_date = datetime.utcnow()

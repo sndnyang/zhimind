@@ -10,3 +10,5 @@ Flask-Login
 Flask-Openid
 Flask-wtf
 Flask-OAuthlib
+psycopg2
+Image

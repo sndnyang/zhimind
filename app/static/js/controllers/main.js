@@ -7,7 +7,7 @@ module.controller('MainCtrl', [ '$scope' , function ($scope) {
     $scope.root = null;		
     $scope.fileName = "mindMap";
 
-    d3.json("data/data.json", function(json) {			  	
+    d3.json("/static/data/data.json", function(json) {			  	
         $scope.json = json;
         $scope.$apply();
     });

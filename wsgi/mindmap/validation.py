@@ -11,8 +11,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 numbers = ''.join(map(str, range(10)))
 chars = ''.join((numbers)) 
  
-sys.path.append('/usr/share/fonts/dejavu/')
-sys.path.append(os.path.dirname(__file__))
+sys.path.append('/usr/share')
 
 def create_validate_code(size=(120, 30), 
                          chars=chars, 
@@ -63,7 +62,7 @@ def create_validate_code(size=(120, 30),
         try:
             font = ImageFont.truetype(font_type, font_size) 
         except:
-            font = ImageFont.truetype("DejaVuSansMono.ttf", font_size) 
+            font = ImageFont.truetype(" DejaVuSansMono.ttf", font_size) 
 
         font_width, font_height = font.getsize(strs) 
  

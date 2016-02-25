@@ -32,7 +32,7 @@ except IOError:
 #  main():
 #
 
-import mindmap as application
+from  mindmap import app as application
 
 if __name__ == '__main__':
   #application = imp.load_source('application', 'main.py')

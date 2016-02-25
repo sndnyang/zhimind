@@ -40,10 +40,9 @@ def register():
     if g.user is not None and g.user.is_authenticated:
         return redirect(url_for('index'))
 
-    code_text = session['code_text']
-
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
+        code_text = session['code_text']
         app.logger.debug(code_text + '  ' + form.verification_code.data)
 
         if form.verification_code.data == code_text:

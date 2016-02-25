@@ -62,7 +62,7 @@ def create_validate_code(size=(120, 30),
         try:
             font = ImageFont.truetype(font_type, font_size) 
         except:
-            font = ImageFont.truetype(" DejaVuSansMono.ttf", font_size) 
+            font = ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSansMono.ttf", font_size) 
 
         font_width, font_height = font.getsize(strs) 
  

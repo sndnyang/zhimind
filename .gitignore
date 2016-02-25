@@ -1,7 +1,7 @@
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+
 
 # C extensions
 *.so
@@ -63,8 +63,9 @@ Scripts
 note.bak
 pip-selfcheck.json
 
-*min*
+*.min.*
 *bak*
 
 source/
 data
+tags

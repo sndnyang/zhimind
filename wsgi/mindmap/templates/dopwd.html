@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>注册页面</title>
+
+
+<link href="main.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+.u_logo{margin: 12px 0 24px;}
+.u_logo a{}
+.u_logo a img{ border:0;}
+.mod-bread {background: url("img/breadbg.gif") repeat-x scroll 0 0 transparent;height: 46px;}
+.mod-bread .bread-left {float: left;font-size: 14px;font-weight: bold;height: 46px;line-height: 46px;text-align: right;width: 137px;}
+.mod-bread .bread-right {float: right;height: 46px;line-height: 46px;padding-right: 20px;}
+</style>
+
+<!--必要样式-->
+<link href="user_form.css" rel="stylesheet" type="text/css" />
+<script src="jquery-1.4.4.min.js" type="text/javascript"></script>
+<script src="formValidator-4.1.1.js" type="text/javascript"></script>
+<script src="formValidatorRegex.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$.formValidator.initConfig({theme:"baidu",mode:"AutoTip",submitOnce:true,formID:"user_form_0"});
+	
+	$("#username").formValidator({onEmpty:"请输入用户名",onFocus:"请输入你注册时填写的用户名",tipCss:{height:68,width:320}}).inputValidator({min:6,max:12,onError:"你输入的用户长度不正确,请确认"});
+	$("#mail").formValidator({onEmpty:"请输入邮箱",onFocus:"请输入你注册时填写的邮箱",defaultValue:"@",tipCss:{height:68,width:320}}).inputValidator({min:6,max:60,onError:"请输入邮箱"}).regexValidator({regExp:"email",dataType:"enum",onError:"邮箱格式不正确"});
+
+    $("#verifycode").formValidator({onShowText:"请输入验证码",onFocus:"请输入图片中的字符，不分区大小写",onEmpty:"请输入验证码",tipCss:{left:194,height:36,width:320}}).inputValidator({min:1,onError:"请输入验证码"});
+	
+	$.formValidator.reloadAutoTip();
+});
+</script>
+</head>
+
+<body>
+<div class="div">
+	<div class="u_logo">
+    	<a href="http://www.baidu.com"><img src="img/logo.gif" alt="baidu"></a>
+    </div>
+</div>
+
+<div class="mod-bread clearfix">
+	<div class="div">
+		<div class="bread-left"> 找回密码 </div>
+    	<div class="bread-right"> 已有帐号？<a id="login" href="javascript:;">马上登录</a></div>
+	</div>
+</div>
+
+<div class="div" style="padding-top:20px;">
+<form id="user_form_0" class="user_form" method="post" target="pass_reg_iframe_0" action="#">
+<p>
+<label id="label_username" for="username">用户名</label>
+<input id="username" class="user_input" type="text" name="username" tabindex="1">
+</p>
+
+<p>
+<label id="label_mail" for="mail">邮箱</label>
+<input id="mail" class="user_input" type="text" name="mail" tabindex="4">
+</p>
+
+<p class="user_p_verifycode">
+<label id="label_verifycode" for="verifycode">验证码</label>
+<input id="verifycode" class="user_input" style="width:80px;" type="text" name="verifycode" tabindex="5">
+</p>
+
+<p class="user_p_img_verifycode"><img src="https://passport.baidu.com/cgi-bin/genimage?00134761095101561F92061DC901BBE80C468EB3D389F48155295C2417E95FA7D3FCEE8FFDFE87E2540F5B48633156494DDE994AA18C79F9EB47F03F371C3AC44015B175DF6C347AFAFE90DE01201B7B260ABC16DE214C25522F1028EAF9E406E44B64D6A85D79D68850267B005A61165CB09C3E3DC80FDD06F9ACA3602507375AF2DD749C5C67682614787ED2037A5EBFE8ABA1DD632D84235321157D516F33AA485770A8D6D819" class="user_verifycode" id="pass_reg_img_verifycode_0" alt="验证码图片" title="验证码图片"><span class="user_change_verifycode" id="user_change_verifycode_0">看不清？</span>
+</p>
+
+<div class="clear"></div>
+<p>
+<input name="提交" type="submit" class="user_submit" id="user_submit" style="margin-left:152px;" tabindex="6" value="确认">
+</p>
+</form>
+
+</div>
+<iframe id="pass_reg_iframe_0" style="display:none;" src="javascript:''" name="pass_reg_iframe_0"></iframe>
+</body>
+</html>

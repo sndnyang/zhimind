@@ -32,9 +32,11 @@ except IOError:
 #  main():
 #
 
+import mindmap as application
+
 if __name__ == '__main__':
   #application = imp.load_source('application', 'main.py')
-  import mindmap as application
+  
   port = application.app.config['PORT']
   ip = application.app.config['IP']
   app_name = application.app.config['APP_NAME']

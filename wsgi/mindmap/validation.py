@@ -1,14 +1,19 @@
 #!/usr/bin/env python 
-#coding=utf-8 
+# coding=utf-8 
  
+import os
+import sys
 import random 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter 
 import StringIO
+from PIL import Image, ImageDraw, ImageFont, ImageFilter 
 
 #map:将str函数作用于后面序列的每一个元素
 numbers = ''.join(map(str, range(10)))
 chars = ''.join((numbers)) 
  
+sys.path.append('/usr/share/fonts/dejavu/')
+sys.path.append(os.path.dirname(__file__))
+
 def create_validate_code(size=(120, 30), 
                          chars=chars, 
                          mode="RGB", 
@@ -55,7 +60,11 @@ def create_validate_code(size=(120, 30),
         c_chars = get_chars() 
         strs = '%s' % ''.join(c_chars) 
  
-        font = ImageFont.truetype(font_type, font_size) 
+        try:
+            font = ImageFont.truetype(font_type, font_size) 
+        except:
+            font = ImageFont.truetype("DejaVuSansMono.ttf", font_size) 
+
         font_width, font_height = font.getsize(strs) 
  
         draw.text(((width - font_width) / 3, (height - font_height) / 4), 

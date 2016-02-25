@@ -31,12 +31,16 @@ except IOError:
 #
 #  main():
 #
+
 if __name__ == '__main__':
-  application = imp.load_source('app', 'flaskapp.py')
+  #application = imp.load_source('application', 'main.py')
+  import mindmap as application
   port = application.app.config['PORT']
   ip = application.app.config['IP']
   app_name = application.app.config['APP_NAME']
   host_name = application.app.config['HOST_NAME']
+
+  application.db.create_all()
 
   fwtype="wsgiref"
   for fw in ("gevent", "cherrypy", "flask"):

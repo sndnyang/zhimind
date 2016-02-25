@@ -30,24 +30,34 @@ def serveStaticResource(resource):
 def test():
     return "<strong>It's Alive!</strong>"
 
-@app.route('/login')
-@app.route('/login.html')
-def login():
-    return render_template('login.html')
-
-@app.route('/signup')
-@app.route('/signup.html')
-@app.route('/register.html')
-def signup():
-    code_img,strs = create_validate_code() 
-    buf = StringIO.StringIO() 
-    code_img.save(buf,'JPEG',quality=70) 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+   #code_img,strs = create_validate_code() 
+   #buf = StringIO.StringIO() 
+   #code_img.save(buf,'JPEG',quality=70) 
  
-    buf_str = buf.getvalue() 
+   #buf_str = buf.getvalue() 
    #response = app.make_response(buf_str)  
    #response.headers['Content-Type'] = 'image/jpeg'  
    #return response
-    return render_template('register.html')
+    if request.method == 'GET':
+        return render_template('register.html')
+    user = User(request.form['username'] , request.form['password'],request.form['email'])
+    db.session.add(user)
+    db.session.commit()
+    flash('User successfully registered')
+    return redirect(url_for('login'))
+ 
+@app.route('/login',methods=['GET','POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    return redirect(url_for('index'))
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug = True)

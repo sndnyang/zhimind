@@ -1,0 +1,62 @@
+{
+    "name":"使用指南",
+    "children":[
+        {
+            "name":"1. 注册登录",
+            "link":[{"name":"注册","url":"/register"}]
+        },
+        {
+            "name":"2. 创建导图",
+            "children":[
+                {
+                    "name":"创建新结点"
+                },
+                {
+                    "name":"修改名称"
+                },
+                {"name":"添加新属性"},
+                {"name":"删除结点"}
+            ]
+        },
+        {"name":"3. 读取及导出json文件"},
+        {"name":"4. 打开个人导图列表"},
+        {"name":"5. 搜索他人导图并保存"},
+        {
+            "name":"示例", 
+            "children":[
+                {
+                    "name":"机器学习",
+                    "children":[
+                        {
+                            "name":"监督学习",
+                            "children":[
+                                {
+                                    "name":"线性回归"
+                                },
+                                {"name":"逻辑回归"},
+                                {"name":"神经网络"},
+                                {"name":"支持向量机"}
+                            ],
+                            "link":[
+                                {"name":"coursera","url":"http://www.coursera.com"},
+                                {"name":"xuetangx","url":"http://www.xuetangx.com"},
+                                {"name":"edx","url":"http://www.edx.org"},
+                                {"name":"weibo","url":"http://weibo.com"}
+                            ]
+                        },
+                        {
+                            "name":"无监督学习",
+                            "children":[
+                                {"name":"主成分分析"},
+                                {"name":"K近邻"}
+                            ]
+                        },
+                        {
+                            "name":"半监督学习"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

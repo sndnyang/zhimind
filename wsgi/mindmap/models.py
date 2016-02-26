@@ -57,8 +57,7 @@ class MindMap(db.Model):
         self.map = json
         self.last_edit = datetime.now()
 
-    def check_frequence(self):
-        now = datetime.now()
+    def check_frequence(self, now):
         differ = (now - self.last_edit).seconds
         if differ >= 60:
             return True

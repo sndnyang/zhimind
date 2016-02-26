@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block body %}
+  <table>
+    <tr valign="top">
+        <!-- <td><img src=" "></td> -->
+        <td>
+            <h1>用户昵称: {{user.username}}</h1>
+
+        </td>
+    </tr>
+</table>
+<hr>
+
+{% for map in maps %}
+    {% include 'map_link.html' %}
+{% endfor %}
+
+{% endblock %}

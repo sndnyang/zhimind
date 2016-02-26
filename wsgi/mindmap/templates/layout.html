@@ -35,10 +35,10 @@ body {
 				<a class="brand" href="/">知维图</a>
 				<div class="nav-collapse collapse">
 					<ul class="nav">
-						<li class="active"><a href="/">Home</a></li>
+						<li class="active"><a href="{{ url_for('index') }}">Home</a></li>
                         {% if g %}
 						{% if g.user.is_authenticated %}
-							<li><a href="/new">New Todo</a></li>
+							<li><a href="{{ url_for('user', nickname = g.user.username) }}">个人主页</a></li>
 							<li><a href="{{ url_for('logout') }}">Logout</a></li>
 						{% endif %}
 						{% if not g.user.is_authenticated %}

@@ -2,15 +2,30 @@
 
 var module = angular.module('controller', []);
 
-module.controller('MainCtrl', [ '$scope', '$http' , function ($scope, $http) {
+module.controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.root = null;		
     $scope.fileName = "mindMap";
+    
+    
+    $scope.init = function(data){
+        var url = "/static/data/data.json";
+        if (data != "index")
+            url = "/loadmap/" + data;
 
-    d3.json("/static/data/data.json", function(json) {			  	
-        $scope.json = json;
-        $scope.$apply();
-    });
+        d3.json(url, function(error, json) {
+            if (error) {
+                alert('遇到问题了');
+            }
+            if ('error' in json && json.error == 'not exist') {
+                alert('该导图不存在，返回');
+                window.history.back(-1); 
+                return ;
+            }
+            $scope.json = json;
+            $scope.$apply();
+        });
+    } 
 
     function serializeData(source){
         var json = {};		
@@ -75,7 +90,7 @@ module.controller('MainCtrl', [ '$scope', '$http' , function ($scope, $http) {
         var saveData = serializeData($scope.root);
         // window.open("data:text/json;charset=utf-8," + escape(JSON.stringify(saveData)));		   
         var MIME_TYPE = 'application/json';
-        var jsonData = JSON.stringify({ 'title': 'demo', 'data':saveData});
+        var jsonData = JSON.stringify({'title': $scope.root['name'], 'data':saveData});
         var bb = new Blob([jsonData], {type: MIME_TYPE});
 
         var a = document.createElement('a');
@@ -196,7 +211,7 @@ function update(source) {
                 var ele = d.link[i];
                 var name = ele['name'];
                 var url = ele['url'];
-                text += name + ': <a href="' + url + '" target="_blank">'+name +' </a></br>';
+                text += '<a href="' + url + '" target="_blank">'+name +' </a></br>';
             }
             if (text != "") {
                 toolTip.html(text)

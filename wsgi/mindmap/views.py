@@ -2,14 +2,14 @@
 import os
 
 from flask import request, flash, url_for, redirect, render_template, g,\
-session
+session, jsonify
 
 from flask.ext.login import LoginManager, current_user, logout_user, \
 login_user, login_required
 
 from mindmap import app, db, login_manager
 
-from models import User
+from models import User, MindMap, EntryMastery
 
 from forms import *
 
@@ -19,6 +19,21 @@ from validation import *
 @app.route('/index')
 def index():
     return render_template('index.html')
+
+@app.route('/save', methods=['POST'])
+@login_required
+def save_map():
+    if request.method == 'GET':
+        return ""
+    data = request.json.get('data', '')
+    title = request.json.get('title', 'default')
+    mindmap = MindMap(title, data)
+    mindmap.user = g.user
+
+    app.logger.debug('json is' + str(data) + typeof(data))
+
+    return jsonify({'x':10, 'y':100})
+    
 
 @app.route('/verifycode')
 def verify_code():

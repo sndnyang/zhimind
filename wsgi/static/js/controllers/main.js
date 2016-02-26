@@ -2,7 +2,7 @@
 
 var module = angular.module('controller', []);
 
-module.controller('MainCtrl', [ '$scope' , function ($scope) {
+module.controller('MainCtrl', [ '$scope', '$http' , function ($scope, $http) {
 
     $scope.root = null;		
     $scope.fileName = "mindMap";
@@ -75,7 +75,8 @@ module.controller('MainCtrl', [ '$scope' , function ($scope) {
         var saveData = serializeData($scope.root);
         // window.open("data:text/json;charset=utf-8," + escape(JSON.stringify(saveData)));		   
         var MIME_TYPE = 'application/json';
-        var bb = new Blob([JSON.stringify(saveData)], {type: MIME_TYPE});
+        var jsonData = JSON.stringify({ 'title': 'demo', 'data':saveData});
+        var bb = new Blob([jsonData], {type: MIME_TYPE});
 
         var a = document.createElement('a');
         a.download = $scope.fileName + ".json";
@@ -85,6 +86,14 @@ module.controller('MainCtrl', [ '$scope' , function ($scope) {
         a.dataset.downloadurl = [MIME_TYPE, a.download, a.href].join(':');
         document.querySelectorAll("#downloadLinkWrap")[0].innerHTML = "";
         document.querySelectorAll("#downloadLinkWrap")[0].appendChild(a);  
+
+        $http.post('/save', jsonData).success(function(data){
+            $scope.msg = 'Data saved';
+            alert("success message:" + data);
+        })
+        .error(function(data) {
+            alert("failure message:" + JSON.stringify({data:data}));
+        });
     }
 
 }]);

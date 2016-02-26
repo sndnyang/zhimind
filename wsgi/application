@@ -32,7 +32,9 @@ except IOError:
 #  main():
 #
 
-from  mindmap import app as application
+from mindmap import app as application
+from mindmap import db
+db.create_all()
 
 if __name__ == '__main__':
   #application = imp.load_source('application', 'main.py')
@@ -41,8 +43,6 @@ if __name__ == '__main__':
   ip = application.app.config['IP']
   app_name = application.app.config['APP_NAME']
   host_name = application.app.config['HOST_NAME']
-
-  application.db.create_all()
 
   fwtype="wsgiref"
   for fw in ("gevent", "cherrypy", "flask"):

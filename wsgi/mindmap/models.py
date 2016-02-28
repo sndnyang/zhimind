@@ -15,6 +15,7 @@ class User(db.Model):
     password = db.Column('password', db.String(250))
     email = db.Column('email', db.String(50), unique=True, index=True)
     registered_on = db.Column('registered_on', db.DateTime)
+    last_edit = db.Column('last_edit', db.DateTime)
 
     def __init__(self , username ,password , email):
         self.username = username
@@ -40,6 +41,17 @@ class User(db.Model):
     def get_id(self):
         return unicode(self.id)
  
+    def check_frequence(self, now):
+        app.logger.debug(self.last_edit)
+        app.logger.debug(not self.last_edit)
+        if not self.last_edit:
+            return True
+        differ = (now - self.last_edit).seconds
+        if differ >= 60:
+            return True
+        else:
+            return False
+
     def __repr__(self):
         return '<User %r>' % (self.username)
 
@@ -57,12 +69,12 @@ class MindMap(db.Model):
         self.map = json
         self.last_edit = datetime.now()
 
-    def check_frequence(self, now):
-        differ = (now - self.last_edit).seconds
-        if differ >= 60:
-            return True
-        else:
-            return False
+    def get_id(self):
+        return unicode(self.id)
+
+    def get_user_id(self):
+        return unicode(self.user_id)
+
 
 class EntryMastery(db.Model):
     __tablename__ = 'entry_mastery'

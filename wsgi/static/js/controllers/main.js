@@ -107,7 +107,7 @@ module.controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
             alert("success message:" + data);
         })
         .error(function(data) {
-            alert("failure message:" + JSON.stringify({data:data}));
+            alert("failure message:" + data);
         });
     }
 

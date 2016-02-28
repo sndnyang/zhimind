@@ -15,6 +15,9 @@ from models import *
 from forms import *
 
 from validation import *
+from utility import *
+
+import traceback
 
 @app.route('/')
 @app.route('/index')
@@ -32,20 +35,54 @@ def load_map(mapid):
     ret_code = {'error':'not exist'}
     try:
         mindmap = MindMap.query.get(int(mapid))
+        entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
+                mindmap_id=mindmap.get_id()).all()
+
         ret_code = mindmap.map
-    except:
-        pass
+        add_mastery_in_json(ret_code, entrylist)
         
+    except:
+        app.logger.debug(traceback.print_exc())
     return json.dumps(ret_code)
 
+
+@app.route('/update_mastery', methods=['POST'])
+def update_entry_master():
+    if g.user is None or not g.user.is_authenticated:
+        return u"用户未登录"
+    name = request.json('name', None)
+    if not name:
+        return u'未指定知识点名字'
+
+    mapid = request.json('mapid', None)
+    if not name:
+        return u'未指定所属图id'
+
+    parent = request.json('parent', None)
+    mastery = drequest.json('mastery', None)
+    results = EntryMastery.query.filter_by(user_id=g.user.get_id(),
+            mindmap_id=mapid, name=name)
+    for entry in results:
+        if parent and entry.parent == parent:
+            pass
+    else:
+        return u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
+
+
 @app.route('/save', methods=['POST'])
-@login_required
 def save_map():
     if request.method == 'GET':
         return ''
 
+    if g.user is None or not g.user.is_authenticated:
+        return "用户未登录"
+
     title = request.json.get('title', '')
     data = request.json.get('data', '')
+
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return u'用户上次操作在一分钟之内，太过频繁'
 
     try:
         mindmap = MindMap.query.filter_by(title=title, user_id=g.user.get_id()).one_or_none()
@@ -55,20 +92,17 @@ def save_map():
     if mindmap is None:
         newmap = MindMap(title, data)
         newmap.user_id = g.user.get_id()
+        newmap.last_edit = now
         db.session.add(newmap)
+        g.user.last_edit = now
         db.session.commit()
         return u'成功添加新的导图'
     else:
-        #db.session.commit()
-        now = datetime.now()
-        if mindmap.check_frequence(now):
-            mindmap.map = data
-            mindmap.last_edit = now
-            #mindmap.update({"map": data, "last_edit": now})
-            db.session.commit()
-            return u'成功更新导图'
-        else:
-            return u'上次更新在一分钟之内，太过频繁'
+        mindmap.map = data
+        mindmap.last_edit = now
+        g.user.last_edit = now
+        db.session.commit()
+        return u'成功更新导图'
 
 
 @app.route('/verifycode')

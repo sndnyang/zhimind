@@ -39,7 +39,9 @@ def load_map(mapid):
                 mindmap_id=mindmap.get_id()).all()
 
         ret_code = mindmap.map
-        add_mastery_in_json(ret_code, entrylist)
+
+        if len(entrylist):
+            add_mastery_in_json(ret_code, entrylist)
         
     except:
         app.logger.debug(traceback.print_exc())

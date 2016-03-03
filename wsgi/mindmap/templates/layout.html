@@ -46,15 +46,15 @@ body {
 				<a class="brand" href="/">知维图</a>
 				<div class="nav-collapse collapse">
 					<ul class="nav">
-						<li class="active"><a href="{{ url_for('index') }}">Home</a></li>
+						<li class="active"><a href="{{ url_for('index') }}">主页</a></li>
                         {% if g %}
 						{% if g.user.is_authenticated %}
 							<li><a href="{{ url_for('user', nickname = g.user.username) }}">个人主页</a></li>
-							<li><a href="{{ url_for('logout') }}">Logout</a></li>
+							<li><a href="{{ url_for('logout') }}">退出登录</a></li>
 						{% endif %}
 						{% if not g.user.is_authenticated %}
-							<li><a href="{{ url_for('login') }}">Login</a></li>
-							<li><a href="{{ url_for('register') }}">Register</a></li>
+							<li><a href="{{ url_for('login') }}">登录</a></li>
+							<li><a href="{{ url_for('register') }}">注册</a></li>
 						{% endif %}
                         {% endif %}
                         <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search暂时无用" name="q" id="tipue_search_input"></form></li>
@@ -87,9 +87,10 @@ body {
 	<footer id="footer">
 				<!-- <p>&copy; Shekhar Gulati 2013 (注册这几个页面用了他的)</p>-->
 
-				<p>本人 <a href="http://weibo.com/u/2405149384" target="_blank">sndnyang</a>. 
-				Contact me at <a href="mailto:sndnyangd@gmail.com">sndnyangd@gmail.com</a>.</p>
-				<p>mindmap App built using Flask, SQLAlchemy, PostgreSQL , and Twitter Bootstrap and some others</p>
+				<p>本人 <a href="http://sndnyang.github.io" target="_blank">sndnyang</a>.  <a href="http://weibo.com/u/2405149384" target="_blank">微博</a>. 
+				邮箱 <a href="mailto:sndnyangd@gmail.com">sndnyangd@gmail.com</a>.</p>
+				<p>思维导图， 不仅仅是思维导图（待完善）</p>
+                <p>使用 Flask, SQLAlchemy, PostgreSQL , Twitter Bootstrap 等等开发</p>
 				<p><a href="https://www.openshift.com/" target="_blank"><img alt="Powered by OpenShift" src="https://www.openshift.com/sites/default/files/images/powered-transparent-black.png"></a></p>		
 	</footer>
 </div>

@@ -165,7 +165,7 @@ module.directive('mindMap', function ($compile) {
 
                 scope.current_node = d;
 
-                toolTip.html('<a href="#" style="cursor:pointer">test</a><table id="toolTipTable">');
+                toolTip.html('<table id="toolTipTable">');
 
                 for (var i in d.link) {
                     var name = d.link[i]['name'],
@@ -183,10 +183,19 @@ module.directive('mindMap', function ($compile) {
                 }
 
                 if (d.link && d.link.length) {
+                    var left, top;
+                    if (d3.event !== null) {
+                        left = d3.event.pageX + 10;
+                        top = d3.event.pageY - 3*d.link.length;
+                    }
+                    else {
+                        left = toolTip.left;
+                        top = toolTip.top;
+                    }
                     toolTip.transition().duration(300)
-                        .style("opacity", 1)
-                        .style("left", (d3.event.pageX+10) + "px")
-                        .style("top", (d3.event.pageY - 3*d.link.length) + "px")
+                        .style("opacity", 0.8)
+                        .style("left", left + "px")
+                        .style("top", top + "px")
                         .style("visibility", "visible")
                         ;
                 }
@@ -248,7 +257,14 @@ module.directive('mindMap', function ($compile) {
                     d3.select(this).style('stroke-width','10px')
                 })
                 .on("mouseout", function(d){
-                 // toolTip.transition().duration(500).style("opacity", 0);
+
+                    toolTip.transition().duration(500).style("opacity", 0);
+                    toolTip.on("mouseover", function(d) {
+                        toolTip.transition().duration(500).style("opacity", 0.8);
+                    }).on("mouseout", function(d) {
+                        toolTip.transition().duration(500).style("opacity", 0);
+                    })
+
                 })
                 .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
                 ;
@@ -326,14 +342,11 @@ module.directive('mindMap', function ($compile) {
                 
         scope.$watch('json', function () {
             if (scope.json === undefined || scope.json === null) {
-                console.log("in")
                 scope.json = {
                     "name" : "root"
                 }
             }
-            console.log(scope.json);
             root = scope.json;
-            console.log(root);
             root.x0 = h / 2;
             root.y0 = 0;
             update(root);

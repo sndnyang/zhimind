@@ -8,6 +8,7 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
     $scope.root = null;
     $scope.fileName = "mindMap";
     $scope.current_node = null;
+    $scope.select_node = null;
 
     $scope.init = function (data) {
         var url = "/static/data/data.json";
@@ -126,7 +127,6 @@ module.directive('mindMap', function ($compile) {
                 i = 0,
                 root,
                 tree = d3.layout.tree().size([h, w]),
-                pack = d3.layout.tree().size([100, 100]),
                 diagonal = d3.svg.diagonal().projection(function (d) { return [d.y, d.x]; }),
                 toolTip = d3.select(element[0])
                     .append("div")
@@ -165,23 +165,26 @@ module.directive('mindMap', function ($compile) {
 
                 scope.current_node = d;
 
-                toolTip.html('<table id="toolTipTable">');
+                toolTip.html('<a href="#" style="cursor:pointer">test</a><table id="toolTipTable">');
 
                 for (var i in d.link) {
                     var name = d.link[i]['name'],
                         url = d.link[i]['url'],
                         text = '<td><button ng-click=\'deleteLink('+i+')\'>-'+
                             '</button></td>',
-                        a = angular.element('<td><a href="' + url + '" target="_blank">'
+                        a = angular.element('<td class="tdlink"><a class="'
+                                + 'link" href="' + url + '" target="_blank">'
                             +name +' </a></td>'),
                         tr = angular.element('<tr></tr>').append(a)
                             .append($compile(text)(scope));
 
-                    angular.element(document.getElementById('toolTipTable')).append(tr);
+                    angular.element(document.getElementById('toolTipTable'))
+                        .append(tr);
                 }
 
                 if (d.link && d.link.length) {
-                    toolTip.transition().duration(300).style("opacity", .8)
+                    toolTip.transition().duration(300)
+                        .style("opacity", 1)
                         .style("left", (d3.event.pageX+10) + "px")
                         .style("top", (d3.event.pageY - 3*d.link.length) + "px")
                         .style("visibility", "visible")
@@ -223,9 +226,9 @@ module.directive('mindMap', function ($compile) {
                     return d.id || (d.id = ++i);
                 });
 
-            d3.select("body").on("click", function() {
-                toolTip.style("opacity", "0");
-            })
+          //d3.select("body").on("click", function() {
+          //    toolTip.style("opacity", "0");
+          //})
 
 
             // Enter any new nodes at the parent's previous position.
@@ -233,18 +236,19 @@ module.directive('mindMap', function ($compile) {
                 .attr("class", "node")
                 .attr("id", function(d) {return "node"+d.id})
                 .on("click", function(d) { 			      	
+                })
+                .on("dblclick", function(d) {
                     toggle(d);
                     update(d);
                     //centerNode(d);
-                })
-                .on("dblclick", function(d) {
 
                 })
                 .on("mouseover", function(d, i){
                     showToolTip(d);
+                    d3.select(this).style('stroke-width','10px')
                 })
                 .on("mouseout", function(d){
-                  //toolTip.transition().duration(500).style("opacity", 0);
+                 // toolTip.transition().duration(500).style("opacity", 0);
                 })
                 .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
                 ;
@@ -258,7 +262,7 @@ module.directive('mindMap', function ($compile) {
                 .duration(duration)
                 .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
-            nodeUpdate.select("circle")
+            nodeUpdate.selectAll("circle")
                 .attr("r", function(d) { return computeRadius(d); })
                 .style("fill", function(d) {
                     if (typeof(d.level) == "undefined") {
@@ -338,7 +342,7 @@ module.directive('mindMap', function ($compile) {
 
         function computeRadius(d) {
             var radius = 20;
-            if(d.children || d._children) return radius + (radius * nbEndNodes(d) / 4);
+            if(d.children || d._children) return radius + (radius * nbEndNodes(d) / 10);
             else return radius;
         }
 
@@ -364,6 +368,13 @@ module.directive('mindMap', function ($compile) {
                 .attr("r", 1e-6)
                 .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
                 .classed("toggleCircle" , true)
+              //.on("click", function(d) {
+              //    if (scope.select_node != null) {
+              //        d3.select(scope.select_node).style('stroke-width','1px');
+              //    }
+              //    scope.select_node = this;
+              //    d3.select(this).style('stroke-width','3px');
+              //})
 
                 nodeEnter.append("text")
                 .attr("x", function(d) {

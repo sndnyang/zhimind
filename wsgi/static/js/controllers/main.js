@@ -46,32 +46,6 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
         return json;
     }
 
-
-    $scope.keyup = function (keyCode) {
-        switch (keyCode) {
-        case 33:
-        case 38:
-            break;
-        case 13:
-        case 34:
-        case 40:
-            break;
-        case 37:
-            break;
-        case 39:
-            break;
-        case 45:
-            break;
-        case 46:
-            break;
-        case 27:
-            break;
-        case 83:
-            break;
-        }
-        return false;
-    };
-
     $scope.create = function () {
         $scope.json = {
             "name" : "root"
@@ -201,6 +175,70 @@ module.directive('mindMap', function ($compile) {
                 }
             }
             
+            scope.keyup = function (keyCode) {
+                var d = scope.select_node;
+                var pd = d.parent;
+                switch (keyCode) {
+                case 13: // Enter
+                    addNewNode(scope.select_node.parent);
+                case 27:
+                    break;
+                case 37: // Left
+                    if (pd) {
+                        var newNode = null;
+                        if (pd.children[0] === d) {
+                            newNode = pd.children[
+                                pd.children.length - 1];
+                        }
+                        else {
+                            for (i = 1; i < pd.children.length; i++) {
+                                if (pd.children[i] === d) {
+                                    newNode = pd.children[i - 1];
+                                }
+                            }
+                        }
+                        if (newNode) {
+                            clickNode(newNode);
+                        }
+                    }
+                    break;
+                case 38: // Up
+                    clickNode(d.parent)
+                    break;
+                case 39: // Right
+                    if (pd) {
+                        var newNode = null;
+                        if (pd.children[pd.children.length-1] === d) {
+                            newNode = pd.children[0];
+                        }
+                        else {
+                            for (i = 0; i < pd.children.length; i++) {
+                                if (pd.children[i] === d) {
+                                    newNode = pd.children[i + 1];
+                                }
+                            }
+                        }
+                        if (newNode) {
+                            clickNode(newNode);
+                        }
+                    }
+                    break;
+                case 40: // Down
+                    if (d.children.length)
+                        clickNode(d.children[0])
+                    break;
+                case 45: // Insert
+                    addNewNode(scope.select_node);
+                    break;
+                case 46: // Delete
+                    removeNode(scope.select_node);
+                    break;
+                case 83:
+                    break;
+                }
+                return false;
+            };
+
             scope.deleteLink = function (i) {
                 var d = scope.current_node;
                 d.link.splice(i, 1);
@@ -353,6 +391,77 @@ module.directive('mindMap', function ($compile) {
             scope.root = root;
         });
 
+        function addLink(d){	    			
+
+            var name = prompt("输入新属性");
+            var url = prompt("输入新链接");
+
+            if (name != null && url != null){
+                if (typeof(d.link) == "undefined") {
+                    d.link = new Array();
+                }
+                var dict = {'name': name, 'url': url};
+                d.link.push(dict);
+            }
+            //update(d);
+            //scope.root = root;	
+        }
+
+        function addNewNode (d){	    			
+            var name = prompt("输入名称", d.name);
+            var childList;
+            if(d.children){
+                childList = d.children;
+            }
+            else if(d._children){	
+                childList = d.children = d._children;
+                d._children = null;
+            }
+            else{
+                childList = [];
+                d.children = childList;
+            }	
+            childList.push({	
+                "depth": d.depth + 1,
+                "name": name,
+                "parent": d
+            });	
+            update(d);
+            //centerNode(d);
+            scope.root = root;	
+        }
+
+        function removeNode (d){	
+            var thisId = d.id;
+            if(!d.parent){
+                alert("没法删除Root");
+                return;
+            }
+            d.parent.children.forEach(function(c , index){	
+                if(thisId === c.id){
+                    d.parent.children.splice(index , 1);
+                    return;
+                }
+            });	
+            scope.select_node = d.parent;
+            update(d.parent);
+            centerNode(d.parent);
+            scope.root = root;	
+        }
+
+        function editNode (d){	
+            var name = prompt("输入新名称", d.name);
+            if (name != null){
+                d.name = name;
+            }
+            if(!d.parent){
+                update(d);
+                centerNode(d);
+            }
+            update(d.parent);
+            centerNode(d);
+            scope.root = root;	
+        }
         function computeRadius(d) {
             var radius = 20;
             if(d.children || d._children) return radius + (radius * nbEndNodes(d) / 10);
@@ -376,18 +485,25 @@ module.directive('mindMap', function ($compile) {
             return nb;
         }
 
+        function clickNode(d) {
+            if (scope.select_node != null) {
+                d3.select("circle#circle"+scope.select_node.id)
+                    .style('stroke-width','1px');
+            }
+            scope.select_node = d;
+            d3.select("circle#circle"+d.id).style('stroke-width','3px');
+            centerNode(d);
+        }
+
         function InjectNodeContent (nodeEnter) {
             nodeEnter.append("circle")			
+                .attr("id", function(d) {return "circle"+d.id})
                 .attr("r", 1e-6)
                 .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
                 .classed("toggleCircle" , true)
-              //.on("click", function(d) {
-              //    if (scope.select_node != null) {
-              //        d3.select(scope.select_node).style('stroke-width','1px');
-              //    }
-              //    scope.select_node = this;
-              //    d3.select(this).style('stroke-width','3px');
-              //})
+                .on("click", function(d) {
+                    clickNode(d);
+                })
 
                 nodeEnter.append("text")
                 .attr("x", function(d) {
@@ -483,75 +599,6 @@ module.directive('mindMap', function ($compile) {
                 })
             .on("click" , addLink);
 
-            function addLink(d){	    			
-
-                var name = prompt("输入新属性");
-                var url = prompt("输入新链接");
-
-                if (name != null && url != null){
-                    if (typeof(d.link) == "undefined") {
-                        d.link = new Array();
-                    }
-                    var dict = {'name': name, 'url': url};
-                    d.link.push(dict);
-                }
-                //update(d);
-                //scope.root = root;	
-            }
-
-            function addNewNode (d){	    			
-                var childList;
-                if(d.children){
-                    childList = d.children;
-                }
-                else if(d._children){	
-                    childList = d.children = d._children;
-                    d._children = null;
-                }
-                else{
-                    childList = [];
-                    d.children = childList;
-                }	
-                childList.push({	
-                    "depth": d.depth + 1,
-                    "name": "new Node",
-                    "parent": d
-                });	
-                update(d);
-                centerNode(d);
-                scope.root = root;	
-            }
-
-            function removeNode (d){	
-                var thisId = d.id;
-                if(!d.parent){
-                    alert("没法删除Root");
-                    return;
-                }
-                d.parent.children.forEach(function(c , index){	
-                    if(thisId === c.id){
-                        d.parent.children.splice(index , 1);
-                        return;
-                    }
-                });	
-                update(d.parent);
-                centerNode(d);
-                scope.root = root;	
-            }
-
-            function editNode (d){	
-                var name = prompt("输入新名称", d.name);
-                if (name != null){
-                    d.name = name;
-                }
-                if(!d.parent){
-                    update(d);
-                    centerNode(d);
-                }
-                update(d.parent);
-                centerNode(d);
-                scope.root = root;	
-            }
         }
 
         function zoom(nodeEnter) {

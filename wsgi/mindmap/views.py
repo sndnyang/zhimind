@@ -34,17 +34,17 @@ def map_page(mapid):
 def load_map(mapid):
     ret_code = {'error':'not exist'}
     try:
-        mindmap = MindMap.query.get(int(mapid))
+        mindmap = MindMap.query.get(mapid)
         entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
                 mindmap_id=mindmap.get_id()).all()
 
         ret_code = mindmap.map
-
         if len(entrylist):
             add_mastery_in_json(ret_code, entrylist)
         
     except:
         app.logger.debug(traceback.print_exc())
+
     return json.dumps(ret_code)
 
 
@@ -198,7 +198,7 @@ def user(nickname):
 
 @login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return User.query.get(id)
 
 
 @app.before_request

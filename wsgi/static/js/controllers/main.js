@@ -16,13 +16,14 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
             url = "/loadmap/" + data;
         }
 
+        console.log(url);
         d3.json(url, function (error, json) {
             if (error) {
                 alert('遇到问题了');
             }
             if (json.error === 'not exist') {
                 alert('该导图不存在，返回');
-                window.history.back(-1);
+                //window.history.back(-1);
                 return;
             }
             $scope.json = json;

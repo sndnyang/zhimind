@@ -70,3 +70,5 @@ source/
 data
 tags
 .idea/
+
+*debug*

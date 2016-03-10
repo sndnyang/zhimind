@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 from flask import request, flash, url_for, redirect, render_template, g,\
-session, json
+session, json, send_from_directory
 
 from flask.ext.login import LoginManager, current_user, logout_user, \
 login_user, login_required
@@ -24,6 +24,16 @@ import traceback
 def index():
     return render_template('index.html')
 
+@app.route('/quiz/<path>')
+def quiz(path):
+    return send_from_directory('quiz', path)
+    
+@app.route('/practice/<path>')
+def practice(path):
+    app.logger.debug("here " + path)
+    app.logger.debug(app.root_path)
+    return send_from_directory(app.root_path + '/practice', path)
+    
 @app.route('/map/<mapid>', methods=['GET'])
 def map_page(mapid):
     if not mapid:

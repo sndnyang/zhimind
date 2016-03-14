@@ -2,7 +2,22 @@ var nodes = null;
 var edges = null;
 var network = null;
 var stepLog = new Array();
+var v = new Array();
 var index = 0;
+var global_l = null;
+var global_k = null;
+
+function print_list() {
+    var len = nodes.length;
+    
+    return v;
+}
+
+function swap(a, i, j) {
+    var t = a[i];
+    a[i] = a[j];
+    a[j] = t;
+}
 
 function execute() {
     var code = document.getElementById('code').value;
@@ -65,23 +80,17 @@ function start() {
         v.push(nodes[i].label);
     }
 
-    for (var i = 0; i < len; i++) {
-        for (var j = 1; j < len-i; j++) {
-            var step = {index:j};
-            if (v[j] < v[j-1]) {
-                step.swap = true;
-                var tmp = v[j];
-                v[j] = v[j-1];
-                v[j-1] = tmp;
-            }
-            else {
-                step.swap = false
-            }
-            stepLog.push(step);
-        }
-    }
-    console.log('log size ' + stepLog.length);
-    console.log(v);
+    var type = $("#algo option:selected").val();
+
+    var map = {'bubble': bubblesort,
+                'quick': qsort,
+                'merge': mergesort,
+                'select': selectsort}
+    
+    map['bubble'](v);
+
+  //console.log('log size ' + stepLog.length);
+  //console.log(v);
 
     index = 0;
 }
@@ -91,15 +100,17 @@ function draw() {
     nodes = new Array();
 
     for (var i = 0; i < len; i++) {
-        var node = {id: i+1,  font:{size:10}, 
-            fixed: {x:true, y:true }, 
+        var node = {id: i+1,  font: {size: 10}, 
+            fixed: {x: true, y: true }, 
             label: Math.floor(Math.random()*100), 
             shape: 'square', 
             color: 'orange'
         };
         nodes.push(node);
     }
-
+    for (var i = 0; i < len; i++) {
+        v.push(nodes[i].label);
+    }
     edges = [];
     initNetwork();
 }

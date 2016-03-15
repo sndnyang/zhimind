@@ -35,11 +35,11 @@
                             "children":[
                                 {
                                     "name":"线性回归",
-                                    "level": 3,
+                                    "level": 3
                                 },
                                 {"name":"逻辑回归", "level": 2},
                                 {"name":"神经网络"},
-                                {"name":"支持向量机", "level": 1}
+                                {"name":"支持向量机"}
                             ],
                             "link":[
                                 {"name":"coursera","url":"http://www.coursera.com"},
@@ -51,7 +51,7 @@
                         {
                             "name":"无监督学习",
                             "children":[
-                                {"name":"主成分分析"},
+                                {"name":"主成分分析", "level": 3},
                                 {"name":"K近邻", "level": 5}
                             ]
                         },

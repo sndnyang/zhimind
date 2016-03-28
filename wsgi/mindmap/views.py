@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 import os
+import re
+import urllib2
+import markdown
 from datetime import datetime
 
 from flask import request, flash, url_for, redirect, render_template, g,\
@@ -28,10 +31,66 @@ def index():
 def quiz(path):
     return send_from_directory('quiz', path)
     
+@app.route('/convert/<link>')
+def convert(link):
+    #real_link = 'https://raw.githubusercontent.com/sndnyang/notebook/master/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%AD%A6%E4%B9%A0/%E6%95%B0%E5%AD%A6/eigen.hst'
+    real_link = 'https://coding.net/u/sndnyang/p/visLearnCS/git/raw/master/eigen.hst'
+    #real_link = 'http://localhost:5000/practice/eigen.hst'
+    app.logger.debug(link)
+    urlfp = urllib2.urlopen(real_link)
+    response = ""
+
+    quiz_count = 0
+    
+    while True:
+        line = urlfp.readline()
+        if not line:
+            break
+        lists = re.findall('{%([^%{}@]*@[^%{}@]*)%}', line)
+        if not lists:
+            response += line
+        else:
+            sterm = lists[0]
+            app.logger.debug(sterm)
+            pattern = '([^|]*)\|([^@]*)@([^#]*)'
+            parts = re.findall(pattern, sterm)[0]
+            app.logger.debug(parts)
+            comment_pos = line.find('#')
+
+            question = parts[1]
+            answer = parts[2]
+
+            if parts[0] == "radio" or parts[0] == "checkbox":
+                quiz_count += 1
+                etype = parts[0]
+                qparts = question.split('&')
+                question = '<p>%s</p>' % qparts[0]
+                app.logger.debug(question)
+                response +=  question
+                template = '<input type="%s" name="quiz%d" value="%s">%s</input>'
+                for v in qparts[1:]:
+                    ele = template % (etype, quiz_count, v, v)
+                    app.logger.debug(ele)
+                    response += ele
+
+                response += '<input type="button" onclick="checkQuiz(%d)" value="submit"' % quiz_count
+
+            elif parts[0] == "gapfill":
+                quiz_count += 1
+                blank = '<input type="text" name="quiz%d" ' % quiz_count
+                app.logger.debug(blank)
+                blank += 'style="border:none;border-bottom:1px solid #000;">' 
+                app.logger.debug(blank)
+                question.replace('_', blank)
+                response += question
+                response += '<br><input type="button" onclick="checkQuiz(%d)" value="submit"' % quiz_count
+
+    urlfp.close()
+    return response
+
+
 @app.route('/practice/<path>')
 def practice(path):
-    app.logger.debug("here " + path)
-    app.logger.debug(app.root_path)
     return send_from_directory(app.root_path + '/practice', path)
     
 @app.route('/map/<mapid>', methods=['GET'])

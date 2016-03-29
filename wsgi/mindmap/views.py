@@ -1,8 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
-import re
 import urllib2
-import markdown
 from datetime import datetime
 
 from flask import request, flash, url_for, redirect, render_template, g,\
@@ -31,68 +29,36 @@ def index():
 def quiz(path):
     return send_from_directory('quiz', path)
     
+@app.route('/tutorial/<link>')
+def tutorial(link):
+    return render_template('tutorial.html', link = link)
+
 @app.route('/convert/<link>')
 def convert(link):
-    #real_link = 'https://raw.githubusercontent.com/sndnyang/notebook/master/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%AD%A6%E4%B9%A0/%E6%95%B0%E5%AD%A6/eigen.hst'
-    real_link = 'https://coding.net/u/sndnyang/p/visLearnCS/git/raw/master/eigen.hst'
-    #real_link = 'http://localhost:5000/practice/eigen.hst'
-    app.logger.debug(link)
+    try:
+        tutorial = Tutorial.query.get(link)
+        real_link = tutorial.get_url()
+    except:
+        app.logger.debug(traceback.print_exc())
+
     urlfp = urllib2.urlopen(real_link)
     response = ""
 
-    quiz_count = 0
-    
-    while True:
-        line = urlfp.readline()
-        if not line:
-            break
-        lists = re.findall('{%([^%{}@]*@[^%{}@]*)%}', line)
-        if not lists:
-            response += line
-        else:
-            sterm = lists[0]
-            app.logger.debug(sterm)
-            pattern = '([^|]*)\|([^@]*)@([^#]*)'
-            parts = re.findall(pattern, sterm)[0]
-            app.logger.debug(parts)
-            comment_pos = line.find('#')
-
-            question = parts[1]
-            answer = parts[2]
-
-            if parts[0] == "radio" or parts[0] == "checkbox":
-                quiz_count += 1
-                etype = parts[0]
-                qparts = question.split('&')
-                question = '<p>%s</p>' % qparts[0]
-                app.logger.debug(question)
-                response +=  question
-                template = '<input type="%s" name="quiz%d" value="%s">%s</input>'
-                for v in qparts[1:]:
-                    ele = template % (etype, quiz_count, v, v)
-                    app.logger.debug(ele)
-                    response += ele
-
-                response += '<input type="button" onclick="checkQuiz(%d)" value="submit"' % quiz_count
-
-            elif parts[0] == "gapfill":
-                quiz_count += 1
-                blank = '<input type="text" name="quiz%d" ' % quiz_count
-                app.logger.debug(blank)
-                blank += 'style="border:none;border-bottom:1px solid #000;">' 
-                app.logger.debug(blank)
-                question.replace('_', blank)
-                response += question
-                response += '<br><input type="button" onclick="checkQuiz(%d)" value="submit"' % quiz_count
+    response = md_qa_parse(urlfp)
 
     urlfp.close()
-    return response
+
+    return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/practice/<path>')
 def practice(path):
     return send_from_directory(app.root_path + '/practice', path)
     
+@app.route('/newmap')
+def newmap():
+    return render_template('map.html', mapid = 'null')
+
 @app.route('/map/<mapid>', methods=['GET'])
 def map_page(mapid):
     if not mapid:
@@ -101,7 +67,11 @@ def map_page(mapid):
 
 @app.route('/loadmap/<mapid>', methods=['GET'])
 def load_map(mapid):
+    if mapid == 'null':
+        return json.dumps({'name':'root'})
+
     ret_code = {'error':'not exist'}
+    
     try:
         mindmap = MindMap.query.get(mapid)
         entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
@@ -118,6 +88,7 @@ def load_map(mapid):
 
 
 @app.route('/update_mastery', methods=['POST'])
+@login_required
 def update_entry_master():
     if g.user is None or not g.user.is_authenticated:
         return u"用户未登录"
@@ -139,14 +110,39 @@ def update_entry_master():
     else:
         return u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
 
+@app.route('/newtutorial', methods=['POST'])
+@login_required
+def create_tutorial():
+    title = request.json.get('title')
+    url = request.json.get('url')
+
+    ret = {'error': u'重复数据异常'}
+
+    try:
+        tutorial = Tutorial.query.filter_by(url=url, user_id=g.user.get_id()).one_or_none()
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps(ret)
+
+    if tutorial is None:
+        tutorial = Tutorial(title, url)
+        tutorial.user_id = g.user.get_id()
+        db.session.add(tutorial)
+        db.session.commit()
+    app.logger.debug(tutorial.get_id())
+
+    ret['error'] = 'success'
+    ret['uuid'] = tutorial.get_id()
+
+    return json.dumps(ret)
 
 @app.route('/save', methods=['POST'])
+@login_required
 def save_map():
     if request.method == 'GET':
         return ''
 
     if g.user is None or not g.user.is_authenticated:
-        return "用户未登录"
+        return u"用户未登录"
 
     title = request.json.get('title', '')
     data = request.json.get('data', '')
@@ -263,7 +259,14 @@ def user(nickname):
     except:
         app.logger.error("use " + nickname + " fetch maps failed")
 
-    return render_template('user.html', user = user, maps = mindmaps)
+    tutorials = None
+    try:
+        tutorials = Tutorial.query.filter_by(user_id=user.get_id()).all()
+    except:
+        app.logger.error("use " + nickname + " fetch maps failed")
+
+    return render_template('user.html', user = user, maps = mindmaps, 
+            tutorials = tutorials)
 
 @login_manager.user_loader
 def load_user(id):

@@ -5,14 +5,26 @@
         <!-- <td><img src=" "></td> -->
         <td>
             <h1>用户昵称: {{user.username}}</h1>
-
         </td>
     </tr>
 </table>
+    <a href="/newmap">创建新思维导图</a>
+   |  
+    <a href="javascript:void(0)" onclick="linkTutorial()">创建新教程</a>
 <hr>
 
+<div id="maps">
 {% for map in maps %}
     {% include 'map_link.html' %}
 {% endfor %}
+</div>
 
+<div id="tutorials">
+{% for tutorial in tutorials %}
+    {% include 'tutorial_link.html' %}
+{% endfor %}
+</div>
+
+<script type="text/javascript" src="/static/js/tutorial.js"> </script>
 {% endblock %}
+

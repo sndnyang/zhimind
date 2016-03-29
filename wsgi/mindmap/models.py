@@ -95,3 +95,23 @@ class EntryMastery(db.Model):
         self.parent = parent
         self.mastery = 0
 
+
+class Tutorial(db.Model):
+    __tablename__ = 'tutorial'
+    id = db.Column('tutor_id', db.String, primary_key=True, default=uuid_gen)
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
+    title = db.Column(db.String(60))
+    url = db.Column(db.String(250))
+    
+    def __init__(self, title, url):
+        self.title = title
+        self.url = url
+
+    def get_id(self):
+        return self.id
+
+    def get_url(self):
+        return self.url
+
+    def get_title(self):
+        return self.title

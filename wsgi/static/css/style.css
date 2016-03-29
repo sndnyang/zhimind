@@ -1,3 +1,53 @@
 ﻿#content-sans-footer{
     min-height:100%;
 }
+
+.lesson {
+    padding: 0 50px 0 50px;
+}
+
+.header {
+    margin-bottom: 10px;
+    /*height: 120px;*/
+    min-height: 60px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    background-color: #efefef;
+    text-align: center
+}
+
+.header h1 {
+    text-transform: uppercase;
+    font-size: 36pt;
+    font-weight: bold
+}
+
+.hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background-color: #bbb;
+    border-radius: 7px;
+    opacity: 0.8;
+	display: none;
+	z-index: 888;
+}
+
+.hint ul {
+    padding: 10px;
+}

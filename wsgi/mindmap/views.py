@@ -45,11 +45,30 @@ def convert(link):
     response = ""
 
     response = md_qa_parse(urlfp)
-
     urlfp.close()
+
+    session['answer'] = response['answer']
 
     return json.dumps(response, ensure_ascii=False)
 
+@app.route('/cmp_math', methods=["POST"])
+def cmp_math():
+    from sympy import simplify_logic
+    no = int(request.json.get('id', None))-1
+    expression = request.json.get('expression', None)
+    ret = {'response': True}
+    if not expression:
+        ret['response'] = False
+    answers = session['answer']
+
+    input_answer = simplify_logic(expression)
+    correct_answer = simplify_logic(answers[no])
+    app.logger.debug('check %s and %s' % (input_answer, correct_answer))
+    
+    if input_answer != correct_answer:
+        ret['response'] = False
+
+    return json.dumps(ret)
 
 @app.route('/practice/<path>')
 def practice(path):
@@ -77,6 +96,7 @@ def load_map(mapid):
         entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
                 mindmap_id=mindmap.get_id()).all()
 
+        app.logger.debug(len(entrylist))
         ret_code = mindmap.map
         if len(entrylist):
             add_mastery_in_json(ret_code, entrylist)
@@ -86,29 +106,79 @@ def load_map(mapid):
 
     return json.dumps(ret_code)
 
+@app.route('/linkquiz', methods=['POST'])
+@login_required
+def link_quiz():
+
+    name = request.json.get('name', None)
+    mapid = request.json.get('mapid', None)
+    tutorid = request.json.get('tutorid', None)
+    parent = request.json.get('parent', None)
+
+    ret = {'response': False}
+    if name and mapid and tutorid:
+        try:
+            result = EntryMastery.query.filter_by(user_id=g.user.get_id(),
+                    mindmap_id=mapid, name=name, tutor_id =
+                    tutorid).one_or_none()
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            return json.dumps(ret)
+
+        if result is None:
+            entry = EntryMastery(name, parent)
+            entry.user_id = g.user.get_id()
+            entry.mindmap_id = mapid
+            entry.tutor_id = tutorid
+            db.session.add(entry)
+            db.session.commit()
+
+    ret['response'] = True
+
+    return json.dumps(ret)
+
 
 @app.route('/update_mastery', methods=['POST'])
 @login_required
 def update_entry_master():
-    if g.user is None or not g.user.is_authenticated:
-        return u"用户未登录"
-    name = request.json('name', None)
-    if not name:
-        return u'未指定知识点名字'
 
-    mapid = request.json('mapid', None)
-    if not name:
-        return u'未指定所属图id'
+    ret = {'response': False}
+    tutorid = request.json.get('tutor_id', None)
+    if not tutorid:
+        ret['info'] = u'未指定教程id'
 
-    parent = request.json('parent', None)
-    mastery = drequest.json('mastery', None)
+    name = request.json.get('name', None)
+    if not tutorid:
+        ret['info'] = u'未指定id'
+
+    mapid = request.json.get('id', None)
+    if not mapid:
+        ret['info'] = u'未指定导图id'
+
+    parent = request.json.get('parent', None)
+
+    if 'info' in ret:
+        return json.dumps(ret, ensure_ascii=False)
+
     results = EntryMastery.query.filter_by(user_id=g.user.get_id(),
-            mindmap_id=mapid, name=name)
+            mindmap_id=mapid, name=name, tutor_id=tutorid)
+
+    flag = False
     for entry in results:
         if parent and entry.parent == parent:
-            pass
-    else:
-        return u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
+            entry.mastery += 1
+            db.session.commit()
+            flag = True
+        if not parent:
+            entry.mastery += 1
+            db.session.commit()
+            flag = True
+
+    if not flag:
+        ret['info'] = u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
+        return json.dumps(ret)
+
+    ret['response'] = True
+    return json.dumps(ret, ensure_ascii=False)
 
 @app.route('/newtutorial', methods=['POST'])
 @login_required
@@ -128,7 +198,6 @@ def create_tutorial():
         tutorial.user_id = g.user.get_id()
         db.session.add(tutorial)
         db.session.commit()
-    app.logger.debug(tutorial.get_id())
 
     ret['error'] = 'success'
     ret['uuid'] = tutorial.get_id()
@@ -198,7 +267,6 @@ def register():
             return render_template('register.html', form=form)
 
         code_text = session['code_text']
-        #app.logger.debug(code_text + '  ' + form.verification_code.data)
 
         if form.verification_code.data == code_text:
             user = User(username, request.form['password'],request.form['email'])
@@ -208,7 +276,6 @@ def register():
                 flash('User successfully registered')
                 return redirect(url_for('login'))
             except:
-                #app.logger.error(traceback.print_exc())
                 db.session.rollback()
                 flash(u'注册失败')
         else:

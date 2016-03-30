@@ -70,7 +70,7 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
             jsonData = JSON.stringify({'title': $scope.root.name, 'data': saveData}),
             bb = new Blob([jsonData], {type: MIME_TYPE}),
             a = document.createElement('a');
-        
+
         a.download = $scope.fileName + ".json";
         a.href = window.URL.createObjectURL(bb);
         a.textContent = '点击下载';
@@ -117,7 +117,7 @@ module.directive('mindMap', function ($compile) {
                     .attr("class", "outer")
                     .attr("transform", "translate(" + m[3] + "," + m[0] + ")"),
                 linkSvg = vis.append("g").attr("class", "linkContainer");
-            
+
             // Toggle children.
             function toggle(d) {
                 if (d.children) {
@@ -175,7 +175,7 @@ module.directive('mindMap', function ($compile) {
                         ;
                 }
             }
-            
+
             scope.keyup = function (keyCode) {
                 var d = scope.select_node;
                 var pd = d.parent;
@@ -245,7 +245,7 @@ module.directive('mindMap', function ($compile) {
                 d.link.splice(i, 1);
                 showToolTip(scope.current_node);
             }
-            
+
         function update(source) {
             if(!(source != null)){
                 return;
@@ -378,7 +378,7 @@ module.directive('mindMap', function ($compile) {
                 d.y0 = d.y;
             });
         }
-                
+
         scope.$watch('json', function () {
             if (scope.json === undefined || scope.json === null) {
                 scope.json = {
@@ -395,14 +395,52 @@ module.directive('mindMap', function ($compile) {
         function addLink(d){	    			
 
             var name = prompt("输入新属性");
+            if (name === null) return;
+
             var url = prompt("输入新链接");
 
-            if (name != null && url != null){
+            if (name !== null && url !== null){
                 if (typeof(d.link) == "undefined") {
                     d.link = new Array();
                 }
                 var dict = {'name': name, 'url': url};
-                d.link.push(dict);
+
+                var urlparts = url.split('/'),
+                    curparts = document.URL.split('/'),
+                    practice_map = ['tutorial', 'practice'];
+
+                if (urlparts[2] === curparts[2]) {
+                    var flag = false;
+                    for (var i in practice_map) {
+                        if (practice_map[i] == urlparts[3]) {
+                            var p = d.parent.name || null;
+                            $.ajax({
+                                method: "post",
+                                url : "/linkquiz",
+                                contentType: 'application/json',
+                                dataType: "json",
+                                data: JSON.stringify({'mapid': curparts[4], 'tutorid': urlparts[4], 'name': d.name, 'parent':p}),
+                                success : function (result){
+                                    var response = result.response;
+                                    if (!response) {
+                                        alert("与练习网页间的关联创建失败!");
+                                    }
+                                    else {
+                                        dict.url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
+                                        d.link.push(dict);
+                                    }
+                                }
+                            });
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag) {
+                        d.link.push(dict);
+                    }
+                } else {
+                    d.link.push(dict);
+                }
             }
             //update(d);
             //scope.root = root;	

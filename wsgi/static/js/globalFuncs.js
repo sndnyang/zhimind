@@ -44,8 +44,12 @@
 	};
 
 	window.reset = function () {
+        var url = document.URL.split('/'),
+            link = url[url.length-1].split('?')[0];
+
 		localStorage.removeItem('currentLesson');
 		localStorage.removeItem('codeSoFar');
+		localStorage.removeItem(link+'currentLesson');
 
 		setTimeout(location.reload.bind(location), 100);
 

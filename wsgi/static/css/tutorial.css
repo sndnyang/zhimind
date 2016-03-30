@@ -1,0 +1,20 @@
+.math-container {
+    display: block;
+    padding: 5px;
+    min-height: 80px;
+    max-width: 220px;
+}
+
+#MathPreview {
+    display: block;
+    background-color: #eee;
+    padding: 5px;
+    min-height: 80px;
+    
+}
+
+.quiz {
+    border: none;
+    border-bottom: 1px solid #000;
+    width: 100%
+}

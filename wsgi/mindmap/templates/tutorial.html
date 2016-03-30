@@ -1,4 +1,4 @@
-﻿{% extends "layout.html" %}
+{% extends "layout.html" %}
 {% block body %}
         <div class="header">
             <h1>教程<h1>
@@ -13,21 +13,22 @@
 
         </div>
 
-
         <div class="hint">
             <ul class="flashes">
             </ul>
         </div>
-
+        <div id="MathAnswer" hidden></div>
         <link rel="stylesheet" href="/static/css/reset.css">
 
         <link rel="stylesheet" href="/static/css/trystyle.css">
         <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/css/tutorial.css">
 
         <script src="//cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
         <script type="text/javascript" src="/static/js/markdown-it-math.min.js"> </script>
-        <script type="text/javascript" src="/static/js/markdown-it-for-inline.js"> </script>
+        <script type="text/javascript" src="/static/js/markdown-it-mathjax.js"> </script>
 
+        <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
         <script type="text/javascript" src="/static/js/jQuery.md5.js"> </script>
         <script type="text/javascript" src="/static/js/globalFuncs.js"> </script>
         <script type="text/javascript" src="/static/js/mathLesson.js"> </script>
@@ -38,4 +39,5 @@
         <script>
             setTimeout("$('.hint').fadeOut('slow')", 5000)
         </script>
+
 {% endblock %}

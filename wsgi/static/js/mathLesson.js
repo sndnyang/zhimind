@@ -11,22 +11,29 @@ function initLesson(link) {
     }
 }
 
-function checkQuiz(id) {
-    var value, 
+function checkQuiz(obj, id) {
+    var value,
         your_answer,
-        ele = $("input[name='quiz"+id+"']"),
+        back_check = false,
+        eleparent = $(obj).parent(),
+        ele = eleparent.children(".quiz"),
         type = ele.attr("type"),
+        lesson_name = eleparent.parent()[0].className,
+        lesson_id = parseInt(lesson_name.substr(13)),
         correct = global_answers[id-1];
-    
-    if (type === "radio") {
-        value = $("input[name='quiz"+id+"']:checked").val(); 
 
+    if (type === "radio") {
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
+                value = $(this).val();
+            }
+        });
     } else if (type === "checkbox") {
 
         value = '';
 
-        $("input[name='quiz"+id+"']").each(function() {
-            if ($(this).prop('checked') ==true) {
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
                 value += $(this).val()+"@";
             }
         });
@@ -37,12 +44,29 @@ function checkQuiz(id) {
         value = ele.val();
     }
 
-    your_answer = $.md5(value);
+    if (type === "text" && ele.hasClass("formula")) {
+        var expression = ele.val();
+        $.ajax({
+            method: "post",
+            url : "/cmp_math",
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({'id': id, 'expression': expression}),
+            success : function (result){
+                check_result(result.response, lesson_id)
+                return;
+            }
+        });
+    } else {
+        your_answer = $.md5(value);
+        check_result(your_answer === correct, lesson_id)
+    }
+}
 
-    if (your_answer === correct) {
-        $('.lesson' + (id+1)).show();
-        updateLesson();
-            
+function check_result(result, id) {
+
+    if (result) {
+        updateLesson(id+1);
         error_times = 0;
     } else {
         $('.hint').css('display', 'block');
@@ -60,13 +84,34 @@ function checkQuiz(id) {
     }
 }
 
-function updateLesson() {
+function updateLesson(no) {
 
-  //$('.lesson' + currentLesson).hide();
-    currentLesson++;
+    if (no === currentLesson+1) {
+        currentLesson = no;
+        if (currentLesson === global_lesson_count) {
+            var params = getRequest(),
+                url = document.URL.split('/'),
+                link = url[url.length-1].split('?')[0];
+            params.tutor_id = link;
 
-    localStorage.setItem(global_link, currentLesson);
-    $('.lesson' + currentLesson).show();
+            console.log(params);
+                
+            $.ajax({
+                method: "post",
+                url : "/update_mastery",
+                contentType: 'application/json',
+                dataType: "json",
+                data: JSON.stringify(params),
+                success : function (result){
+                    if (!result.response) {
+                        alert("更新掌握度失败! "+result.info);
+                    }
+                }
+            });  
+        }
+        localStorage.setItem(global_link, currentLesson);
+        $('.lesson' + currentLesson).show();
+    }
 };
 
 function startLesson(num) {

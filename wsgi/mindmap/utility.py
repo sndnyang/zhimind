@@ -3,8 +3,6 @@ import md5
 
 from xml.etree.ElementTree import tostring
 
-import asciimathml
-
 from mindmap import app
 
 def md_qa_parse(urlfp):

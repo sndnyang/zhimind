@@ -86,6 +86,7 @@ class EntryMastery(db.Model):
     id = db.Column('entry_id', db.String, primary_key=True, default=uuid_gen)
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     mindmap_id = db.Column(db.String, db.ForeignKey('mindmap.mindmap_id'))
+    tutor_id = db.Column(db.String, db.ForeignKey('tutorial.tutor_id'))
     name = db.Column(db.String(60))
     parent = db.Column(db.String(60))
     mastery = db.Column(db.Integer)

@@ -17,6 +17,30 @@ var Preview = {
     }
 };
 
+function updateMastery() {
+    var params = getRequest(),
+        url = document.URL.split('/'),
+        link = url[url.length-1].split('?')[0];
+
+    if (!params) {
+        return;
+    }
+
+    params.tutor_id = link;
+    $.ajax({
+        method: "post",
+        url : "/update_mastery",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify(params),
+        success : function (result){
+            if (!result.response) {
+                alert("更新掌握度失败! "+result.info);
+            }
+        }
+    });   
+}
+
 function loadTutorial(link) {
     'use strict';
     var root = document.URL.split('/')[3]; 
@@ -148,7 +172,10 @@ function getRequest() {
       for(var i = 0; i < strs.length; i ++) {   
          theRequest[strs[i].split("=")[0]] = decodeURI(strs[i].split("=")[1]);
       }   
-   }   
+   }
+   else {
+       return null;
+   }
    return theRequest;   
 }
 

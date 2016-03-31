@@ -22,7 +22,13 @@ function updateLesson(input, output) {
 
             localStorage.setItem(global_link, currentLesson);
             startLesson(currentLesson);
+            
         }
+    }
+
+    console.log(currentLesson + ' ' + global_lesson_count);
+    if (currentLesson === global_lesson_count) {
+        updateMastery();
     }
 };
 

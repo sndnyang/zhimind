@@ -91,28 +91,11 @@ function updateLesson(no) {
 
     if (no === currentLesson+1) {
         currentLesson = no;
-        if (currentLesson === global_lesson_count) {
-            var params = getRequest(),
-                url = document.URL.split('/'),
-                link = url[url.length-1].split('?')[0];
-            params.tutor_id = link;
-
-            console.log(params);
-                
-            $.ajax({
-                method: "post",
-                url : "/update_mastery",
-                contentType: 'application/json',
-                dataType: "json",
-                data: JSON.stringify(params),
-                success : function (result){
-                    if (!result.response) {
-                        alert("更新掌握度失败! "+result.info);
-                    }
-                }
-            });  
-        }
         localStorage.setItem(global_link, currentLesson);
         $('.lesson' + currentLesson).show();
+
+        if (currentLesson === global_lesson_count) {
+            updateMastery();  
+        }
     }
 }

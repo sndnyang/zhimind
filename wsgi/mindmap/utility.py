@@ -19,11 +19,15 @@ def md_qa_parse(real_link):
     if not r.ok:
         return {'response': False, 'info': real_link+u' not exists'}
 
-    if 'content-length' not in r.headers or \
+    if 'content-length' in r.headers and \
         int(r.headers['content-length']) > 8 * 1024 * 1024 * 3:
-        return {'response': False, 'info': real_link+u' 无长度或太长'}
+        return {'response': False, 'info': real_link+u' 太长'}
    
+    line_count = 0
     for line in r.iter_lines():
+        line_count += 1
+        if line_count > 1024:
+            return {'response': False, 'info': real_link+u' 太长, 超过1000行'}
 
         lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
         if not lists:

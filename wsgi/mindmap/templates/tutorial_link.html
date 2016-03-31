@@ -10,7 +10,7 @@
         <td>
             <i>{{ user.username }} 发布了:</i>
             <br>
-            <a href="/{{tutorial.type}}/{{tutorial.id}}">{{tutorial.title}}</a>
+            <a href="/{{tutorial.type or 'tutorial'}}/{{tutorial.id}}">{{tutorial.title}}</a>
         </td>
     </tr>
 </table>

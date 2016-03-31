@@ -1,11 +1,16 @@
 <table>
     <tr valign="top">
-        <td> 教程 </td>
+        <td> {% if tutorial.type == "practice" %}
+            练习
+            {% else %}
+            教程
+            {% endif %}
+        </td>
         <td>|</td>
         <td>
             <i>{{ user.username }} 发布了:</i>
             <br>
-            <a href="/tutorial/{{tutorial.id}}">{{tutorial.title}}</a>
+            <a href="/{{tutorial.type}}/{{tutorial.id}}">{{tutorial.title}}</a>
         </td>
     </tr>
 </table>

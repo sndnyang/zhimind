@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
         <div class="header">
-            <h1>教程<h1>
+            <h1>{{name}}教程<h1>
         </div>
 
         <button onclick="reset()">重置</button>
@@ -25,7 +25,6 @@
         <link rel="stylesheet" href="/static/css/tutorial.css">
 
         <script src="//cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
-        <script type="text/javascript" src="/static/js/markdown-it-math.min.js"> </script>
         <script type="text/javascript" src="/static/js/markdown-it-mathjax.js"> </script>
 
         <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>

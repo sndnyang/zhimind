@@ -1,26 +1,33 @@
+﻿#coding=utf-8 
 import re
 import md5
+import requests
 
 from xml.etree.ElementTree import tostring
 
 from mindmap import app
 
-def md_qa_parse(urlfp):
+def md_qa_parse(real_link):
 
     qaparts = {}
     response = ''
     quiz_count = 0
     answers = []
     comments = {}
-    
-    while True:
-        line = urlfp.readline()
-        if not line:
-            break
+    r = requests.get(real_link)
+
+    if not r.ok:
+        return {'response': False, 'info': real_link+u' not exists'}
+
+    if 'content-length' not in r.headers or \
+        int(r.headers['content-length']) > 8 * 1024 * 1024 * 3:
+        return {'response': False, 'info': real_link+u' 无长度或太长'}
+   
+    for line in r.iter_lines():
 
         lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
         if not lists:
-            response += line
+            response += line+'\n'
             continue
 
         sterm = lists[0]

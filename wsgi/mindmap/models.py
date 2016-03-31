@@ -103,10 +103,12 @@ class Tutorial(db.Model):
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     title = db.Column(db.String(60))
     url = db.Column(db.String(250))
+    type = db.Column(db.String(10))
     
-    def __init__(self, title, url):
+    def __init__(self, title, url, type="tutorial"):
         self.title = title
         self.url = url
+        self.type = type
 
     def get_id(self):
         return self.id

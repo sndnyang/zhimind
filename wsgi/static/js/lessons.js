@@ -1,11 +1,14 @@
 
-var exports = {},
-    currentLesson = localStorage.getItem('currentLesson') || 1;
+var exports = {};
 
-if (currentLesson !== 1) {
-    $('.lesson1').hide();
-    evaluate.init();
-    startLesson(currentLesson);
+function initLesson(link) {
+    global_link = link+'currentLesson';
+    currentLesson = localStorage.getItem(global_link) || 1;
+    if (currentLesson !== 1) {
+        $('.lesson1').hide();
+        evaluate.init();
+        startLesson(currentLesson);
+    }
 }
 
 function updateLesson(input, output) {
@@ -17,7 +20,7 @@ function updateLesson(input, output) {
             $('.lesson' + currentLesson).hide();
             currentLesson++;
 
-            localStorage.setItem('currentLesson', currentLesson);
+            localStorage.setItem(global_link, currentLesson);
             startLesson(currentLesson);
         }
     }
@@ -42,7 +45,7 @@ exports.previousLesson = function () {
     }
 
     currentLesson--;
-    localStorage.setItem('currentLesson', currentLesson);
+    localStorage.setItem(global_link, currentLesson);
 
     $('.lesson').hide();
     $('.lesson' + currentLesson).show();

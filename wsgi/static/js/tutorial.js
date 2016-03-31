@@ -1,6 +1,9 @@
 var global_answers = null;
 var global_comment = null;
 var global_lesson_count = 0;
+var error_times = 0,
+    currentLesson = 1,
+    global_link = 'currentLesson';
 
 var Preview = {
     preview: null,     // filled in by Init below
@@ -16,23 +19,29 @@ var Preview = {
 
 function loadTutorial(link) {
     'use strict';
+    var root = document.URL.split('/')[3]; 
     $.ajax({
         url : "/convert/"+link,
         contentType: 'application/json',
         dataType: "json",
-        success : function (result){
-            var answers = result.answer,
-                comments = result.comment,
-                result = result.response;
+        success : function (data){
+            var answers = data.answer,
+                comments = data.comment,
+                result = data.response;
 
             global_comment = comments;
             global_answers = answers;
-            
+        
+            if (!result) {
+                alert(data.info);
+                return;
+            } 
+
             var md = window.markdownit({html:true})
                     .use(window.markdownitMathjax);
                   
             var content = result.split(/\r?\n/),
-                tutorial = $("#tutorial"),
+                tutorial = $(".tutorial"),
                 count = 0,
                 match,
                 html = md.render(result)+"<h2>",
@@ -54,7 +63,7 @@ function loadTutorial(link) {
                 lesson_div.attr('class', 'lesson lesson'+count);
                 lesson_div.html(lesson);
                 lesson_div.appendTo(tutorial);
-                if (!lesson_div.find('button').length) {
+                if (root !== 'practice' && !lesson_div.find('button').length) {
                     lesson_div.append(button_div);
                 }
             }
@@ -64,6 +73,15 @@ function loadTutorial(link) {
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
         }
     });
+    if (root === "practice") {
+        draw();
+    }
+}
+
+function draw() {
+    initData();
+    initNetwork();
+    generateStepLog();
 }
 
 function linkTutorial() {
@@ -75,7 +93,7 @@ function linkTutorial() {
     var url = prompt("输入源文件url地址,后缀.mkd或.md");
 
     if (title != null && url != null && (url.indexOf(".mkd") > -1 || 
-                url.indexOf(".md") > -1 || url.indexOf(".hst") > -1)) {
+                url.indexOf(".md") > -1)) {
         $.ajax({
             url: '/newtutorial',
             method: 'POST',
@@ -94,6 +112,33 @@ function linkTutorial() {
     }
 }
 
+function linkPractice() {
+
+    var title = prompt("输入教程名称");
+    if (title === null) 
+        return ;
+
+    var url = prompt("输入源文件url地址,后缀.mkd或.md");
+
+    if (title != null && url != null && (url.indexOf(".mkd") > -1 || 
+                url.indexOf(".md") > -1)) {
+        $.ajax({
+            url: '/newpractice',
+            method: 'POST',
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({'url': url, 'title': title}),
+            success: function (result) {
+                var div = $("#tutorials");
+                var entity = '<table> <tr valign="top"> <td> 练习 </td> '+
+                    '<td>|</td> <td> <i> 您发布了:</i> <br> <a href='+
+                    '"/practice/'+result.uuid+'">'+title+'</a> </td></tr>'+
+                    '</table>';
+                div.append(entity);
+            }
+        });
+    }
+}
 function getRequest() {   
    var url = location.search; //获取url中"?"符后的字串   
    var theRequest = new Object();   
@@ -106,3 +151,4 @@ function getRequest() {
    }   
    return theRequest;   
 }
+

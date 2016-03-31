@@ -1,5 +1,14 @@
 var nodes = null;
 var edges = null;
+var options = {
+    layout: {
+        hierarchical:{
+            direction: 'UD'
+        }
+    }
+};
+var watch;
+
 var network = null;
 var stepLog = new Array();
 var v = new Array();
@@ -8,15 +17,30 @@ var global_l = null;
 var global_k = null;
 
 function print_list() {
+    v = new Array();
     var len = nodes.length;
-    
+    for (var i = 0; i < len; i++) {
+        v.push(nodes[i].label);
+    }
+   
     return v;
+}
+
+function swap_lable(i, j) {
+
+    var label = nodes[j].label;
+    nodes[j].label = nodes[i].label;
+    nodes[i].label = label;
+
+    updateData(); 
 }
 
 function swap(a, i, j) {
     var t = a[i];
     a[i] = a[j];
     a[j] = t;
+
+    swap_lable(i, j);
 }
 
 function execute() {
@@ -35,25 +59,19 @@ function initNetwork() {
         nodes: nodes,
         edges: edges
     };
-    var options = {
-        layout: {
-            hierarchical:{
-                direction: 'UD'
-            }//,
-                         //physics: {hierarchicalRepulsion: {springConstant: 0}
-        }};//physics:{barnesHut:{gravitationalConstant:-4000}}};
+
     network = new vis.Network(container, data, options);
 }
 
 function next() {
     if (stepLog.length == 0) {
         alert("步骤长度为0， 应该尚未执行算法");
-        return;
+        return -1;
     }
 
     if (stepLog.length == index) {
         alert("执行完毕");
-        return;
+        return -1;
     }
 
     var step = stepLog[index];
@@ -62,16 +80,15 @@ function next() {
     markNodes([j-1, j]);
 
     if (step.swap == true) {
-        var label = nodes[j].label;
-        nodes[j].label = nodes[j-1].label;
-        nodes[j-1].label = label;
+        swap_lable(j-1, j);
     }
 
-    updateData(); 
     index++;
+    return 0;
 }
 
-function start() {
+function generateStepLog() {
+    stepLog = new Array();
     var len = nodes.length;
 
     var v = new Array();
@@ -79,38 +96,29 @@ function start() {
     for (var i = 0; i < len; i++) {
         v.push(nodes[i].label);
     }
-
-    var type = $("#algo option:selected").val();
-
-    var map = {'bubble': bubblesort,
-                'quick': qsort,
-                'merge': mergesort,
-                'select': selectsort}
-    
-    map['bubble'](v);
+   
+    procedure(v);
 
   //console.log('log size ' + stepLog.length);
-  //console.log(v);
+}
 
+function timenext() {
+    watch = setTimeout(function() {
+        var t = next();
+        if (t != -1) {
+            timenext();
+        }
+    }, 500);
+}
+
+function stopnext() {
+    clearTimeout(watch);
+}
+
+function start() {
+    generateStepLog();
     index = 0;
+    console.log(stepLog.length);
+    timenext();
 }
 
-function draw() {
-    var len = document.getElementById('lenth').value;
-    nodes = new Array();
-
-    for (var i = 0; i < len; i++) {
-        var node = {id: i+1,  font: {size: 10}, 
-            fixed: {x: true, y: true }, 
-            label: Math.floor(Math.random()*100), 
-            shape: 'square', 
-            color: 'orange'
-        };
-        nodes.push(node);
-    }
-    for (var i = 0; i < len; i++) {
-        v.push(nodes[i].label);
-    }
-    edges = [];
-    initNetwork();
-}

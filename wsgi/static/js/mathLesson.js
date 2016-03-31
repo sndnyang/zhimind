@@ -1,16 +1,4 @@
 
-var error_times = 0,
-    currentLesson = 1,
-    global_link = 'currentLesson';
-
-function initLesson(link) {
-    global_link = link+'currentLesson';
-    currentLesson = localStorage.getItem(global_link) || 1;
-    if (currentLesson !== 1) {
-        startLesson(currentLesson);
-    }
-}
-
 function checkQuiz(obj, id) {
     var value,
         your_answer,
@@ -84,6 +72,21 @@ function check_result(result, id) {
     }
 }
 
+function initLesson(link) {
+    global_link = link+'currentLesson';
+    currentLesson = localStorage.getItem(global_link) || 1;
+    if (currentLesson !== 1) {
+        startLesson(currentLesson);
+    }
+}
+
+function startLesson(num) {
+    for (var i = 2; i <= num; i++) {
+        $('.lesson' + i).css('display', 'block');
+        $('.lesson' + i).show();
+    }
+}
+
 function updateLesson(no) {
 
     if (no === currentLesson+1) {
@@ -111,12 +114,5 @@ function updateLesson(no) {
         }
         localStorage.setItem(global_link, currentLesson);
         $('.lesson' + currentLesson).show();
-    }
-};
-
-function startLesson(num) {
-    for (var i = 2; i <= num; i++) {
-        $('.lesson' + i).css('display', 'block');
-        $('.lesson' + i).show();
     }
 }

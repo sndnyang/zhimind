@@ -3,6 +3,7 @@ import os
 import urllib2
 from datetime import datetime
 
+
 from flask import request, flash, url_for, redirect, render_template, g,\
 session, json, send_from_directory
 
@@ -31,23 +32,24 @@ def quiz(path):
     
 @app.route('/tutorial/<link>')
 def tutorial(link):
-    return render_template('tutorial.html', link = link)
+    try:
+        tutorial = Tutorial.query.get(link)
+        name = tutorial.get_title()
+    except:
+        app.logger.debug(traceback.print_exc())
+    return render_template('tutorial.html', link = link, name=name)
 
 @app.route('/convert/<link>')
 def convert(link):
+
+    response = {'response': False}
     try:
         tutorial = Tutorial.query.get(link)
         real_link = tutorial.get_url()
+        response = md_qa_parse(real_link)
+        session['answer'] = response['answer']
     except:
         app.logger.debug(traceback.print_exc())
-
-    urlfp = urllib2.urlopen(real_link)
-    response = ""
-
-    response = md_qa_parse(urlfp)
-    urlfp.close()
-
-    session['answer'] = response['answer']
 
     return json.dumps(response, ensure_ascii=False)
 
@@ -70,9 +72,19 @@ def cmp_math():
 
     return json.dumps(ret)
 
-@app.route('/practice/<path>')
-def practice(path):
-    return send_from_directory(app.root_path + '/practice', path)
+@app.route('/practice/<link>')
+def program_practice(link):
+    base_link = '/'
+    try:
+        tutorial = Tutorial.query.get(link)
+        real_link = tutorial.get_url()
+        base_link = '/'.join(real_link.split('/')[:-1])
+        name = tutorial.get_title()
+    except:
+        app.logger.debug(traceback.print_exc())
+
+    return render_template('practice.html', link = link, base=base_link,
+            name=name)
     
 @app.route('/newmap')
 def newmap():
@@ -181,6 +193,7 @@ def update_entry_master():
     return json.dumps(ret, ensure_ascii=False)
 
 @app.route('/newtutorial', methods=['POST'])
+@app.route('/newpractice', methods=['POST'])
 @login_required
 def create_tutorial():
     title = request.json.get('title')
@@ -193,8 +206,13 @@ def create_tutorial():
     except sqlalchemy.orm.exc.MultipleResultsFound:
         return json.dumps(ret)
 
+    path = request.path
+    qtype = "tutorial"
+    if 'practice' in path:
+        qtype = 'practice'
+
     if tutorial is None:
-        tutorial = Tutorial(title, url)
+        tutorial = Tutorial(title, url, qtype)
         tutorial.user_id = g.user.get_id()
         db.session.add(tutorial)
         db.session.commit()

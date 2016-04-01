@@ -3,6 +3,7 @@ import os
 import urllib2
 from datetime import datetime
 
+import sqlalchemy
 
 from flask import request, flash, url_for, redirect, render_template, g,\
 session, json, send_from_directory
@@ -23,13 +24,30 @@ import traceback
 
 @app.route('/')
 @app.route('/index')
+@app.route('/index.html')
 def index():
     return render_template('index.html')
 
-@app.route('/quiz/<path>')
-def quiz(path):
-    return send_from_directory('quiz', path)
-    
+@app.route('/practicelist')
+@app.route('/practicelist.html')
+def practicelist():
+    try:
+        tutorials = Tutorial.query.filter_by(type="practice").limit(100)
+    except:
+        app.logger.debug(traceback.print_exc())
+    return render_template('tutoriallist.html', tutorials=tutorials)
+
+
+@app.route('/tutoriallist')
+@app.route('/tutoriallist.html')
+def tutoriallist():
+    try:
+        tutorials = Tutorial.query.filter_by(type="tutorial").limit(100)
+    except:
+        app.logger.debug(traceback.print_exc())
+    return render_template('tutoriallist.html', tutorials=tutorials)
+
+
 @app.route('/tutorial/<link>')
 def tutorial(link):
     try:
@@ -38,6 +56,7 @@ def tutorial(link):
     except:
         app.logger.debug(traceback.print_exc())
     return render_template('tutorial.html', link = link, name=name)
+
 
 @app.route('/convert/<link>')
 def convert(link):
@@ -175,6 +194,7 @@ def update_entry_master():
             mindmap_id=mapid, name=name, tutor_id=tutorid)
 
     flag = False
+    
     for entry in results:
         if parent and entry.parent == parent:
             entry.mastery += 1
@@ -214,6 +234,7 @@ def create_tutorial():
     if tutorial is None:
         tutorial = Tutorial(title, url, qtype)
         tutorial.user_id = g.user.get_id()
+        tutorial.username = g.user.get_name()
         db.session.add(tutorial)
         db.session.commit()
 
@@ -335,7 +356,7 @@ def logout():
 def user(nickname):
     user = User.query.filter_by(username = nickname).first()
     if user == None:
-        flash('不存在用户：' + nickname + '！')
+        flash(u'不存在用户：' + nickname + '！')
         return redirect(url_for('index'))
 
     mindmaps = None

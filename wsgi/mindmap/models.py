@@ -46,9 +46,11 @@ class User(db.Model):
     def get_id(self):
         return unicode(self.id)
  
+    def get_name(self):
+        return unicode(self.username)
+
     def check_frequence(self, now):
         app.logger.debug(self.last_edit)
-        app.logger.debug(not self.last_edit)
         if not self.last_edit:
             return True
         differ = (now - self.last_edit).seconds
@@ -89,7 +91,7 @@ class EntryMastery(db.Model):
     tutor_id = db.Column(db.String, db.ForeignKey('tutorial.tutor_id'))
     name = db.Column(db.String(60))
     parent = db.Column(db.String(60))
-    mastery = db.Column(db.Integer)
+    mastery = db.Column(db.Integer, default=1)
 
     def __init__(self, name, parent):
         self.name = name
@@ -104,6 +106,8 @@ class Tutorial(db.Model):
     title = db.Column(db.String(60))
     url = db.Column(db.String(250))
     type = db.Column(db.String(10))
+    like = db.Column(db.Integer, default=1)
+    username = db.Column(db.String(20))
     
     def __init__(self, title, url, type="tutorial"):
         self.title = title

@@ -108,6 +108,29 @@ function draw() {
     generateStepLog();
 }
 
+function to_backend_create(type, json) {
+    $.ajax({
+        url: '/new'+type,
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify(json),
+        success: function (result) {
+            var ctype, div = $("#tutorials");
+            if (type === 'practice') {
+                ctype = '练习';
+            }
+            else if (type === 'tutorial') {
+                ctype = '教程';
+            }
+            var entity = '<table> <tr valign="top"> <td> '+ctype+' </td> '+
+                '<td>|</td> <td> <i> 您发布了:</i> <br> <a href="/'+type+'/'+
+                result.uuid+'">'+json.title+'</a> </td></tr></table>';
+            div.append(entity);
+        }
+    });
+}
+
 function linkTutorial() {
 
     var title = prompt("输入教程名称");
@@ -118,21 +141,8 @@ function linkTutorial() {
 
     if (title != null && url != null && (url.indexOf(".mkd") > -1 || 
                 url.indexOf(".md") > -1)) {
-        $.ajax({
-            url: '/newtutorial',
-            method: 'POST',
-            contentType: 'application/json',
-            dataType: "json",
-            data: JSON.stringify({'url': url, 'title': title}),
-            success: function (result) {
-                var div = $("#tutorials");
-                var entity = '<table> <tr valign="top"> <td> 教程 </td> '+
-                    '<td>|</td> <td> <i> 您发布了:</i> <br> <a href='+
-                    '"/tutorial/'+result.uuid+'">'+title+'</a> </td></tr>'+
-                    '</table>';
-                div.append(entity);
-            }
-        });
+        var json = {'url': url, 'title': title};
+        to_backend_create('tutorial', json);
     }
 }
 
@@ -146,23 +156,12 @@ function linkPractice() {
 
     if (title != null && url != null && (url.indexOf(".mkd") > -1 || 
                 url.indexOf(".md") > -1)) {
-        $.ajax({
-            url: '/newpractice',
-            method: 'POST',
-            contentType: 'application/json',
-            dataType: "json",
-            data: JSON.stringify({'url': url, 'title': title}),
-            success: function (result) {
-                var div = $("#tutorials");
-                var entity = '<table> <tr valign="top"> <td> 练习 </td> '+
-                    '<td>|</td> <td> <i> 您发布了:</i> <br> <a href='+
-                    '"/practice/'+result.uuid+'">'+title+'</a> </td></tr>'+
-                    '</table>';
-                div.append(entity);
-            }
-        });
+
+        var json = {'url': url, 'title': title};
+        to_backend_create('practice', json);
     }
 }
+
 function getRequest() {   
    var url = location.search; //获取url中"?"符后的字串   
    var theRequest = new Object();   

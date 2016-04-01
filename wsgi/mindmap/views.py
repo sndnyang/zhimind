@@ -4,6 +4,7 @@ import urllib2
 from datetime import datetime
 
 import sqlalchemy
+from sqlalchemy import desc
 
 from flask import request, flash, url_for, redirect, render_template, g,\
 session, json, send_from_directory
@@ -32,7 +33,8 @@ def index():
 @app.route('/practicelist.html')
 def practicelist():
     try:
-        tutorials = Tutorial.query.filter_by(type="practice").limit(100)
+        tutorials = Tutorial.query.filter_by(type="practice")\
+                        .order_by(desc(Tutorial.like)).limit(100)
     except:
         app.logger.debug(traceback.print_exc())
     return render_template('tutoriallist.html', tutorials=tutorials)
@@ -42,7 +44,8 @@ def practicelist():
 @app.route('/tutoriallist.html')
 def tutoriallist():
     try:
-        tutorials = Tutorial.query.filter_by(type="tutorial").limit(100)
+        tutorials = Tutorial.query.filter_by(type="tutorial")\
+                        .order_by(desc(Tutorial.like)).limit(100)
     except:
         app.logger.debug(traceback.print_exc())
     return render_template('tutoriallist.html', tutorials=tutorials)

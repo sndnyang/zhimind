@@ -16,7 +16,6 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
             url = "/loadmap/" + data;
         }
 
-        console.log(url);
         d3.json(url, function (error, json) {
             if (error) {
                 alert('遇到问题了');
@@ -43,7 +42,9 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
             });
             json.children = childList;
         }
-        json.show = false;
+        if (source.link && source.link.length > 0) {
+            json.link = source.link;
+        }
         return json;
     }
 
@@ -125,7 +126,7 @@ module.directive('mindMap', function ($compile) {
                     d.children = null;
                 } else {
                     d.children = d._children;
-                    //d._children = null;
+                    d._children = null;
                 }
             }
 
@@ -177,8 +178,8 @@ module.directive('mindMap', function ($compile) {
             }
 
             scope.keyup = function (keyCode) {
-                var d = scope.select_node;
-                var pd = d.parent;
+                var d = scope.select_node,
+                    pd = d.parent;
                 switch (keyCode) {
                 case 13: // Enter
                     addNewNode(scope.select_node.parent);
@@ -392,6 +393,71 @@ module.directive('mindMap', function ($compile) {
             scope.root = root;
         });
 
+        function to_backend_create(d, type, json, name) {
+            $.ajax({
+                url: '/new'+type,
+                method: 'POST',
+                contentType: 'application/json',
+                dataType: "json",
+                data: JSON.stringify(json),
+                success: function (result) {
+                    var whole_url = 'http://'+ window.location.host +'/'+type
+                        +'/'+result.uuid;
+                    console.log(whole_url);
+                    linkquiz(d, name, whole_url);
+                }
+            });
+        }
+
+        function linkquiz(d, name, url){
+
+            var dict = {'name': name, 'url': url},
+                urlparts = url.split('/'),
+                curparts = document.URL.split('/'),
+                practice_map = ['tutorial', 'practice'];
+
+            if (urlparts[2] === curparts[2]) {
+                var flag = false;
+                for (var i in practice_map) {
+                    if (practice_map[i] == urlparts[3]) {
+                        var p = d.parent.name || null;
+                        $.ajax({
+                            method: "post",
+                            url : "/linkquiz",
+                            contentType: 'application/json',
+                            dataType: "json",
+                            data: JSON.stringify({
+                                'mapid': curparts[4], 
+                                'tutorid': urlparts[4], 
+                                'name': d.name, 
+                                'parent':p}
+                                ),
+                            success : function (result){
+                                var response = result.response;
+                                if (!response) {
+                                    alert("与练习网页间的关联创建失败!");
+                                }
+                                else {
+                                    dict.url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
+                                    d.link.push(dict);
+                                    console.log(d.link);
+                                }
+                            }
+                        });
+                        flag = true;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    d.link.push(dict);
+                }
+            } else {
+                d.link.push(dict);
+            }
+
+            console.log(d.link);
+        }
+
         function addLink(d){	    			
 
             var name = prompt("输入新属性");
@@ -403,44 +469,20 @@ module.directive('mindMap', function ($compile) {
                 if (typeof(d.link) == "undefined") {
                     d.link = new Array();
                 }
-                var dict = {'name': name, 'url': url};
 
-                var urlparts = url.split('/'),
-                    curparts = document.URL.split('/'),
-                    practice_map = ['tutorial', 'practice'];
-
-                if (urlparts[2] === curparts[2]) {
-                    var flag = false;
-                    for (var i in practice_map) {
-                        if (practice_map[i] == urlparts[3]) {
-                            var p = d.parent.name || null;
-                            $.ajax({
-                                method: "post",
-                                url : "/linkquiz",
-                                contentType: 'application/json',
-                                dataType: "json",
-                                data: JSON.stringify({'mapid': curparts[4], 'tutorid': urlparts[4], 'name': d.name, 'parent':p}),
-                                success : function (result){
-                                    var response = result.response;
-                                    if (!response) {
-                                        alert("与练习网页间的关联创建失败!");
-                                    }
-                                    else {
-                                        dict.url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
-                                        d.link.push(dict);
-                                    }
-                                }
-                            });
-                            flag = true;
-                            break;
-                        }
+                if (url.indexOf(".mkd") > -1 || url.indexOf(".md") > -1) {
+                    if (name === 'practice' || name === '练习') {
+                        var json = {'url': url, 'title': d.name};
+                        to_backend_create(d, 'practice', json, name);
+                        return;
                     }
-                    if (!flag) {
-                        d.link.push(dict);
+                    else if (name === 'practice' || name === '练习') {
+                        var json = {'url': url, 'title': d.name};
+                        to_backend_create(d, 'practice', json, name);
+                        return;
                     }
-                } else {
-                    d.link.push(dict);
                 }
+                linkquiz(d, name, url);
             }
             //update(d);
             //scope.root = root;	
@@ -448,6 +490,10 @@ module.directive('mindMap', function ($compile) {
 
         function addNewNode (d){	    			
             var name = prompt("输入名称", d.name);
+            if (name === null) {
+                return;
+            }
+
             var childList;
             if(d.children){
                 childList = d.children;
@@ -542,9 +588,9 @@ module.directive('mindMap', function ($compile) {
                 .classed("toggleCircle" , true)
                 .on("click", function(d) {
                     clickNode(d);
-                })
+                });
 
-                nodeEnter.append("text")
+            nodeEnter.append("text")
                 .attr("x", function(d) {
                     var spacing = computeRadius(d) + 5;
                     return d.children || d._children ? -spacing : spacing;

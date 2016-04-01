@@ -118,7 +118,6 @@ function stopnext() {
 function start() {
     generateStepLog();
     index = 0;
-    console.log(stepLog.length);
     timenext();
 }
 

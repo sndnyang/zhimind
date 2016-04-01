@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div id="tutorials">
+{% for tutorial in tutorials %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>
+                    <a href="/user/{{ tutorial.username }}">
+                        {{ tutorial.username }}
+                    </a> 发布了:
+                </i>
+            </td>
+            {% include 'tutorial_link.html' %}
+        </tr>
+    </table>
+{% endfor %}
+</div>
+
+{% endblock %}
+

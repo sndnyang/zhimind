@@ -17,13 +17,27 @@
 
 <div id="maps">
 {% for map in maps %}
-    {% include 'map_link.html' %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>您 发布了:</i>
+            </td>
+            {% include 'map_link.html' %}
+        </tr>
+    </table>
 {% endfor %}
 </div>
 
 <div id="tutorials">
 {% for tutorial in tutorials %}
-    {% include 'tutorial_link.html' %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>您 发布了:</i>
+            </td>
+            {% include 'tutorial_link.html' %}
+        </tr>
+    </table>
 {% endfor %}
 </div>
 

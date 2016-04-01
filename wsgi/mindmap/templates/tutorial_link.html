@@ -1,5 +1,3 @@
-<table>
-    <tr valign="top">
         <td> {% if tutorial.type == "practice" %}
             练习
             {% else %}
@@ -8,9 +6,6 @@
         </td>
         <td>|</td>
         <td>
-            <i>{{ user.username }} 发布了:</i>
             <br>
             <a href="/{{tutorial.type or 'tutorial'}}/{{tutorial.id}}">{{tutorial.title}}</a>
         </td>
-    </tr>
-</table>

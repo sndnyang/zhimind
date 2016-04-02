@@ -50,7 +50,8 @@ def md_qa_parse(real_link):
             question = '<p>%s</p>' % qparts[0]
             response +=  question
 
-            template = '<input type="%s" class="quiz" value="%s">%s</input>'
+            template = '<input type="%s" class="quiz" name="quiz" value="%s">'\
+                    +'%s</input>'
             for v in qparts[1:]:
                 ele = template % (etype, v, v)
                 response += ele+'<br>'
@@ -70,6 +71,7 @@ def md_qa_parse(real_link):
             blank += 'onchange="Preview.Update(this)">\n' 
 
             question = question.replace('_', '<br>'+blank+'<br>')
+
             response += question
             response += submit % quiz_count
             answers.append(parts[2])

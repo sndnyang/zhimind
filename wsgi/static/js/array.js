@@ -81,7 +81,7 @@ function next() {
     markNodes([i, j]);
 
     if (step.swap == true) {
-        swap_lable(i, j);
+        swap_label(i, j);
     }
 
     index++;

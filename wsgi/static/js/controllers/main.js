@@ -476,9 +476,9 @@ module.directive('mindMap', function ($compile) {
                         to_backend_create(d, 'practice', json, name);
                         return;
                     }
-                    else if (name === 'practice' || name === '练习') {
+                    else if (name === '教程' || name === 'tutorial') {
                         var json = {'url': url, 'title': d.name};
-                        to_backend_create(d, 'practice', json, name);
+                        to_backend_create(d, 'tutorial', json, name);
                         return;
                     }
                 }

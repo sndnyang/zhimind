@@ -48,14 +48,32 @@ function loadTutorial(link) {
         url : "/convert/"+link,
         contentType: 'application/json',
         dataType: "json",
+        beforeSend : function(){
+            var _PageWidth = document.documentElement.clientWidth,
+                _LoadingTop = $(".main").height() / 2 ,
+                _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0,
+                _LoadingHtml = $('<div></div>');
+                _LoadingHtml.attr("id", "loadingDiv");
+                _LoadingHtml.css("left", _LoadingLeft + 'px');
+                _LoadingHtml.css("top", _LoadingTop + 'px');
+                _LoadingHtml.html('教程加载中，请等待...');
+
+                //呈现loading效果
+                $(".main").append(_LoadingHtml);
+        },
+
         success : function (data){
             var answers = data.answer,
                 comments = data.comment,
-                result = data.response;
+                result = data.response,
+                loadingMask = document.getElementById('loadingDiv');
+
+            loadingMask.parentNode.removeChild(loadingMask);
 
             global_comment = comments;
             global_answers = answers;
         
+
             if (!result) {
                 alert(data.info);
                 return;

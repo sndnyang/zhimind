@@ -140,7 +140,8 @@ button.right {
     width: -webkit-calc(100% - 60px);
     width: calc(100% - 60px);
     min-height: 350px;
-    margin: 0 auto
+    margin: 0 auto;
+    position: relative;
 }
 
 .main > div {

@@ -17,9 +17,12 @@ $(document).ready(function () {
     });
 
     input.keydown(function (e) {
-        if (e.keyCode === keymap.ENTER) {
+        if (e.ctrlKey && e.keyCode === 13) {
             var $this = $(this),
                 code = $this.val();
+            console.log(e.ctrlKey);
+            console.log(e.keyCode);
+            console.log(code);
 
             if (code.length === 0) {
                 return;
@@ -87,6 +90,7 @@ $(document).ready(function () {
             $this.val('');
 
             regexConsole.scrollTop(regexConsole.prop('scrollHeight'));
+
         } else if (e.keyCode === keymap.UP) {
             if (reverseCmdIndex >= previousCmds.length) {
                 return;
@@ -118,6 +122,8 @@ $(document).ready(function () {
         } else if (e.keyCode === keymap.L && e.ctrlKey) {
             window.clear();
         }
+        var lines = $(this).val().split('\n');
+        input.height(22 * (lines.length || 1));
     }).on('input', function () {
         reverseCmdIndex = 0;
     }).focus();

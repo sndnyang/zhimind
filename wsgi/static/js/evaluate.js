@@ -18,8 +18,7 @@
 		try {
 			var result = eval(newCode); // jshint ignore: line
 
-			codeSoFar = newCode;
-			localStorage.setItem('codeSoFar', codeSoFar);
+			localStorage.setItem('codeSoFar', codeSoFar+'\n;'+code);
 
 			return result;
 		} catch (e) {
@@ -28,6 +27,6 @@
 	};
 
 	evaluate.init = function () {
-		eval(codeSoFar); // jshint ignore: line
+        //eval(codeSoFar); // jshint ignore: line
 	};
 

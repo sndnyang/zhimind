@@ -13,10 +13,16 @@ function initLesson(link) {
 
 function updateLesson(input, output) {
     var lesson = 'lesson' + currentLesson;
-    if (lessonCompleted[lesson]) {
-        var result = lessonCompleted[lesson].call(this, input, output);
 
-        if (result) {
+    console.log(output + ' ' + typeof(output) + ' ' + typeof(input));
+
+    if (lessonCompleted[lesson] || (typeof(output) === "undefined" && typeof(input) == "number")) {
+        var result = null;
+        
+        if (typeof(output) !== "undefined")
+            result = lessonCompleted[lesson].call(this, input, output);
+
+        if (result || (typeof(output) === "undefined" && typeof(input) == "number")) {
             $('.lesson' + currentLesson).hide();
             currentLesson++;
 
@@ -26,7 +32,6 @@ function updateLesson(input, output) {
         }
     }
 
-    console.log(currentLesson + ' ' + global_lesson_count);
     if (currentLesson === global_lesson_count) {
         updateMastery();
     }

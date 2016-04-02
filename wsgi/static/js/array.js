@@ -26,7 +26,7 @@ function print_list() {
     return v;
 }
 
-function swap_lable(i, j) {
+function swap_label(i, j) {
 
     var label = nodes[j].label;
     nodes[j].label = nodes[i].label;
@@ -40,7 +40,7 @@ function swap(a, i, j) {
     a[i] = a[j];
     a[j] = t;
 
-    swap_lable(i, j);
+    swap_label(i, j);
 }
 
 function execute() {
@@ -75,12 +75,13 @@ function next() {
     }
 
     var step = stepLog[index];
-    var j = step.index;
+        i = step.p, 
+        j = step.q;
 
-    markNodes([j-1, j]);
+    markNodes([i, j]);
 
     if (step.swap == true) {
-        swap_lable(j-1, j);
+        swap_lable(i, j);
     }
 
     index++;

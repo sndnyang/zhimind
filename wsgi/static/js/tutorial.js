@@ -126,6 +126,79 @@ function draw() {
     generateStepLog();
 }
 
+function checkQuiz(obj, id) {
+    var value,
+        your_answer,
+        back_check = false,
+        eleparent = $(obj).parent(),
+        ele = eleparent.children(".quiz"),
+        type = ele.attr("type"),
+        lesson_name = eleparent.parent()[0].className,
+        lesson_id = parseInt(lesson_name.substr(13)),
+        correct = global_answers[id-1];
+
+    if (type === "radio") {
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
+                value = $(this).val();
+            }
+        });
+    } else if (type === "checkbox") {
+
+        value = '';
+
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
+                value += $(this).val()+"@";
+            }
+        });
+
+        value = value.substring(0, value.length-1);
+
+    } else if (type === "text") {
+        value = ele.val();
+    }
+
+    if (type === "text" && ele.hasClass("formula")) {
+        var expression = ele.val();
+        $.ajax({
+            method: "post",
+            url : "/cmp_math",
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({'id': id, 'expression': expression}),
+            success : function (result){
+                check_result(result.response, lesson_id, id)
+                return;
+            }
+        });
+    } else {
+        your_answer = $.md5(value);
+        check_result(your_answer === correct, lesson_id, id)
+    }
+}
+
+function check_result(result, id, quiz_id) {
+
+    if (result) {
+        updateLesson(id+1);
+        error_times = 0;
+    } else {
+        $('.hint').css('display', 'block');
+        $('.flashes').html('');
+        if (quiz_id in global_comment) {
+            var comments = global_comment[quiz_id];
+                idx = Math.min(error_times, comments.length-1),
+                comment = comments[idx];
+            $('.flashes').append("<li>对不起， 答案错误</li>")
+            $('.flashes').append("<li>提示:</li>")
+            $('.flashes').append("<li>"+comment+"</li>")
+        }
+        error_times++;
+        setTimeout("$('.hint').fadeOut('slow')", 5000)
+    }
+}
+
 function to_backend_create(type, json) {
     $.ajax({
         url: '/new'+type,

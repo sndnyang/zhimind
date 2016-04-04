@@ -29,26 +29,23 @@ import traceback
 def index():
     return render_template('index.html')
 
-@app.route('/practicelist')
-@app.route('/practicelist.html')
-def practicelist():
+@app.route('/recommendlist')
+@app.route('/recommendlist.html')
+def recommendlist():
+    mindmaps = None
+    tutorials = None
     try:
-        tutorials = Tutorial.query.filter_by(type="practice")\
-                        .order_by(desc(Tutorial.like)).limit(100)
+        mindmaps = MindMap.query.join(User).add_columns(MindMap.id, 
+                MindMap.title, User.username).limit(100)
+        tutorials = Tutorial.query.join(User).add_columns(Tutorial.id,
+                Tutorial.type, Tutorial.title, User.username).limit(100)
+                       # .order_by(desc(Tutorial.like)).limit(100)
     except:
         app.logger.debug(traceback.print_exc())
-    return render_template('tutoriallist.html', tutorials=tutorials)
 
+    return render_template('recommendlist.html', maps = mindmaps, 
+            tutorials = tutorials)
 
-@app.route('/tutoriallist')
-@app.route('/tutoriallist.html')
-def tutoriallist():
-    try:
-        tutorials = Tutorial.query.filter_by(type="tutorial")\
-                        .order_by(desc(Tutorial.like)).limit(100)
-    except:
-        app.logger.debug(traceback.print_exc())
-    return render_template('tutoriallist.html', tutorials=tutorials)
 
 
 @app.route('/tutorial/<link>')
@@ -237,7 +234,6 @@ def create_tutorial():
     if tutorial is None:
         tutorial = Tutorial(title, url, qtype)
         tutorial.user_id = g.user.get_id()
-        tutorial.username = g.user.get_name()
         db.session.add(tutorial)
         db.session.commit()
 

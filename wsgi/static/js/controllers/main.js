@@ -145,13 +145,14 @@ module.directive('mindMap', function ($compile) {
 
                 for (var i in d.link) {
                     var name = d.link[i]['name'],
-                        url = d.link[i]['url'],
                         text = '<td><button ng-click=\'deleteLink('+i+')\'>-'+
                             '</button></td>',
-                        a = angular.element('<td class="tdlink"><a class="'
-                                + 'link" href="' + url + '" target="_blank">'
-                            +name +' </a></td>'),
-                        tr = angular.element('<tr></tr>').append(a)
+                        a = '<td class="tdlink"><a class="link" ng-click="'+
+                            'toTutorial('+i+')" href="javascript:void(0)" >'
+                            +name +' </a></td>',
+
+                        tr = angular.element('<tr></tr>')
+                            .append($compile(a)(scope))
                             .append($compile(text)(scope));
 
                     angular.element(document.getElementById('toolTipTable'))
@@ -245,6 +246,15 @@ module.directive('mindMap', function ($compile) {
                 var d = scope.current_node;
                 d.link.splice(i, 1);
                 showToolTip(scope.current_node);
+            }
+
+            scope.toTutorial = function (i) {
+                var d = scope.current_node,
+                    p = d.parent.name || null,
+                    curparts = document.URL.split('/'),
+                    url = d.link[i]['url'].split('?')[0];
+                url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
+                window.open(url);
             }
 
         function update(source) {
@@ -438,9 +448,7 @@ module.directive('mindMap', function ($compile) {
                                     alert("与练习网页间的关联创建失败!");
                                 }
                                 else {
-                                    dict.url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
                                     d.link.push(dict);
-                                    console.log(d.link);
                                 }
                             }
                         });

@@ -106,8 +106,6 @@ class Tutorial(db.Model):
     title = db.Column(db.String(60))
     url = db.Column(db.String(250))
     type = db.Column(db.String(10))
-    like = db.Column(db.Integer, default=1)
-    username = db.Column(db.String(20))
     
     def __init__(self, title, url, type="tutorial"):
         self.title = title

@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div id="maps">
+    <p>思维导图列表</p>
+{% for map in maps %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>
+                    <a href="/user/{{ map.username }}">
+                        {{ map.username }}
+                    </a> 发布了:
+                </i>
+            </td>
+            {% include 'map_link.html' %}
+        </tr>
+    </table>
+{% endfor %}
+
+</div>
+<div id="tutorials">
+    <p>教程列表</p>
+{% for tutorial in tutorials %}
+{% if tutorial.type == "tutorial" %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>
+                    <a href="/user/{{ tutorial.username }}">
+                        {{ tutorial.username }}
+                    </a> 发布了:
+                </i>
+            </td>
+            {% include 'tutorial_link.html' %}
+        </tr>
+    </table>
+{% endif %}
+{% endfor %}
+</div>
+
+<div id="practices">
+    <p>编程练习列表</p>
+{% for tutorial in tutorials %}
+{% if tutorial.type == "practice" %}
+    <table>
+        <tr valign="top">
+            <td>
+                <i>
+                    <a href="/user/{{ tutorial.username }}">
+                        {{ tutorial.username }}
+                    </a> 发布了:
+                </i>
+            </td>
+            {% include 'tutorial_link.html' %}
+        </tr>
+    </table>
+{% endif %}
+{% endfor %}
+</div>
+{% endblock %}
+

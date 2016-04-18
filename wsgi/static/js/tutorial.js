@@ -80,15 +80,20 @@ function loadTutorial(link) {
             } 
 
             var md = window.markdownit({html:true})
-                    .use(window.markdownitMathjax);
+                    .use(window.markdownitMathjax)
+                    ;
                   
             var content = result.split(/\r?\n/),
                 tutorial = $(".tutorial"),
                 count = 0,
                 match,
                 html = md.render(result)+"<h2>",
-                reg = /<h2>([\d\D]*?)<h2>/g,
+                reg = /<h[234]>([\d\D]*?)<h[234]>/g,
                 matches = [];
+
+            if (root === "practice") {
+                reg = /<h2>([\d\D]*?)<h2>/g;
+            }
 
             while (match = reg.exec(html)) {
                 matches.push(match[0]);

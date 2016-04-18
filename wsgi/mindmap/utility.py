@@ -57,7 +57,7 @@ def md_qa_parse(real_link):
                 response += ele+'<br>'
             response += submit % quiz_count
 
-        elif parts[0] == "gapfill":
+        elif parts[0] == "text":
             quiz_count += 1
             blank = '<input type="text" class="quiz">'
             question = question.replace('_', blank)

@@ -1,5 +1,7 @@
 var nodes = null;
 var edges = null;
+var data = null;
+var groups = null;
 var options = {
     layout: {
         hierarchical:{
@@ -7,6 +9,7 @@ var options = {
         }
     }
 };
+var graphtype = 'Network';
 var watch;
 
 var network = null;
@@ -52,15 +55,15 @@ function execute() {
     obj.next();
 }
 
-function initNetwork() {
+function initCanvas() {
     // create a network
     var container = document.getElementById('datastruct');
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
-
-    network = new vis.Network(container, data, options);
+    
+    if (graphtype === "Graph3d") {
+        network = new vis.Graph3d(container, data, options);
+    } else if (graphtype === "Network") {
+        network = new vis.Network(container, data, options);
+    }
 }
 
 function next() {

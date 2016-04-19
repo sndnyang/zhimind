@@ -14,9 +14,21 @@ function startLesson(num) {
     }
 }
 
+function previousLesson(no) {
+    if (no === 0) {
+        return;
+    }
+
+    currentLesson = no;
+    localStorage.setItem(global_link, currentLesson);
+
+    for (var i = no+1; i <= global_lesson_count; i++)
+        $('.lesson' + i).hide();
+}
+
 function updateLesson(no) {
 
-    if (no === currentLesson+1) {
+    if (no === parseInt(currentLesson)+1) {
         currentLesson = no;
         localStorage.setItem(global_link, currentLesson);
 

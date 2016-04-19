@@ -80,8 +80,7 @@ function loadTutorial(link) {
             } 
 
             var md = window.markdownit({html:true})
-                    .use(window.markdownitMathjax)
-                    ;
+                    .use(window.markdownitMathjax);
                   
             var content = result.split(/\r?\n/),
                 tutorial = $(".tutorial"),
@@ -103,16 +102,21 @@ function loadTutorial(link) {
             for (var i in matches) {
                 count += 1;
                 var lesson_div = $('<div></div>'),
-                    onclick = 'onclick="updateLesson('+(count+1)+')"',
-                    button_div = $('<button '+onclick+'>下一段</button>'),
+                    nextclick = 'onclick="updateLesson('+(count+1)+')"',
+                    prevclick = 'onclick="previousLesson('+(count-1)+')"',
+                    next_button = $('<button '+nextclick+'>下一段</button>'),
+                    prev_button = $('<button '+prevclick+'>上一段</button>'),
                     lesson = matches[i].substring(0, matches[i].length-4);
                 
                 lesson_div.attr('class', 'lesson lesson'+count);
                 lesson_div.html(lesson);
+                if (root !== 'practice') {
+                    if (!lesson_div.find('button').length) {
+                        lesson_div.append(next_button);
+                    }
+                    lesson_div.append(prev_button);
+                } 
                 lesson_div.appendTo(tutorial);
-                if (root !== 'practice' && !lesson_div.find('button').length) {
-                    lesson_div.append(button_div);
-                }
             }
 
             global_lesson_count = count;
@@ -127,8 +131,7 @@ function loadTutorial(link) {
 
 function draw() {
     initData();
-    initNetwork();
-    generateStepLog();
+    initCanvas();
 }
 
 function checkQuiz(obj, id) {

@@ -14,8 +14,6 @@ function initLesson(link) {
 function updateLesson(input, output) {
     var lesson = 'lesson' + currentLesson;
 
-    console.log(output + ' ' + typeof(output) + ' ' + typeof(input));
-
     if (lessonCompleted[lesson] || (typeof(output) === "undefined" && typeof(input) == "number")) {
         var result = null;
         

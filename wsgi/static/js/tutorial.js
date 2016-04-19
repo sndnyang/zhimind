@@ -117,6 +117,7 @@ function loadTutorial(link) {
                     lesson_div.append(prev_button);
                 } 
                 lesson_div.appendTo(tutorial);
+                tutorial.append($('<br>'));
             }
 
             global_lesson_count = count;

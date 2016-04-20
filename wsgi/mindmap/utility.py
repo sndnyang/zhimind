@@ -74,6 +74,8 @@ def md_qa_parse(real_link):
 
             response += question
             response += submit % quiz_count
+
+        if parts[0] == "formula" or parts[0] == "text":
             answers.append(parts[2])
         else:
             tmp = md5.new()

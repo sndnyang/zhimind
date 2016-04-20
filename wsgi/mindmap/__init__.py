@@ -1,4 +1,12 @@
+import sys
+
+reload(sys)
+
+if sys.getdefaultencoding() != 'utf8':
+    sys.setdefaultencoding('utf8')
+
 import os
+
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy

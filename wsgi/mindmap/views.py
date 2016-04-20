@@ -66,11 +66,38 @@ def convert(link):
         tutorial = Tutorial.query.get(link)
         real_link = tutorial.get_url()
         response = md_qa_parse(real_link)
+
         session['answer'] = response['answer']
     except:
         app.logger.debug(traceback.print_exc())
 
     return json.dumps(response, ensure_ascii=False)
+
+
+@app.route('/checkTextAnswer', methods=["POST"])
+def checkAnswer():
+    no = int(request.json.get('id', None))-1
+    expression = request.json.get('expression', None)
+    response = {'response': False}
+
+    if not expression:
+        return json.dumps(response)
+
+    answers = session['answer'][no].split('@')
+    if len(answers) != len(expression):
+        return json.dumps(response)
+
+    for i in range(len(answers)):
+        keys = answers[i].split()
+        user  = expression[i]
+        for e in keys:
+            if e not in user:
+                app.logger.debug("%s %s wrong" % (e, user))
+                return json.dumps(response)
+
+    response['response'] = True
+    return json.dumps(response)
+
 
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
@@ -80,14 +107,18 @@ def cmp_math():
     ret = {'response': True}
     if not expression:
         ret['response'] = False
-    answers = session['answer']
 
-    input_answer = simplify_logic(expression)
-    correct_answer = simplify_logic(answers[no])
-    app.logger.debug('check %s and %s' % (input_answer, correct_answer))
+    answers = session['answer'][no].split('@')
+    if len(answers) != len(expression):
+        return json.dumps(ret)
+
+    for i in range(len(answers)):
+        input_answer = simplify_logic(expression[i])
+        correct_answer = simplify_logic(answers[i])
     
-    if input_answer != correct_answer:
-        ret['response'] = False
+        if input_answer != correct_answer:
+            app.logger.debug('check %s and %s not equal' % (input_answer, correct_answer))
+            ret['response'] = False
 
     return json.dumps(ret)
 
@@ -306,6 +337,7 @@ def register():
 
         code_text = session['code_text']
 
+        app.logger.debug('code_text ' + code_text)
         if form.verification_code.data == code_text:
             user = User(username, request.form['password'],request.form['email'])
             try:

@@ -43,7 +43,8 @@ function updateMastery() {
 
 function loadTutorial(link) {
     'use strict';
-    var root = document.URL.split('/')[3]; 
+    var root = document.URL.split('/')[3];
+
     $.ajax({
         url : "/convert/"+link,
         contentType: 'application/json',
@@ -164,15 +165,22 @@ function checkQuiz(obj, id) {
 
         value = value.substring(0, value.length-1);
 
-    } else if (type === "text") {
-        value = ele.val();
-    }
+    } 
 
-    if (type === "text" && ele.hasClass("formula")) {
-        var expression = ele.val();
+    //if (type === "text" && ele.hasClass("formula")) {
+    if (type === "text") {
+        var expression = [];
+        for (var i = 0; i < ele.length; i++) {
+            expression.push(ele[i].value)
+        }
+
+        var url = "/checkTextAnswer";
+        if (ele.hasClass("formula"))
+            url = "/cmp_math";
+
         $.ajax({
             method: "post",
-            url : "/cmp_math",
+            url : url,
             contentType: 'application/json',
             dataType: "json",
             data: JSON.stringify({'id': id, 'expression': expression}),

@@ -441,7 +441,6 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/user/<nickname>')
-@login_required
 def user(nickname):
     user = User.query.filter_by(username = nickname).first()
     if user == None:
@@ -461,7 +460,7 @@ def user(nickname):
         app.logger.error("use " + nickname + " fetch maps failed")
 
     return render_template('user.html', user = user, maps = mindmaps, 
-            tutorials = tutorials)
+            tutorials = tutorials, isSelf = user.get_id() == g.user.get_id())
 
 @login_manager.user_loader
 def load_user(id):

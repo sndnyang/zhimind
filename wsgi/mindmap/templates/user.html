@@ -21,7 +21,16 @@
     <table>
         <tr valign="top">
             <td>
-                <i>您 发布了:</i>
+                <i>
+                {% if isSelf %}
+                    您 
+                {% else %}
+                    <a href="/user/{{ user.username }}">
+                        {{ user.username }}
+                    </a>
+                {% endif %}
+                    发布了:
+                </i>
             </td>
             {% include 'map_link.html' %}
         </tr>
@@ -36,10 +45,21 @@
     <table>
         <tr valign="top">
             <td>
-                <i>您 发布了:</i>
+                <i>
+                {% if isSelf %}
+                    您 
+                {% else %}
+                    <a href="/user/{{ user.username }}">
+                        {{ user.username }}
+                    </a>
+                {% endif %}
+                    发布了:
+                </i>
             </td>
             {% include 'tutorial_link.html' %}
-            {% include 'edit_link.html' %}
+            {% if isSelf %}
+                {% include 'edit_link.html' %}
+            {% endif %}
         </tr>
     </table>
 {% endif %}
@@ -53,10 +73,21 @@
     <table>
         <tr valign="top">
             <td>
-                <i>您 发布了:</i>
+                <i>
+                {% if isSelf %}
+                    您 
+                {% else %}
+                    <a href="/user/{{ user.username }}">
+                        {{ user.username }}
+                    </a>
+                {% endif %}
+                    发布了:
+                </i>
             </td>
             {% include 'tutorial_link.html' %}
-            {% include 'edit_link.html' %}
+            {% if isSelf %}
+                {% include 'edit_link.html' %}
+            {% endif %}
         </tr>
     </table>
 {% endif %}

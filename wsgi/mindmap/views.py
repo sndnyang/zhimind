@@ -101,7 +101,7 @@ def checkAnswer():
 
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
-    from sympy import simplify_logic
+
     no = int(request.json.get('id', None))-1
     expression = request.json.get('expression', None)
     ret = {'response': True}
@@ -113,14 +113,14 @@ def cmp_math():
         return json.dumps(ret)
 
     for i in range(len(answers)):
-        input_answer = simplify_logic(expression[i])
-        correct_answer = simplify_logic(answers[i])
-    
-        if input_answer != correct_answer:
-            app.logger.debug('check %s and %s not equal' % (input_answer, correct_answer))
+        info = checkCmpExpression(answers[i], expression[i])
+        app.logger.debug(info)
+        if info:
             ret['response'] = False
+            ret['info'] = info 
+            break
 
-    return json.dumps(ret)
+    return json.dumps(ret, ensure_ascii=False)
 
 @app.route('/practice/<link>')
 def program_practice(link):

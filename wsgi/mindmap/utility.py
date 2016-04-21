@@ -5,7 +5,33 @@ import requests
 
 from xml.etree.ElementTree import tostring
 
+from sympy import simplify_logic
+
 from mindmap import app
+
+def isExpressionCmp(s):
+    for e in ['=', '>', '<']:
+        if e in s:
+            return True
+    return False
+
+def checkCmpExpression(s1, s2):
+    if isExpressionCmp(s1):
+        app.logger.debug(s1 + ' has equation ')
+        return u'暂不支持带=><'
+    else:
+        try:
+            input_answer = simplify_logic(s2)
+            correct_answer = simplify_logic(s1)
+        except:
+            app.logger.debug('%s simplify error' % s2)
+            return '%s simplify error' % s2
+
+        if input_answer != correct_answer:
+            app.logger.debug('%s and %s are not equal' % (s1, s2))
+            return None
+
+    return None
 
 def md_qa_parse(real_link):
 

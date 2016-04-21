@@ -2,20 +2,17 @@
 {% block body %}
 
         <div class="header">
-            <h1>{{name}}练习<h1>
+            <h1>{{name}}练习</h1>
         </div>
 
         <div class = "vismain">
-            输入数据长度（20以内）
+            输入数据长度
             <input type="text" id="length" value="10" onkeydown="javascript:if (event.keyCode==13) draw();"/>
             <div id="datastruct">
             </div>
-        </div>
 
-        <div class="manual" id="manual">
-            <button onclick="start()">演示</button>
-            <button onclick="stopnext()">停止</button>
-            <button onclick="next()">下一步</button>
+            <div class="manual" id="manual" style="display: none">
+            </div>
         </div>
 
         <div class="main" style="max-height: 400px">
@@ -49,26 +46,6 @@
             </ul>
         </div>
 
-        
-      <!--  <div class="code">
-            <textarea name="Code" id="code">{
-                next: function() {
-                nodes[index].color = "red";
-                var data = {
-                nodes: nodes,
-                edges: edges
-                };
-                network.setData(data);
-                network.redraw();
-                index++;
-       }
-}
-            </textarea>
-        </div> 
-
-        <div class="manual">
-            <button id="button_apply" style="float: right" onclick="execute()">Apply</button>
-        </div>-->
         <link rel="stylesheet" href="/static/css/reset.css">
 
         <link rel="stylesheet" href="/static/css/trystyle.css">

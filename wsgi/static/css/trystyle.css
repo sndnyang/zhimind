@@ -4,11 +4,15 @@
     box-sizing: border-box
 }*/
 
-html, body {
+html {
     padding: 0;
     margin: 0;
     
 }
+body {
+    padding-top: 50px;
+}
+ 
 
 body {
     display: -webkit-box;
@@ -90,7 +94,7 @@ button.right {
     width: calc(100% - 20px);
     min-height:40px;
     height: 40px;
-    margin-bottom: 10px;
+    margin: 10px;
 }
 
 .vismain {
@@ -98,7 +102,7 @@ button.right {
     width: calc(100% - 20px);
     min-height: 200px;
     margin: 0 auto;
-    background-color: #efefef;
+    border: 1px solid lightgray;
     margin-bottom: 10px;
 }
 
@@ -249,7 +253,6 @@ button.right {
 }
 
 .main .tutorial h2 {
-    font-size: 18pt;
     font-weight: 600;
     margin-bottom: 20px
 }
@@ -260,7 +263,7 @@ button.right {
 }
 
 .main .tutorial li {
-    line-height: 1.4;
+    line-height: 1.1;
     margin-bottom: 5px
 }
 
@@ -287,7 +290,7 @@ button.right {
 
 footer {
     margin-top: 30px;
-    height: 90px;
+    height: 110px;
     min-height: 40px;
     display: -webkit-box;
     display: -webkit-flex;

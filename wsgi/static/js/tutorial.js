@@ -46,7 +46,7 @@ function loadTutorial(link) {
     var root = document.URL.split('/')[3];
 
     $.ajax({
-        url : "/convert/"+link,
+        url : "/convert/"+link+"?random="+Math.random(),
         contentType: 'application/json',
         dataType: "json",
         beforeSend : function(){
@@ -117,18 +117,19 @@ function loadTutorial(link) {
                     }
                     lesson_div.append(prev_button);
                 } 
+                lesson_div.append($('<br>'));
                 lesson_div.appendTo(tutorial);
-                tutorial.append($('<br>'));
             }
 
             global_lesson_count = count;
+
+            if (root === "practice") {
+                draw();
+            }
             initLesson(link);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
         }
     });
-    if (root === "practice") {
-        draw();
-    }
 }
 
 function draw() {
@@ -185,13 +186,22 @@ function checkQuiz(obj, id) {
             dataType: "json",
             data: JSON.stringify({'id': id, 'expression': expression}),
             success : function (result){
-                check_result(result.response, lesson_id, id)
+
+                if (!result.info)
+                    check_result(result.response, lesson_id, id);
+                else {
+                    $('.hint').css('display', 'block');
+                    $('.flashes').html('');
+                    $('.flashes').append("<li>对不起</li>")
+                    $('.flashes').append("<li>"+result.info+"</li>")
+                    setTimeout("$('.hint').fadeOut('slow')", 5000)
+                }
                 return;
             }
         });
     } else {
         your_answer = $.md5(value);
-        check_result(your_answer === correct, lesson_id, id)
+        check_result(your_answer === correct, lesson_id, id);
     }
 }
 

@@ -110,7 +110,7 @@ def cmp_math():
 
     answers = session['answer'][no].split('@')
     if len(answers) != len(expression):
-        return json.dumps(ret)
+        return json.dumps(ret, ensure_ascii=False)
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
@@ -184,7 +184,7 @@ def link_quiz():
                     mindmap_id=mapid, name=name, tutor_id =
                     tutorid).one_or_none()
         except sqlalchemy.orm.exc.MultipleResultsFound:
-            return json.dumps(ret)
+            return json.dumps(ret, ensure_ascii=False)
 
         if result is None:
             entry = EntryMastery(name, parent)
@@ -196,7 +196,7 @@ def link_quiz():
 
     ret['response'] = True
 
-    return json.dumps(ret)
+    return json.dumps(ret, ensure_ascii=False)
 
 
 @app.route('/update_mastery', methods=['POST'])
@@ -238,7 +238,7 @@ def update_entry_master():
 
     if not flag:
         ret['info'] = u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
-        return json.dumps(ret)
+        return json.dumps(ret, ensure_ascii=False)
 
     ret['response'] = True
     return json.dumps(ret, ensure_ascii=False)
@@ -255,7 +255,7 @@ def create_tutorial():
     try:
         tutorial = Tutorial.query.filter_by(url=url, user_id=g.user.get_id()).one_or_none()
     except sqlalchemy.orm.exc.MultipleResultsFound:
-        return json.dumps(ret)
+        return json.dumps(ret, ensure_ascii=False)
 
     path = request.path
     qtype = "tutorial"
@@ -271,7 +271,65 @@ def create_tutorial():
     ret['error'] = 'success'
     ret['uuid'] = tutorial.get_id()
 
-    return json.dumps(ret)
+    return json.dumps(ret, ensure_ascii=False)
+
+@app.route('/editTutorial', methods=['POST'])
+@login_required
+def edit_tutorial():
+    tutorial_id = request.json.get('id')
+    title = request.json.get('title')
+    url = request.json.get('url')
+
+    ret = {'error': u'重复数据异常'}
+
+    try:
+        tutorial = Tutorial.query.filter_by(id=tutorial_id,
+                user_id=g.user.get_id()).one_or_none()
+        if not tutorial:
+            return json.dumps({'error': tutorial_id + ' not exists'})
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps(ret, ensure_ascii=False)
+
+    if title != 'no':
+        tutorial.title = title
+
+    if url != 'no':
+        tutorial.url = url
+
+    if title != 'no' or url != 'no':
+        try:
+            db.session.commit()
+        except:
+            return json.dumps({'error': u'数据库更新异常'}, ensure_ascii=False)
+
+    ret['error'] = 'success'
+    return json.dumps(ret, ensure_ascii=False)
+
+
+@app.route('/deleteTutorial', methods=['POST'])
+@login_required
+def delete_tutorial():
+    tutorial_id = request.json.get('id')
+
+    ret = {'error': u'重复数据异常'}
+
+    try:
+        tutorial = Tutorial.query.filter_by(id=tutorial_id,
+                user_id=g.user.get_id()).one_or_none()
+        if not tutorial:
+            return json.dumps({'error': tutorial_id + ' not exists'})
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps(ret, ensure_ascii=False)
+
+    try:
+        db.session.delete(tutorial)
+        db.session.commit()
+    except:
+        return json.dumps({'error': u'数据库更新异常'}, ensure_ascii=False)
+
+    ret['error'] = 'success'
+    return json.dumps(ret, ensure_ascii=False)
+
 
 @app.route('/save', methods=['POST'])
 @login_required

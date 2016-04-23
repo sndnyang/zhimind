@@ -18,6 +18,9 @@ $(document).ready(function () {
 
     input.keydown(function (e) {
         if (e.ctrlKey && e.keyCode === 13) {
+            input.height(22 + input.height());
+
+        } else if (e.keyCode === keymap.ENTER) {
             var $this = $(this),
                 code = $this.val();
 
@@ -87,9 +90,6 @@ $(document).ready(function () {
             $this.val('');
 
             regexConsole.scrollTop(regexConsole.prop('scrollHeight'));
-
-        } else if (e.keyCode === keymap.ENTER) {
-            input.height(22 + input.height());
 
         } else if (e.keyCode === keymap.UP) {
             if (reverseCmdIndex >= previousCmds.length) {

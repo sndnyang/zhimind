@@ -23,7 +23,7 @@ time, mark, audio, video {
 	vertical-align: baseline;
 }
 
-.tutorial ol , .tutorial ul {
+.lesson ol , .lesson ul {
     padding-left: 10%; 
 }
 
@@ -51,4 +51,16 @@ q:before, q:after {
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
+}
+
+.lesson p {
+    text-indent:2em;
+}
+
+.math-container p {
+    text-indent:0;
+}
+
+.math-container { 
+    margin:0 0 0 2em;
 }

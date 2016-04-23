@@ -72,7 +72,7 @@ function startLesson(num) {
         });
 
         $this.html(html);
-        });
+    });
 }
 
 function contains(string, substr) {

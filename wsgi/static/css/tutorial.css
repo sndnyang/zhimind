@@ -19,7 +19,7 @@
 }
 
 #loadingDiv {
-    position: absolute;
+    position: fixed;
     cursor1: wait;
     width: auto;
     height: 57px; 
@@ -30,4 +30,8 @@
     border: 2px solid #95B8E7; 
     color: #696969; 
     font-family:\'Microsoft YaHei\';
+}
+
+.lesson h2, .lesson h3, .lesson h4 {
+    text-align: center;
 }

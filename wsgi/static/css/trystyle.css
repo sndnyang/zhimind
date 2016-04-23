@@ -1,18 +1,8 @@
-/* * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box
-}*/
 
 html {
     padding: 0;
-    margin: 0;
-    
-}
-body {
-    padding-top: 50px;
-}
- 
+    margin: 0;   
+} 
 
 body {
     display: -webkit-box;
@@ -97,7 +87,7 @@ button.right {
     margin: 10px;
 }
 
-.vismain {
+.vismain     {
     width: -webkit-calc(100% - 20px);
     width: calc(100% - 20px);
     min-height: 200px;
@@ -123,7 +113,7 @@ button.right {
     margin-bottom: 10px;
 }
 
-.main {
+.container-fluid {
     display: -webkit-box;
     display: -webkit-flex;
     display: -moz-box;
@@ -148,7 +138,7 @@ button.right {
     position: relative;
 }
 
-.main > div {
+.container-fluid > div {
     -webkit-box-flex: 1;
     -webkit-flex: 1;
     -moz-box-flex: 1;
@@ -158,7 +148,7 @@ button.right {
 
 
 @media all and (max-width: 640px) {
-    .main {
+    .container-fluid {
         -webkit-box-orient: vertical;
         -webkit-box-direction: normal;
         -webkit-flex-direction: column;
@@ -168,11 +158,11 @@ button.right {
         flex-direction: column
     }
 
-    .main .console {
+    .container-fluid .console {
         padding: 0 50px 0 20px
     }
 
-    .main .tutorial {
+    .container-fluid #tutorial {
         -webkit-box-flex: 3;
         -webkit-flex: 3;
         -moz-box-flex: 3;
@@ -187,36 +177,38 @@ button.right {
     }
 }
 
-.main .console {
+.row-fluid  .console {
     padding-right: 20px;
     font-family: monospace;
     overflow: auto
 }
 
-.main .console .info {
+.row-fluid  .console .info {
     color: #222;
     margin-bottom: 10px
 }
 
-.main .console code {
+.container-fluid  .console code {
     white-space: pre-wrap;
     word-break: break-all;
-    color: #185694
+    color: #185694;
+    font: inherit;
+    background-color: #FFFFFF;
 }
 
-.main .console .prompt + code {
+.container-fluid  .console .prompt + code {
     color: #128905
 }
 
-.main .console .prompt + code {
+.container-fluid  .console .prompt + code {
     color: #128905
 }
 
-.main .console .prompt {
+.container-fluid  .console .prompt {
     color: #185694
 }
 
-.main .console input {
+.container-fluid .console input {
     font-size: 13px;
     font-family: monospace;
     border: 0;
@@ -227,47 +219,45 @@ button.right {
     margin-left: -1px
 }
 
-.main .console textarea {
+.regex-input {
     font-size: 13px;
     font-family: monospace;
     border: 0;
     outline: none;
     width: -webkit-calc(100% - 30px);
     width: calc(100% - 30px);
-    margin-top: -2px;
-    margin-left: -1px;
+    
     height: 22px;
 }
 
-.main .console li:nth-child(even) {
+.container-fluid .console li:nth-child(even) {
     margin: 5px 16px
 }
 
-.main .console .error {
+.container-fluid .console .error {
     color: #d14
 }
 
-.main .tutorial {
-    padding: 0 50px 0 20px;
+.container-fluid #tutorial {
     overflow: auto
 }
 
-.main .tutorial h2 {
+.container-fluid #tutorial h2 {
     font-weight: 600;
     margin-bottom: 20px
 }
 
-.main .tutorial p, .main .tutorial pre {
+.container-fluid #tutorial p, .container-fluid #tutorial pre {
     line-height: 1.4;
     margin-bottom: 10px
 }
 
-.main .tutorial li {
+.container-fluid #tutorial li {
     line-height: 1.1;
     margin-bottom: 5px
 }
 
-.main .tutorial code {
+.container-fluid #tutorial code {
     font-family: monospace;
     white-space: pre;
     border-radius: 3px;
@@ -276,16 +266,20 @@ button.right {
     color: #128905
 }
 
-.main .tutorial em {
+.container-fluid #tutorial em {
     font-style: italic
 }
 
-.main .tutorial strong {
+.container-fluid #tutorial strong {
     font-weight: bold
 }
 
-.main .tutorial .lesson:not(.lesson1) {
+.container-fluid #tutorial .lesson:not(.lesson1) {
     display: none
+}
+
+.input-container strong {
+    font: inherit;
 }
 
 footer {
@@ -315,13 +309,19 @@ footer {
 
 @media all and (max-width: 640px) {
     footer {
-        height: 40px
+        height: 50px
+    }
+    .platformintro {
+        display: none
     }
 }
 
 @media all and (max-width: 500px) {
     footer small {
         display: none
+    }
+    #algo {
+        width: 80px
     }
 }
 
@@ -334,3 +334,5 @@ footer {
 .hidden-storage {
     display: none
 }
+
+

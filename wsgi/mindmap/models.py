@@ -50,7 +50,6 @@ class User(db.Model):
         return unicode(self.username)
 
     def check_frequence(self, now):
-        app.logger.debug(self.last_edit)
         if not self.last_edit:
             return True
         differ = (now - self.last_edit).seconds

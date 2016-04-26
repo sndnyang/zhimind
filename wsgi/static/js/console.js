@@ -17,10 +17,7 @@ $(document).ready(function () {
     });
 
     input.keydown(function (e) {
-        if (e.ctrlKey && e.keyCode === 13) {
-            input.height(22 + input.height());
-
-        } else if (e.keyCode === keymap.ENTER) {
+        if (e.ctrlKey && e.keyCode === keymap.ENTER) {
             var $this = $(this),
                 code = $this.val();
 
@@ -87,10 +84,12 @@ $(document).ready(function () {
                 .find('code')
                 [error ? 'html' : 'text'](result);
 
-            $this.val('');
+            input.val('');
 
             regexConsole.scrollTop(regexConsole.prop('scrollHeight'));
 
+        } else if (e.keyCode === 13) {
+            input.height(22 + input.height());
         } else if (e.keyCode === keymap.UP) {
             if (reverseCmdIndex >= previousCmds.length) {
                 return;
@@ -121,15 +120,13 @@ $(document).ready(function () {
             input.val(previousCmds[previousCmds.length - reverseCmdIndex]);
         } else if (e.keyCode === keymap.L && e.ctrlKey) {
             window.clear();
+        } else if (e.keyCode === 8 || e.keyCode === 46) {
+            var lines = $(this).val().split('\n');
+            input.height(22 * (lines.length || 1));
         }
-
-        var lines = $(this).val().split('\n');
-        input.height(22 * (lines.length || 1));
-
     }).on('input', function () {
         reverseCmdIndex = 0;
     }).focus();
-
 
     function pushToPreviousCmds(cmd) {
         previousCmds.push(cmd);

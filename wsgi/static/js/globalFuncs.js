@@ -51,7 +51,9 @@
 		localStorage.removeItem('codeSoFar');
 		localStorage.removeItem(link+'currentLesson');
 
-		setTimeout(location.reload.bind(location), 100);
+        currentLesson = 1;
+        initLesson(link);
+        //setTimeout(location.reload.bind(location), 100);
 
 		return 'Resetting…';
 	};

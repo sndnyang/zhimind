@@ -158,7 +158,6 @@ def load_map(mapid):
         entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
                 mindmap_id=mindmap.get_id()).all()
 
-        app.logger.debug(len(entrylist))
         ret_code = mindmap.map
         if len(entrylist):
             add_mastery_in_json(ret_code, entrylist)
@@ -395,7 +394,6 @@ def register():
 
         code_text = session['code_text']
 
-        app.logger.debug('code_text ' + code_text)
         if form.verification_code.data == code_text:
             user = User(username, request.form['password'],request.form['email'])
             try:

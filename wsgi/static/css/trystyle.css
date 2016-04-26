@@ -226,7 +226,6 @@ button.right {
     outline: none;
     width: -webkit-calc(100% - 30px);
     width: calc(100% - 30px);
-    
     height: 22px;
 }
 

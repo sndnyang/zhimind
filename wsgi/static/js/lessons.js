@@ -9,6 +9,9 @@ function initLesson(link) {
         evaluate.init();
         startLesson(currentLesson);
     }
+    else {
+        $('.lesson1').show();
+    }
 }
 
 function updateLesson(input, output) {

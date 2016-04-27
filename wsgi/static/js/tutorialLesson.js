@@ -1,16 +1,17 @@
 
 function initLesson(link) {
-    global_link = link+'currentLesson';
+    global_link = link + 'currentLesson';
     currentLesson = localStorage.getItem(global_link) || 1;
-    if (currentLesson !== 1) {
-        startLesson(currentLesson);
-    }
+    startLesson(currentLesson);
 }
 
 function startLesson(num) {
-    for (var i = 2; i <= num; i++) {
-        $('.lesson' + i).css('display', 'block');
+    var i;
+    for (i = 2; i <= num; i++) {
         $('.lesson' + i).show();
+    }
+    for (i = num+1; i <= global_lesson_count; i++) {
+        $('.lesson' + i).hide();
     }
 }
 

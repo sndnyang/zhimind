@@ -1,28 +1,23 @@
-var nodes = null;
-var edges = null;
+var nodes = [];
+var edges = [];
+var nodeSet = null;
+var edgeSet = null;
 var data = null;
-var groups = null;
-var options = {
-    layout: {
-        hierarchical:{
-            direction: 'UD'
-        }
-    }
-};
-var graphtype = 'Network';
+var structure = null;
+
 var watch;
 
 var network = null;
-var stepLog = new Array();
-var v = new Array();
+var stepLog = [];
+var v = [];
 var index = 0;
 var global_l = null;
 var global_k = null;
 
 function print_list() {
-    v = new Array();
-    var len = nodes.length;
-    for (var i = 0; i < len; i++) {
+    v = [];
+    for (var i = 0; i < nodes.length; i++) {
+        console.log(i);
         v.push(nodes[i].label);
     }
    
@@ -31,11 +26,15 @@ function print_list() {
 
 function swap_label(i, j) {
 
-    var label = nodes[j].label;
-    nodes[j].label = nodes[i].label;
-    nodes[i].label = label;
+    var t = nodes[i-1].label;
+    nodes[i-1].label = nodes[j-1].label;
+    nodes[j-1].label = t;
+    var node_list = [
+        {id: i, label: nodes[i-1].label},
+        {id: j, label: nodes[j-1].label}
+    ];
 
-    updateData(); 
+    nodeSet.update(node_list);
 }
 
 function swap(a, i, j) {
@@ -55,17 +54,6 @@ function execute() {
     obj.next();
 }
 
-function initCanvas() {
-    // create a network
-    var container = document.getElementById('datastruct');
-    
-    if (graphtype === "Graph3d") {
-        network = new vis.Graph3d(container, data, options);
-    } else if (graphtype === "Network") {
-        network = new vis.Network(container, data, options);
-    }
-}
-
 function next() {
     if (stepLog.length == 0) {
         alert("步骤长度为0， 应该尚未执行算法");
@@ -78,8 +66,8 @@ function next() {
     }
 
     var step = stepLog[index];
-        i = step.p, 
-        j = step.q;
+        i = step.p + 1,
+        j = step.q + 1;
 
     markNodes([i, j]);
 

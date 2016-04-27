@@ -456,6 +456,7 @@ var LinkedList = function (container, length) {
 
         for (i = 1; i < self.length; i += 1) {
             edge = {
+                id: i,
                 from: i,
                 to: i + 1,
                 arrows: 'to'
@@ -464,13 +465,81 @@ var LinkedList = function (container, length) {
         }
 
         nodeSet = new vis.DataSet(nodes);
+        edgeSet = new vis.DataSet(edges);
         data = {
             nodes: nodeSet,
-            edges: edges
+            edges: edgeSet
         };
 
         self.draw();
     };
+    self.markNodes = function (data) {
+        markNodes(data);
+    };
+    self.add = function (label) {
+        var node, edge;
+        node = {
+            id: nodeSet.max(id).id + 1,
+            x: self.length * 80 + 40,
+            y: 100,
+            fixed: {x: true, y: true},
+            label: label,
+            shape: 'square',
+            color: 'orange'
+        };
+        edge = {
+            id: edgeSet.max(id).id + 1,
+            from: self.length,
+            to: self.length + 1,
+            arrows: 'to'
+        };
+        nodeSet.add(node);
+        edgeSet.add(edge);
+        self.length += 1;
+    };
+    self.swap = function (i, j) {
+        swap_label(i, j);
+    };
+    self.update = function (points) {
+    };
+    self.remove = function (value) {
+        var removeId;
+        nodeSet.forEach(function (e) {
+            if (e.label == value) {
+                removeId = e.id;
+            }
+        });
+        if (!removeId) {
+            alert("值不存在");
+            return;
+        }
+        self.removeID(removeId);
+    };
+    self.removeID = function (id) {
+        var i, e, edge = {}, node_list = [], 
+            removeId = nodeSet.remove(id);
+        if (!removeId.length) {
+            alert("ID不存在");
+            return;
+        }
+        nodeSet.map(function (e) {
+            if (e.id > removeId) {
+                node_list.push({id: e.id, x: e.x - 80});
+            }
+        });
+        edgeSet.forEach(function (e) {
+            if (e.from == removeId) {
+                edge.to = e.to;
+            } 
+            else if (e.to == removeId) {
+                edge.id = e.id;
+                edge.from = e.from;
+            }
+        });
+        edgeSet.remove(removeId);
+        edgeSet.update(edge);
+        nodeSet.update(node_list);
+    }
 
     self.setData = function (data) {
         network.setData(data);
@@ -983,8 +1052,6 @@ var Graph = function (container, length) {
 
     self.draw = function () {
         network = new vis.Network(container, data, self.options);
-        network.on("afterDrawing", function (ctx) {
-        });
     };
 
     self.setData = function (data) {

@@ -131,11 +131,12 @@ function loadTutorial(link) {
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
         }
     });
+
+    backToTop();
 }
 
 function draw() {
     initData();
-    initCanvas();
 }
 
 function checkQuiz(obj, id) {
@@ -366,3 +367,29 @@ function getRequest() {
    return theRequest;   
 }
 
+/**
+ * 回到顶部
+ */
+function backToTop() {
+    //滚页面才显示返回顶部
+    $(window).scroll(function() {
+        if ($(window).scrollTop() > 100) {
+            $("#top").fadeIn(500);
+        } else {
+            $("#top").fadeOut(500);
+        }
+    });
+
+    //点击回到顶部
+    $("#top").click(function() {
+        $("body").animate({
+            scrollTop: "0"
+        }, 500);
+    });
+
+    if ($(window).scrollTop() > 100) {
+        $("#top").fadeIn(500);
+    } else {
+        $("#top").fadeOut(500);
+    }
+}

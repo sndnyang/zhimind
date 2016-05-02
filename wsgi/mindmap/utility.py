@@ -128,18 +128,22 @@ def add_mastery_in_json(json, entrys):
         name = node['name']
         if name in node_map:
             if parent == '' or parent == node_map[name][0]:
-                return node 
+                node['level'] = node_map[name][1]
 
         if 'children' not in node:
-            return None
+            return node
 
+        childlevel = 0
         for child in node['children']:
             if child not in visited:
-                node = dfs(child, name)
-                if node:
-                    return node
-        else:
-            return None
+                childnode = dfs(child, name)
+                if childnode and 'level' in childnode:
+                    childlevel += child['level']
+
+        if childlevel:
+            if 'level' not in node:
+                node['level'] = 0
+            node['level'] += childlevel * 1.0 / len(node['children'])
+        return node
 
     node = dfs(json, '')
-    node['level'] = node_map[node['name']][1]

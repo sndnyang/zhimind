@@ -450,6 +450,9 @@ module.directive('mindMap', function ($compile) {
                                 else {
                                     d.link.push(dict);
                                 }
+                            },
+                            error: function (data) {
+                                alert(data.status + ' ' + data.statusText);
                             }
                         });
                         flag = true;

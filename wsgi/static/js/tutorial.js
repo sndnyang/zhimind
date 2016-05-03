@@ -88,12 +88,12 @@ function loadTutorial(link) {
                 tutorial = $("#tutorial"),
                 count = 0,
                 match,
-                html = md.render(result)+"<h2>",
-                reg = /<h[234]>([\d\D]*?)<h[234]>/g,
+                html = md.render(result)+"<h1>",
+                reg = /<h[1234]>([\d\D]*?)<h[1234]>/g,
                 matches = [];
 
             if (root === "practice") {
-                reg = /<h2>([\d\D]*?)<h2>/g;
+                reg = /<h1>([\d\D]*?)<h1>/g;
             }
 
             while (match = reg.exec(html)) {

@@ -58,9 +58,10 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
         var reader = new FileReader();
         reader.onload = function (event) {
             var contents = event.target.result;
-            //console.log(JSON.parse(contents));
             $scope.json = JSON.parse(contents);
+            //console.log(JSON.parse(contents));
             $scope.$apply();
+            $("#uploadFile").val("");
         };
         reader.readAsText(file);
     };
@@ -68,7 +69,8 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
     $scope.save = function () {
         var saveData = serializeData($scope.root),
             MIME_TYPE = 'application/json',
-            jsonData = JSON.stringify({'title': $scope.root.name, 'data': saveData}),
+            //jsonData = JSON.stringify({'title': $scope.root.name, 'data': saveData}),
+            jsonData = JSON.stringify(saveData),
             bb = new Blob([jsonData], {type: MIME_TYPE}),
             a = document.createElement('a');
 
@@ -413,7 +415,7 @@ module.directive('mindMap', function ($compile) {
                 success: function (result) {
                     var whole_url = 'http://'+ window.location.host +'/'+type
                         +'/'+result.uuid;
-                    console.log(whole_url);
+                    //console.log(whole_url);
                     linkquiz(d, name, whole_url);
                 }
             });
@@ -466,7 +468,7 @@ module.directive('mindMap', function ($compile) {
                 d.link.push(dict);
             }
 
-            console.log(d.link);
+            //console.log(d.link);
         }
 
         function addLink(d){	    			

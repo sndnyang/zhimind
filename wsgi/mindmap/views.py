@@ -114,7 +114,7 @@ def cmp_math():
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
-        app.logger.debug(info)
+        #app.logger.debug(info)
         if info:
             ret['response'] = False
             ret['info'] = info 

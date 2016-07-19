@@ -80,6 +80,7 @@ def md_qa_parse(real_link):
                     +'%s</input>'
             for v in qparts[1:]:
                 ele = template % (etype, v, v)
+                app.logger.debug(ele)
                 response += ele+'<br>'
             response += submit % quiz_count
 

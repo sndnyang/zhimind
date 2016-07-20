@@ -59,17 +59,27 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
         reader.onload = function (event) {
             var contents = event.target.result;
             $scope.json = JSON.parse(contents);
-            //console.log(JSON.parse(contents));
+            console.log(JSON.parse(contents));
             $scope.$apply();
             $("#uploadFile").val("");
         };
         reader.readAsText(file);
     };
+    $scope.update = function () {
+        var saveData = serializeData($scope.root),
+            jsonData = JSON.stringify({'title': $scope.root.name, 'data': saveData});
+
+        $http.post('/save', jsonData).success(function (data) {
+            $scope.msg = 'Data saved';
+            alert("success message:" + data);
+        }).error(function (data) {
+            alert("failure message:" + data);
+        });
+    };
 
     $scope.save = function () {
         var saveData = serializeData($scope.root),
             MIME_TYPE = 'application/json',
-            //jsonData = JSON.stringify({'title': $scope.root.name, 'data': saveData}),
             jsonData = JSON.stringify(saveData),
             bb = new Blob([jsonData], {type: MIME_TYPE}),
             a = document.createElement('a');
@@ -82,12 +92,6 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
         document.querySelectorAll("#downloadLinkWrap")[0].innerHTML = "";
         document.querySelectorAll("#downloadLinkWrap")[0].appendChild(a);
 
-        $http.post('/save', jsonData).success(function (data) {
-            $scope.msg = 'Data saved';
-            alert("success message:" + data);
-        }).error(function (data) {
-            alert("failure message:" + data);
-        });
     };
 });
 
@@ -267,6 +271,7 @@ module.directive('mindMap', function ($compile) {
             // Compute the new tree layout.
 
             var nodes = tree.nodes(root).reverse();
+            console.log(nodes.length);
 
             var deepest = 0,
                 generationGutter = w;

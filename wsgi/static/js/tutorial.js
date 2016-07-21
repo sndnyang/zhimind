@@ -55,14 +55,14 @@ function loadTutorial(link) {
                 _LoadingTop = _PageHeight / 2,
                 _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0,
                 _LoadingHtml = $('<div></div>');
-                _LoadingHtml.attr("id", "loadingDiv");
-                _LoadingHtml.css("left", _LoadingLeft + 'px');
-                _LoadingHtml.css("top", _LoadingTop + 'px');
+            _LoadingHtml.attr("id", "loadingDiv");
+            _LoadingHtml.css("left", _LoadingLeft + 'px');
+            _LoadingHtml.css("top", _LoadingTop + 'px');
 
-                _LoadingHtml.html('教程加载中，请稍等...');
+            _LoadingHtml.html('教程加载中，请稍等...');
 
-                //呈现loading效果
-                $(".container-fluid").append(_LoadingHtml);
+            //呈现loading效果
+            $(".container-fluid").append(_LoadingHtml);
         },
 
         success : function (data){

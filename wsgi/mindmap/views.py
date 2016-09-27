@@ -29,6 +29,11 @@ import traceback
 def index():
     return render_template('index.html')
 
+@app.route('/android')
+@app.route('/android.html')
+def android():
+    return render_template('android.html')
+
 @app.route('/recommendlist')
 @app.route('/recommendlist.html')
 def recommendlist():

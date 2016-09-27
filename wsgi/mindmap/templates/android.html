@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block body %}
+        <meta name="viewport" content="user-scalable=no, width=device-width" />
+        <link rel="stylesheet" type="text/css" href="/static/css/android.css" media="only screen and (max-width: 600px)" />
+        <!--[if IE]>
+        <link rel="stylesheet" type="text/css" href="desktop.css" media="all" /> 
+        <![endif]
+        -->
+        <script src="//cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/android.js"></script>
+
+        <div id="mapArea">
+            <div id="nav">
+                <ul id="mainMap">
+                </ul>
+            </div>
+        </div>
+
+        <h2>About</h2>
+        <p>本人 <a href="http://sndnyang.github.io" target="_blank">sndnyang</a>.  <a href="http://weibo.com/u/2405149384" target="_blank">微博</a>. 
+                邮箱 <a href="mailto:sndnyangd@gmail.com">sndnyangd@gmail.com</a>.</p>
+                <p class="platformintro">思维导图， 不仅仅是思维导图（待完善）</p>
+                <p class="platformintro">基于openshift 免费Paas平台, 使用 Flask, PostgreSQL+Redis,
+                Twitter Bootstrap, D3.js等开发</p>
+
+        <script type="text/javascript">
+            $(document).ready(androidLoadMap("/static/data/data.json"));
+        </script>
+{% endblock %}

@@ -1,15 +1,45 @@
 var root = null;
 var point = null;
 
-if (window.innerWidth && window.innerWidth <= 600) { 
-    $(document).ready(function(){
-        $('#header ul').addClass('hide'); 
-        $('#header').append('<div class="leftButton" onclick="toggleMenu()">Menu</div>');
-    }); 
-    function toggleMenu() {
-        $('#header ul').toggleClass('hide'); 
-        $('#header .leftButton').toggleClass('pressed');
+function toggleLink() {
+    console.log($(".link").css('display'));
+    if ($(".link").css('display') === 'none') {
+        $("a.link").css('display', 'block');
     }
+    else {
+        $("a.link").css('display', 'none');
+    }
+}
+
+function showList() {
+    var name = root.name;
+    if (root.link && root.link.length) {
+        name = " onclick='toggleLink()' >" + name;
+        name += "<i class='fa fa-angle-right' style='float:right'>";
+    }
+    else {
+        name = ">" + name;
+    }
+
+    $("#mainMap").append("<li><a href='#' id='nodename'"+name+"</a></li>");
+
+    if (root.link && root.link.length) {
+        for (var i in root.link) {
+            var link = root.link[i],
+                name = link.name,
+                url = link.url;
+            $("#mainMap").append("<li><a href='"+url+"' class='link'>"+name+"</a></li>");
+        }
+    }
+
+    if (root.children && root.children.length) {
+        for (var i in root.children) {
+            var child = root.children[i];
+            $("#mainMap").append("<li><a href='#' class='subnode' onclick='goSub("+i+")'>"+child.name+"</a></li>");
+        }
+    }
+    if (root.parent)
+        $("#mainMap").append("<li><a href='#' onclick='goUpLevel()'>上层:"+root.parent.name+"</a></li>");
 }
 
 function androidLoadMap(link) {
@@ -19,19 +49,35 @@ function androidLoadMap(link) {
         contentType: 'application/json',
         dataType: "json",
         success : function (data) {
-            var name = data.name;
             root = data;
-            constructParent(root);
-            $("#mainMap").append("<li><a href='#' id='nodename'>"+name+"</a></li>");
-            //$("#mainMap").append("<li><a href='#'>上一层</a></li>");
+            console.log(root);
+            constructParent(root, null);
+            showList();
         }
     });
 } 
-function constructParent(data) {
 
+function constructParent(node, p) {
+    node.parent = p;
+    if (node.children && node.children.length) {
+        for (var i in node.children) {
+            constructParent(node.children[i], node);
+        }
+    }
 }
 
-function goUpLeve() {
+function goUpLevel() {
     
-    $('#nodename').text = "";
+    root = root.parent;
+
+    $("#mainMap").empty();
+    showList();
+    
 }
+
+function goSub(i) {
+    root = root.children[i];
+    $("#mainMap").empty();
+    showList();
+}
+

@@ -11,6 +11,18 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
     $scope.select_node = null;
 
     $scope.init = function (data) {
+        if (screen.width <= '512') {
+            var url = document.URL.split('/'),
+                mapid = url[url.length-1];
+            if ("map" === url[3]) {
+                window.location = "/android/" + mapid;
+            }
+            else {
+                window.location = "/android";
+            }
+            return;
+        }
+        else {
         var url = "/static/data/data.json";
         if (data !== "index") {
             url = "/loadmap/" + data;
@@ -28,6 +40,7 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
             $scope.json = json;
             $scope.$apply();
         });
+        }
     };
 
     function serializeData(source) {

@@ -42,7 +42,15 @@ function showList() {
         $("#mainMap").append("<li><a href='#' onclick='goUpLevel()'>上层:"+root.parent.name+"</a></li>");
 }
 
-function androidLoadMap(link) {
+function androidLoadMap() {
+    var url = document.URL.split('/'),
+        mapid = url[url.length-1];
+    if (url.length > 4) {
+        link = "/loadmap/" + mapid;
+    }
+    else {
+        link = "/static/data/data.json";
+    }
 
     $.ajax({
         url: link,
@@ -50,7 +58,6 @@ function androidLoadMap(link) {
         dataType: "json",
         success : function (data) {
             root = data;
-            console.log(root);
             constructParent(root, null);
             showList();
         }

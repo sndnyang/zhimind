@@ -567,7 +567,7 @@ module.directive('mindMap', function ($compile) {
         }
         function computeRadius(d) {
             var radius = 20;
-            if(d.children || d._children) return radius + (radius * nbEndNodes(d) / 10);
+            if(d.children || d._children) return radius + (nbEndNodes(d) / 2);
             else return radius;
         }
 

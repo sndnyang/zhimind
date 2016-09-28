@@ -1,11 +1,11 @@
-body { 
+/*body { 
     background-color: #ddd; /* Background color */
     color: #222;	        /* Foreground color used for text */
     font-family: Helvetica; 
     font-size: 14px; 
     margin: 0;	            /* Amount of negative space around the outside of the body */
     padding: 0;	            /* Amount of negative space around the inside of the body */
-}
+}*/
 #mapArea h1 {
     margin: 0;
     padding: 0;

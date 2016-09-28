@@ -29,10 +29,17 @@ import traceback
 def index():
     return render_template('index.html')
 
+
 @app.route('/android')
 @app.route('/android.html')
 def android():
-    return render_template('android.html')
+    mapid = ""
+    return render_template('android.html', mapid = mapid)
+
+
+@app.route('/android/<mapid>', methods=['GET'])
+def androidMap(mapid):
+    return render_template('android.html', mapid = mapid)
 
 @app.route('/recommendlist')
 @app.route('/recommendlist.html')

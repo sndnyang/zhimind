@@ -10,6 +10,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 #mapArea h1 a {
     background-color: #ccc;
     border-bottom: 1px solid #666;
@@ -71,4 +72,19 @@ body {
 }
 #mapArea div.pressed {
     -webkit-border-image: url(images/button_clicked.png) 0 8 0 8;
+}
+
+#mapArea ul li a.subnode {
+    background-color: #ddd; /* Background color */
+    height: 24px;
+    font-size: 15px;
+    font-weight: normal;
+}
+
+#mapArea ul li a.link {
+    background-color: #fff; /* Background color */
+    height: 24px;
+    font-size: 15px;
+    font-weight: normal;
+    display: none;
 }

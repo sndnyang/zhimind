@@ -16,7 +16,8 @@
 .quiz {
     border: none;
     border-bottom: 1px solid #000;
-    width: 100%
+    width: 70%
+    min-width: 100px;
 }
 
 #loadingDiv {

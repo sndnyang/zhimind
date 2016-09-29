@@ -16,6 +16,25 @@ def isExpressionCmp(s):
     return False
 
 def checkCmpExpression(s1, s2):
+    """
+    验证 两个式子是否一致
+    :param s1: 标准参考答案
+    :param s2: 用户输入结果
+    :return:
+    """
+    if ':' in s1:
+        answer_type, answer = s1.split(':')
+        # 默认添加 : 的都是 矩阵类型的， 因为其他类型的貌似 sympy simplify 能处理
+        # 一般矩阵乘法不满足交换律， 所以一般来说， 矩阵的表达式不需要化简
+        # 貌似可以去掉空格而不影响式子， 所以处理方式是去掉空格后比较。
+        answer = answer.replace(' ', '')
+        s1 = s1.replace(' ', '')
+        if s2 == answer:
+            return None
+        else:
+            app.logger.debug('%s and %s matrix are not equal' % (s1, answer))
+            return u'答案不匹配'
+
     if isExpressionCmp(s1):
         app.logger.debug(s1 + ' has equation ')
         return u'暂不支持带=><'

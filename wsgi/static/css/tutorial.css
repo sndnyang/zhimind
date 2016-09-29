@@ -4,12 +4,13 @@
     min-height: 80px;
 }
 
-#MathPreview {
+.MathPreview {
     display: block;
-    background-color: #eee;
+    background-color: #f1f1f1;
     padding: 5px;
-    min-height: 80px;
-    
+    min-width: 40px;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 .quiz {

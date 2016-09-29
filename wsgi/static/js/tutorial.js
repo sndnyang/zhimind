@@ -5,15 +5,24 @@ var error_times = 0,
     currentLesson = 1,
     global_link = 'currentLesson';
 
+MathJax.Hub.Config({
+    showProcessingMessages: false,
+    asciimath2jax: {
+        delimiters: [['$','$'], ['`','`']]
+    }
+  });
+
 var Preview = {
     preview: null,     // filled in by Init below
     Update: function (obj) {
-        var ele = $(obj), 
+        var ele = $(obj),
             parentdiv = ele.parent(),
-            preview = parentdiv.children("#MathPreview"),
+            preview = parentdiv.children(".MathPreview").eq(0),
+            pid = preview.attr("id"),
+            previewEle = document.getElementById(pid),
             text = ele.val();
-        preview.html('`'+text+'`');
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "MathPreview"]);
+        preview.html("$" + text + "$");
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, previewEle]);
     }
 };
 

@@ -29,7 +29,7 @@ def checkCmpExpression(s1, s2):
 
         if input_answer != correct_answer:
             app.logger.debug('%s and %s are not equal' % (s1, s2))
-            return None
+            return "%s is not right" % s2
 
     return None
 
@@ -93,9 +93,9 @@ def md_qa_parse(real_link):
 
         if parts[0] == "formula":
             quiz_count += 1
-            blank = '<div id="MathPreview"></div><br>\n'
+            blank = '<div id="MathPreview%d" class="MathPreview"></div><br>\n' % quiz_count
             blank += '<input type="text" class="quiz formula" '
-            blank += 'onchange="Preview.Update(this)">\n' 
+            blank += 'onkeyup="Preview.Update(this)">\n'
 
             question = question.replace('_', '<br>'+blank+'<br>')
 

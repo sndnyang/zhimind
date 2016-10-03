@@ -19,5 +19,12 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+import redis
+
+pool = redis.ConnectionPool(host=os.getenv('OPENSHIFT_REDIS_HOST', 'localhost'),
+      port= 16379)
+
+app.redis = redis.StrictRedis(connection_pool = pool)
+
 from models import *
 from views import *

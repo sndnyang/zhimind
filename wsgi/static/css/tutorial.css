@@ -8,9 +8,10 @@
     display: block;
     background-color: #f1f1f1;
     padding: 5px;
-    min-width: 40px;
+    min-width: 60px;
     border-radius: 4px;
     display: inline-block;
+    min-height: 70px;
 }
 
 .quiz {

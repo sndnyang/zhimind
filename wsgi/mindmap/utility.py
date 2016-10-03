@@ -39,9 +39,14 @@ def checkCmpExpression(s1, s2):
         app.logger.debug(s1 + ' has equation ')
         return u'暂不支持带=><'
     else:
+
+        try:
+            correct_answer = simplify_logic(s1)
+        except:
+            app.logger.debug('answer %s simplify error' % s1)
+            return u'参考答案bug 处理错误'
         try:
             input_answer = simplify_logic(s2)
-            correct_answer = simplify_logic(s1)
         except:
             app.logger.debug('%s simplify error' % s2)
             return '%s simplify error' % s2
@@ -99,7 +104,7 @@ def md_qa_parse(real_link):
                     +'%s</input>'
             for v in qparts[1:]:
                 ele = template % (etype, v, v)
-                app.logger.debug(ele)
+                #app.logger.debug(ele)
                 response += ele+'<br>'
             response += submit % quiz_count
 
@@ -112,9 +117,9 @@ def md_qa_parse(real_link):
 
         if parts[0] == "formula":
             quiz_count += 1
-            blank = '<div id="MathPreview%d" class="MathPreview"></div><br>\n' % quiz_count
-            blank += '<input type="text" class="quiz formula" '
+            blank = '<input type="text" class="quiz formula" '
             blank += 'onkeyup="Preview.Update(this)">\n'
+            blank += '<br><div id="MathPreview%d" class="MathPreview"></div>\n' % quiz_count
 
             question = question.replace('_', '<br>'+blank+'<br>')
 

@@ -22,23 +22,25 @@
         <div class="menu">
 
             <div class="btn btn-default" ng-click="create()">新导图</div>
-            <div class="btn btn-default loadFile">
-                <span>读档</span>
-                <input id="uploadFile" name="uploadFile" type="file" change-file="load">
-            </div>
 
             <div class="downloadWrap">
-                <div class="btn btn-default" ng-click="update()">更新导图</div>
+                <div class="btn btn-default" ng-click="update()">保存导图</div>
                 <div id="updateWrap"></div>
             </div>
 
             <div class="downloadWrap">
-                <div class="btn btn-default" ng-click="save()">存档</div>
+                <div class="btn btn-default loadFile">
+                    <span>读取json文件</span>
+                    <input id="uploadFile" name="uploadFile" type="file" change-file="load">
+                </div>
+                <div class="btn btn-default" ng-click="save()">保存json文件</div>
                 <div id="downloadLinkWrap"></div>
             </div>
 
             <div class="btn btn-default"
-                onclick="javascript:window.open('http://sndnyang.github.io/zhimind-manual.html')">zhimind使用说明</div>
+                 onclick="javascript:window.open('http://sndnyang.github.io/zhimind-manual.html')">
+                zhimind使用说明
+            </div>
 
         </div>
         <div class="mindMap" mind-map="root" ng-keyup="keyup($event.keyCode)" tabindex="1"></div>      

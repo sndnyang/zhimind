@@ -3,7 +3,7 @@
    License: none (public domain)
 */
 
-html, body, div, span, applet, object, iframe,
+html, body, span, applet, object, iframe,
 p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, em, img, ins, kbd, q, s, samp,
@@ -19,7 +19,6 @@ time, mark, audio, video {
 
 	border: 0;
 	font-size: 100%;
-
 	vertical-align: baseline;
 }
 

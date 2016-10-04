@@ -45,14 +45,11 @@
                     <a class="brand" href="/">知维图</a>
                     <div class="nav-collapse collapse">
                         <ul class="nav">
-                            <li class="active">
+                            <li id="">
                                 <a href="{{ url_for('index') }}">主页</a>
                             </li>
                             {% if g %}
                             {% if g.user.is_authenticated %}
-                            <li>
-                                <a href="{{ url_for('user', nickname = g.user.username) }}">个人主页</a>
-                            </li>
                             <li>
                                 <a href="{{ url_for('logout') }}">退出登录</a>
                             </li>
@@ -67,11 +64,15 @@
                             {% endif %}
                             {% endif %}
                             <li>
-                                <a href="{{ url_for('recommendlist') }}">列表</a>
+                                <a href="{{ url_for('recommendlist') }}">推荐</a>
                             </li>
                             <li>
                                 <a
-                                    href="http://sndnyang.github.io/tags.html#zhimind-ref">博客</a>
+                                    href="/intro.html">导图示例</a>
+                            </li>
+                            <li>
+                                <a
+                                    href="http://sndnyang.github.io/tags.html#zhimind-ref">开发者博客</a>
                             </li>
                             <li>
                                 <form class="navbar-search" action="/search" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search暂时无用" name="q" id="search_input">
@@ -93,7 +94,7 @@
             </ul>
         </div>
         <script>
-            setTimeout("$('.alert').fadeOut('slow')", 5000)
+            setTimeout("$('.alert').fadeOut('slow')", 5000);
         </script>
             {% endif %}
         {% endwith %}
@@ -103,16 +104,24 @@
 
         <hr>
         <div class="row-fluid">
-            <footer id="footer">
+            <footer id="footer" style="text-align:center">
                 <!-- <p>&copy; Shekhar Gulati 2013 (注册这几个页面用了他的)</p>-->
 
                 <p>本人 <a href="http://sndnyang.github.io" target="_blank">sndnyang</a>.  <a href="http://weibo.com/u/2405149384" target="_blank">微博</a>. 
                 邮箱 <a href="mailto:sndnyangd@gmail.com">sndnyangd@gmail.com</a>.</p>
-                <p class="platformintro">思维导图， 不仅仅是思维导图（待完善）</p>
+                <p class="platformintro">交互式智能学习+思维导图 实验（待完善）</p>
                 <p class="platformintro">基于openshift 免费Paas平台, 使用 Flask, PostgreSQL+Redis,
                 Twitter Bootstrap, D3.js等开发</p>
             </footer>
         </div>
-    <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1258734700'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1258734700' type='text/javascript'%3E%3C/script%3E"));</script>
+    <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1258734700'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1258734700' type='text/javascript'%3E%3C/script%3E"));</script>
+        <script type="text/javascript">
+             var pgurl = window.location.href.substr(window.location.href.lastIndexOf("/"));
+
+             $("ul li a").each(function(){
+                  if ($(this).attr("href") == pgurl || ($(this).attr("href") == '/index.html' && pgurl == "/") )
+                        $(this).parent().addClass("active");
+             })
+        </script>
     </body>
 </html>

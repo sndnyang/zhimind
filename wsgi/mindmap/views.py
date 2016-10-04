@@ -27,8 +27,14 @@ import traceback
 @app.route('/index')
 @app.route('/index.html')
 def index():
-    return render_template('index.html')
+    if g.user is None or not g.user.is_authenticated:
+        return render_template('index.html')
+    else:
+        return user(g.user.get_name())
 
+@app.route('/intro.html')
+def intro():
+    return render_template('index.html')
 
 @app.route('/android')
 @app.route('/android.html')

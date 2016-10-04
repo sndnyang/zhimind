@@ -1,7 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div id="maps">
+    <link href="/static/css/listTabMenu.css" rel="stylesheet">
+<main>
+  <input id="tab1" type="radio" name="tabs" checked="">
+  <label for="tab1">思维导图</label>
+
+  <input id="tab2" type="radio" name="tabs">
+  <label for="tab2">教程</label>
+
+  <input id="tab3" type="radio" name="tabs">
+  <label for="tab3">练习</label>
+
+  <section id="content1">
+    <div id="maps">
     <p>思维导图列表</p>
 {% for map in maps %}
     <table>
@@ -19,7 +31,10 @@
 {% endfor %}
 
 </div>
-<div id="tutorials">
+  </section>
+
+  <section id="content2">
+    <div id="tutorials">
     <p>教程列表</p>
 {% for tutorial in tutorials %}
 {% if tutorial.type == "tutorial" %}
@@ -38,8 +53,10 @@
 {% endif %}
 {% endfor %}
 </div>
+  </section>
 
-<div id="practices">
+  <section id="content3">
+    <div id="practices">
     <p>编程练习列表</p>
 {% for tutorial in tutorials %}
 {% if tutorial.type == "practice" %}
@@ -58,5 +75,10 @@
 {% endif %}
 {% endfor %}
 </div>
+
+  </section>
+
+</main>
+
 {% endblock %}
 

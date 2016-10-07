@@ -478,6 +478,29 @@ def user(nickname):
     return render_template('user.html', user = user, maps = mindmaps, 
             tutorials = tutorials, isSelf = user.get_id() == g.user.get_id())
 
+
+@app.route('/reciteWord.html')
+def reciteWord():
+    import requests
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/book.db"
+    #real_link = "http://localhost:4321/book.db"
+    r = requests.get(real_link)
+    books = []
+    for line in r.iter_lines():
+        if not line:
+            continue
+        name, link = line.split()
+        app.logger.debug(line)
+        books.append({'name': name, 'link': link})
+    #app.logger.debug(books)
+    return render_template('reciteWord.html', books = books)
+
+
+@app.route('/getBook/<bookname>')
+def booksList(bookname):
+    pass
+
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(id)

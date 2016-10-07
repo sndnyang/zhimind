@@ -1,0 +1,7 @@
+a.audio:link,
+a.class:visited,
+a.class:hover,
+a.class:active {
+    color: #08c;
+    text-decoration: none;
+}

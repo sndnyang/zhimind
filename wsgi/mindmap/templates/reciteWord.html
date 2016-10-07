@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+{% block body %}
+
+        <link href="/static/css/ListTabMenu.css" rel="stylesheet">
+        <link href="/static/css/reciteWord.css" rel="stylesheet">
+        <link href="/static/css/loader.css" rel="stylesheet"  media="screen" type="text/css" />
+        <script src="/static/js/sql.js"></script>
+        <script src="/static/js/loader.js"></script>
+        <script src="/static/js/reciteWord.js"></script>
+
+
+<ul id="myTab" class="nav nav-tabs">
+	<li class="active">
+		<a href="#recite" data-toggle="tab">背单词	</a>
+	</li>
+	<li><a href="#books" data-toggle="tab">词库</a></li>
+	<li><a href="#myBook" data-toggle="tab">我的词库</a></li>
+    <li><a href="#setting" data-toggle="tab">背单词设置</a></li>
+    <!--<li class="dropdown">
+		<a href="#" id="myTabDrop1" class="dropdown-toggle"
+		   data-toggle="dropdown">Java
+			<b class="caret"></b>
+		</a>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="myTabDrop1">
+			<li><a href="#jmeter" tabindex="-1" data-toggle="tab">jmeter</a></li>
+			<li><a href="#ejb" tabindex="-1" data-toggle="tab">ejb</a></li>
+		</ul>
+	</li>-->
+</ul>
+
+<div id="myTabContent" class="tab-content">
+	<div class="tab-pane fade in active" id="recite">
+        <a href="#" onclick="start()" id="start">开始学习</a>
+    </div>
+	<div class="tab-pane fade" id="recall">
+        <main style="margin:0px auto; text-align:center;">
+            <h1 class="word">word</h1>
+            <div class="learning-speaker">
+                <h1><small></small></h1>
+                <span>UK<a href="#" class="fa fa-volume-up fa-2x audio uk">
+                    <audio class="media"></audio>
+                </a></span>
+                <span>US<a href="#" class="fa fa-volume-up fa-2x audio us">
+                    <audio class="media"></audio>
+                </a></span>
+            </div>
+            <div  style="text-align:center;">
+                <div style="overflow:hidden; display:inline-block;">
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="fuzzy">模糊(left)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="ok">知道(up)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="sorry">不知道(right)</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div class="loader">
+
+            <div class="progress-bar">
+                <div class="progress-stripes"></div>
+            </div>
+            <div class="percentage">0</div>
+        </div>
+    </div>
+	<div class="tab-pane fade" id="remember">
+		<main style="margin:0px auto; text-align:center;">
+            <h1 class="word">word</h1>
+            <div class="learning-speaker">
+                <h1><small></small></h1>
+                <span>UK<a href="#" class="fa fa-volume-up fa-2x audio uk">
+                    <audio class="media"></audio>
+                </a></span>
+                <span>US<a href="#" class="fa fa-volume-up fa-2x audio us">
+                    <audio class="media"></audio>
+                </a></span>
+            </div>
+            <br>
+            <div  style="text-align:center;">
+                <div style="overflow:hidden; display:inline-block;">
+                    <h2 style="float:left;" id="zh">中文</h2>
+                    <h2 style="float:left;" id="en">英文</h2>
+                </div>
+            </div>
+
+            <hr>
+
+            <input id="tab1" type="radio" name="tabs" checked="">
+            <label for="tab1">联想记忆</label>
+
+            <input id="tab2" type="radio" name="tabs">
+            <label for="tab2">词根词缀</label>
+
+            <input id="tab3" type="radio" name="tabs">
+            <label for="tab3">例句</label>
+
+            <section id="content1">
+                <div id="lenovo">
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary"
+                           style="min-width:20px; min-height:20px;" onclick="createNote()">
+                        创建记忆法
+                    </button>
+                    <div id="note" style="display: none">
+                        <textarea></textarea>
+                        <button type="button" class="btn btn-success" id="addNote"
+                                style="min-width:20px; min-height:20px;" onclick="addLenovo(this)">
+                            添加
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="content2">
+                <div id="etyma">
+                </div>
+            </section>
+
+            <section id="content3">
+                <div style="overflow:hidden; display:inline-block;">
+                    <a id="youdao" style="float:left;">
+                        有道查询
+                    </a>
+                </div>
+                <div id="example">
+                </div>
+            </section>
+            <div  style="text-align:center;">
+                <div style="overflow:hidden; display:inline-block;" id="next_right">
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="right">记对了(left)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="master">完全掌握(up)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="wrong">错误(right)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn btn-large" type="button" id="trivial">不重要</a>
+                    </div>
+                </div>
+                <div style="display: none" id="next_wrong">
+                    <a class="btn btn-large" type="button" id="next">下一个</a>
+                </div>
+            </div>
+        </main>
+        <div class="loader">
+
+            <div class="progress-bar">
+                <div class="progress-stripes"></div>
+            </div>
+            <div class="percentage">0</div>
+        </div>
+	</div>
+	<div class="tab-pane fade" id="books">
+        {% for book in books %}
+        <div>
+            <a href="javascript:void(0)" onclick="
+            downloadbook(this, '{{ book.link }}')">
+                {{ book.name }}
+            </a>
+        </div>
+        {% endfor %}
+	</div>
+	<div class="tab-pane fade" id="myBook">
+		<p>jMeter 是一款开源的测试软件。它是 100% 纯 Java 应用程序，用于负载和性能测试。</p>
+	</div>
+	<div class="tab-pane fade" id="setting">
+        <div>
+            一组单词个数(默认20个):<input type="text" id="unitNum"/>
+            <a class="btn btn-large" type="button" onclick="updateSetting()">更新</a>
+        </div>
+
+	</div>
+</div>
+
+{% endblock %}
+

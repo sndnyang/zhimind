@@ -14,7 +14,7 @@
 		<a href="#recite" data-toggle="tab">背单词	</a>
 	</li>
 	<li><a href="#books" data-toggle="tab">词库</a></li>
-	<li><a href="#myBook" data-toggle="tab">我的词库</a></li>
+	<li><a href="#myBooks" data-toggle="tab">我的词库</a></li>
     <li><a href="#setting" data-toggle="tab">背单词设置</a></li>
     <!--<li class="dropdown">
 		<a href="#" id="myTabDrop1" class="dropdown-toggle"
@@ -30,11 +30,19 @@
 
 <div id="myTabContent" class="tab-content">
 	<div class="tab-pane fade in active" id="recite">
-        <a href="#" onclick="start()" id="start">开始学习</a>
+        <a href="#" onclick="start()" id="start">
+            开始学习 (当前
+            <span id="currentBook"></span>
+            <span id="currentBookNum"></span>
+            <span id="currentBookFinish"></span>
+            )
+        </a>
     </div>
 	<div class="tab-pane fade" id="recall">
         <main style="margin:0px auto; text-align:center;">
-            <h1 class="word">word</h1>
+            <div style="display:inline-block;">
+                <h1 class="word" style="float: left"></h1>
+            </div>
             <div class="learning-speaker">
                 <h1><small></small></h1>
                 <span>UK<a href="#" class="fa fa-volume-up fa-2x audio uk">
@@ -44,16 +52,17 @@
                     <audio class="media"></audio>
                 </a></span>
             </div>
+            <br>
             <div  style="text-align:center;">
                 <div style="overflow:hidden; display:inline-block;">
                     <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="fuzzy">模糊(left)</a>
+                        <a class="btn" type="button" id="fuzzy">模糊(left)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="ok">知道(up)</a>
+                        <a class="btn" type="button" id="ok">知道(up)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="sorry">不知道(right)</a>
+                        <a class="btn" type="button" id="sorry">不知道(right)</a>
                     </div>
                 </div>
             </div>
@@ -68,7 +77,11 @@
     </div>
 	<div class="tab-pane fade" id="remember">
 		<main style="margin:0px auto; text-align:center;">
-            <h1 class="word">word</h1>
+            <div style="display:inline-block;">
+                <h1 class="word" style="float: left"></h1>
+                <a class="fa fa-trash fa-2x" id="trivial"
+                   style="margin: 10px 0;line-height: 40px;"></a>
+            </div>
             <div class="learning-speaker">
                 <h1><small></small></h1>
                 <span>UK<a href="#" class="fa fa-volume-up fa-2x audio uk">
@@ -81,11 +94,26 @@
             <br>
             <div  style="text-align:center;">
                 <div style="overflow:hidden; display:inline-block;">
-                    <h2 style="float:left;" id="zh">中文</h2>
-                    <h2 style="float:left;" id="en">英文</h2>
+                    <h4 style="float:left;" id="zh">中文</h4>
+                    <h4 style="float:left;" id="en">英文</h4>
                 </div>
             </div>
-
+            <div  style="text-align:center;">
+                <div style="overflow:hidden; display:inline-block;" id="next_right">
+                    <div style="float:left;">
+                        <a class="btn" type="button" id="right">记对了(left)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn" type="button" id="master">完全掌握(up)</a>
+                    </div>
+                    <div style="float:left;">
+                        <a class="btn" type="button" id="wrong">错误(right)</a>
+                    </div>
+                </div>
+                <div style="display: none" id="next_wrong">
+                    <a class="btn" type="button" id="next">下一个</a>
+                </div>
+            </div>
             <hr>
 
             <input id="tab1" type="radio" name="tabs" checked="">
@@ -129,25 +157,6 @@
                 <div id="example">
                 </div>
             </section>
-            <div  style="text-align:center;">
-                <div style="overflow:hidden; display:inline-block;" id="next_right">
-                    <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="right">记对了(left)</a>
-                    </div>
-                    <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="master">完全掌握(up)</a>
-                    </div>
-                    <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="wrong">错误(right)</a>
-                    </div>
-                    <div style="float:left;">
-                        <a class="btn btn-large" type="button" id="trivial">不重要</a>
-                    </div>
-                </div>
-                <div style="display: none" id="next_wrong">
-                    <a class="btn btn-large" type="button" id="next">下一个</a>
-                </div>
-            </div>
         </main>
         <div class="loader">
 
@@ -164,16 +173,17 @@
             downloadbook(this, '{{ book.link }}')">
                 {{ book.name }}
             </a>
+            <span>单词数: {{ book.num }}</span>
         </div>
         {% endfor %}
 	</div>
-	<div class="tab-pane fade" id="myBook">
-		<p>jMeter 是一款开源的测试软件。它是 100% 纯 Java 应用程序，用于负载和性能测试。</p>
+	<div class="tab-pane fade" id="myBooks">
+		
 	</div>
 	<div class="tab-pane fade" id="setting">
         <div>
             一组单词个数(默认20个):<input type="text" id="unitNum"/>
-            <a class="btn btn-large" type="button" onclick="updateSetting()">更新</a>
+            <a class="btn" type="button" onclick="updateSetting()">更新</a>
         </div>
 
 	</div>

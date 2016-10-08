@@ -1,13 +1,22 @@
 var db, limit = 20;
 var unit = [];
 var openRequest;
+var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
 var currentBook = localStorage.getItem("book");
 var currentWord, index;
-var completeNumber = sessionStorage.getItem("finish") || 0;
-var reciteTimes = sessionStorage.getItem("times") || {};
+var completeNumber = 0;
+var reciteTimes = {};
 
 $(document).ready(function(){
-    $("#start").html("开始学习 (当前单词书为: " + currentBook + " )");
+    if (!currentBook || currentBook === "") {
+        //$("#start").html("开始学习 (当前未选中单词书，请先到词库选择)");
+        $("#currentBook").html('未选中单词书，请先到词库选择');
+    }
+    else {
+        var num = myBooks[currentBook].num, finish = myBooks[currentBook].finish;
+        updateProgress(num, finish);
+    }
+
     $("#ok").click(function (){
         $("#next_right").css("display", "inline-block");
         $("#next_wrong").css("display", "none");
@@ -33,6 +42,14 @@ $(document).ready(function(){
         $("#remember").attr("class", "tab-pane fade in active");
     });
 
+    function animate() {
+        progress.animate({
+            width: Math.floor(100.0*completeNumber/limit) + "%"
+        }, 100, function() {
+            percent.text(completeNumber);
+        });
+    }
+
     $("#master").click(function (){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
@@ -41,11 +58,12 @@ $(document).ready(function(){
         unit.splice(index, 1);
 
         completeNumber++;
-        progress.animate({
-            width: Math.floor(100.0*completeNumber/limit) + "%"
-        }, 100, function() {
-            percent.text(completeNumber);
-        })
+        myBooks[currentBook].finish += 1;
+        $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+
+        localStorage.setItem('myBooks', JSON.stringify(myBooks));
+
+        animate();
 
         if (completeNumber >= limit) {
             sessionEnd();
@@ -57,9 +75,7 @@ $(document).ready(function(){
         }
         else {
             reciteMainView();
-            $("#remember").attr("class", "tab-pane fade");
-            $("#recall").attr("class", "tab-pane fade in active");
-            $('#node').hide();
+
         }
     });
 
@@ -73,26 +89,21 @@ $(document).ready(function(){
         if (currentWord.level === 10 || reciteTimes[currentWord.word] === 3) {
             unit.splice(index, 1);
             completeNumber++;
-            progress.animate({
-                width: Math.floor(100.0*completeNumber/limit) + "%"
-            }, 100, function() {
-                percent.text(completeNumber);
-            })
+
+            if (currentWord.level === 10) {
+                myBooks[currentBook].finish += 1;
+                $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+                localStorage.setItem('myBooks', JSON.stringify(myBooks));
+            }
+
+            animate();
         }
 
         if (completeNumber >= limit) {
             sessionEnd();
-            progress.animate({
-                width: Math.floor(100.0*completeNumber/limit) + "%"
-            }, 100, function() {
-                percent.text(completeNumber);
-            })
         }
         else {
             reciteMainView();
-            $("#remember").attr("class", "tab-pane fade");
-            $("#recall").attr("class", "tab-pane fade in active");
-            $('#node').hide();
         }
     });
 
@@ -102,9 +113,6 @@ $(document).ready(function(){
         currentWord.level =  Math.max(currentWord.level/2, 10);
         itemStore.put(currentWord);
         reciteMainView();
-        $("#remember").attr("class", "tab-pane fade");
-        $("#recall").attr("class", "tab-pane fade in active");
-        $('#node').hide();
     });
 
     $("#trivial").click(function (){
@@ -114,32 +122,22 @@ $(document).ready(function(){
         itemStore.put(currentWord);
         unit.splice(index, 1);
         completeNumber++;
-        progress.animate({
-            width: Math.floor(100.0*completeNumber/limit) + "%"
-        }, 100, function() {
-            percent.text(completeNumber);
-        })
+        myBooks[currentBook].finish += 1;
+        localStorage.setItem('myBooks', JSON.stringify(myBooks));
+        $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+
+        animate();
+
         if (completeNumber >= limit) {
             sessionEnd();
-            progress.animate({
-                width: Math.floor(100.0*completeNumber/limit) + "%"
-            }, 100, function() {
-                percent.text(completeNumber);
-            })
         }
         else {
             reciteMainView();
-            $("#remember").attr("class", "tab-pane fade");
-            $("#recall").attr("class", "tab-pane fade in active");
-            $('#node').hide();
         }
     });
 
     $("#next").click(function (){
         reciteMainView();
-        $('#node').hide();
-        $("#remember").attr("class", "tab-pane fade");
-        $("#recall").attr("class", "tab-pane fade in active");
     });
 
     $(".audio").click(function (){
@@ -153,11 +151,16 @@ $(document).ready(function(){
     stripes.text('////////////////////////');
 
     setSkin(demoColorArray[colorIndex]);
-    progress.animate({
-        width: Math.floor(100.0*completeNumber/limit) + "%"
-    }, 100, function() {
-        percent.text(completeNumber);
-    })
+    animate();
+
+    for (var book in myBooks) {
+        var num = myBooks[book].num, finish = myBooks[book].finish,
+            newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
+                " onclick='chooseBooks(this)'>" + book + "</a> 总单词数:" + num +
+                ", 已完成:" + finish + "</div>";
+
+        $("#myBooks").append(newBook);
+    }
 });
 
 // In the following line, you should include the prefixes of implementations you want to test.
@@ -169,7 +172,7 @@ window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.ms
 // (Mozilla has never prefixed these objects, so we don't need window.mozIDB*)
 
 if (currentBook) {
-    initIndexDB("null", null, null);
+    initIndexDB("init", null, null);
 }
 
 function initIndexDB(type, content, name) {
@@ -193,9 +196,17 @@ function initIndexDB(type, content, name) {
             console.log("create");
             createNewBook(content, name);
         }
-        console.log("continue? " + type + dbExists);
+
         if (dbExists) {
             console.log('数据库已存在， 不需要重新下载， 连上就行');
+        }
+
+        if (type == "newbook") {
+            $("#myTab").children('li.active').removeClass('active');
+            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
+
+            $("#books").attr("class", "tab-pane fade");
+            $("#myBooks").attr("class", "tab-pane fade in active");
         }
     };
     openRequest.onupgradeneeded = function(event) {
@@ -212,6 +223,26 @@ function initIndexDB(type, content, name) {
         objectStore.createIndex('word', 'word', { unique: false });
         objectStore.createIndex('level', 'level', { unique: false });
     };
+}
+
+function chooseBooks(obj) {
+
+    if (currentBook !== $(obj).html()) {
+        console.log('更换单词书');
+        currentBook = $(obj).html();
+        localStorage.setItem("book", currentBook);
+
+        initIndexDB("init", null, null);
+
+        var num = myBooks[currentBook].num, finish = myBooks[currentBook].finish;
+        updateProgress(num, finish);
+    }
+
+    $("#myTab").children('li.active').removeClass('active');
+    $("#myTab").children('li').children('a[href="#recite"]').parent().addClass('active');
+
+    $("#recite").attr("class", "tab-pane fade in active");
+    $("#myBooks").attr("class", "tab-pane fade");
 }
 
 function audio(media, url) {
@@ -260,9 +291,32 @@ function createNewBook(content, name) {
             itemStore.put(item).onsuccess = putNext;
             ++i;
         } else {   // complete
-            console.log('populate complete  ' + i);
+            console.log('populate complete  ' + i + ' 添加 单词书 ' + currentBook);
+
+            myBooks[currentBook] = {'num': i, 'finish': 0};
+            localStorage.setItem('myBooks', JSON.stringify(myBooks));
+
+            updateProgress(i, 0);
+
+            var newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
+                " onclick='chooseBooks(this)'>" + currentBook + "</a> 总单词数:"
+                 + i +  ", 已完成:" + 0 + "</div>";
+
+            $("#myBooks").append(newBook);
+
+            $("#myTab").children('li.active').removeClass('active');
+            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
+
+            $("#books").attr("class", "tab-pane fade");
+            $("#myBooks").attr("class", "tab-pane fade in active");
         }
     }
+}
+
+function updateProgress(total, finish) {
+    $("#currentBook").html("单词书:" + currentBook);
+    $("#currentBookNum").html(" 总单词数:" + total);
+    $("#currentBookFinish").html(" 记忆个数:" + finish);
 }
 
 function downloadbook(obj, name) {
@@ -308,10 +362,6 @@ function start() {
             reciteMainView();
         }
     };
-
-    $("#recite").attr("class", "tab-pane fade");
-    $("#recall").attr("class", "tab-pane fade in active");
-
 }
 
 function renderLenovo(text) {
@@ -343,6 +393,10 @@ function reciteMainView() {
     else {
         $("#lenovo").html(renderLenovo(currentWord.lenovo));
     }
+    $('#node').hide();
+    $("#remember").attr("class", "tab-pane fade");
+    $("#recite").attr("class", "tab-pane fade");
+    $("#recall").attr("class", "tab-pane fade in active");
 }
 
 function addLenovo(obj) {

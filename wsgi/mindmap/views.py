@@ -489,9 +489,14 @@ def reciteWord():
     for line in r.iter_lines():
         if not line:
             continue
-        name, link = line.split()
+        items = line.split()
+        if len(items) == 2:
+            name, link = items
+            num = ""
+        else:
+            name, link, num = items
         app.logger.debug(line)
-        books.append({'name': name, 'link': link})
+        books.append({'name': name, 'link': link, 'num': num})
     #app.logger.debug(books)
     return render_template('reciteWord.html', books = books)
 

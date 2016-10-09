@@ -32,10 +32,9 @@
   letter-spacing: -14px;
 }
 
-.percentage{
+.percentage, .total{
   position: absolute;
   top: 4px;
-  left: 5px;
   font-weight: bold;
   font-size: 16px;
 }

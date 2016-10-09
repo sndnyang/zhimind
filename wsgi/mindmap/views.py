@@ -482,7 +482,7 @@ def user(nickname):
 @app.route('/reciteWord.html')
 def reciteWord():
     import requests
-    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/book.db"
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt"
     #real_link = "http://localhost:4321/book.db"
     r = requests.get(real_link)
     books = []
@@ -499,11 +499,6 @@ def reciteWord():
         books.append({'name': name, 'link': link, 'num': num})
     #app.logger.debug(books)
     return render_template('reciteWord.html', books = books)
-
-
-@app.route('/getBook/<bookname>')
-def booksList(bookname):
-    pass
 
 
 @login_manager.user_loader

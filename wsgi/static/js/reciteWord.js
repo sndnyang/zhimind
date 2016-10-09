@@ -17,21 +17,60 @@ $(document).ready(function(){
         updateProgress(num, finish);
     }
 
-    $("#ok").click(function (){
+    $(document).keydown(function (event) {
+        var section = $("div.active").attr("id"),
+            forget = $("#next_right").css("display");
+        if(event.keyCode == 37) {
+            //判断当event.keyCode 为37时（即左方面键）
+            if (section == "recall") { fuzzy(); } //recall页面对应 模糊
+            else if (section == "remember") { // remember页面对应 记对了
+                if (forget !== "none") right();
+            }
+            return false;
+        } else if (event.keyCode == 38) {
+            //判断当event.keyCode 为38时（即上方面键）
+            if (section == "recall") { ok(); } //recall页面对应 知道
+            else if (section == "remember") { // remember页面对应 掌握
+                if (forget !== "none") master();
+            }
+            return false;
+        } else if (event.keyCode == 39) {
+            //判断当event.keyCode 为39时（即右方面键）
+            if (section == "recall") { sorry(); } //recall页面对应 不知道
+            else if (section == "remember") { // remember页面对应 记错了
+                if (forget !== "none") wrong();
+                else reciteMainView();
+            }
+            return false;
+        } else if (event.keyCode == 40) {
+            //判断当event.keyCode 为40时（即下方面键）
+            if (section == "recall") { } //recall页面不存在
+            else if (section == "remember") { // remember页面对应 不重要单词
+                trivial();
+            }
+            return false;
+        }
+    });
+
+    function ok() {
         $("#next_right").css("display", "inline-block");
         $("#next_wrong").css("display", "none");
         $("#recall").attr("class", "tab-pane fade");
         $("#remember").attr("class", "tab-pane fade in active");
-    });
+    }
 
-    $("#fuzzy").click(function (){
+    $("#ok").click(ok);
+
+    function fuzzy() {
         $("#next_right").css("display", "inline-block");
         $("#next_wrong").css("display", "none");
         $("#recall").attr("class", "tab-pane fade");
         $("#remember").attr("class", "tab-pane fade in active");
-    });
+    }
 
-    $("#sorry").click(function (){
+    $("#fuzzy").click(fuzzy);
+
+    function sorry() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = Math.max(currentWord.level/2, 10);
@@ -40,17 +79,20 @@ $(document).ready(function(){
         $("#next_wrong").css("display", "inline-block");
         $("#recall").attr("class", "tab-pane fade");
         $("#remember").attr("class", "tab-pane fade in active");
-    });
+    }
+
+    $("#sorry").click(sorry);
 
     function animate() {
         progress.animate({
             width: Math.floor(100.0*completeNumber/limit) + "%"
         }, 100, function() {
             percent.text(completeNumber);
+            total.text(limit);
         });
     }
 
-    $("#master").click(function (){
+    function master() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = 10;
@@ -75,11 +117,9 @@ $(document).ready(function(){
         }
         else {
             reciteMainView();
-
         }
-    });
-
-    $("#right").click(function (){
+    }
+    function right() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = Math.min(currentWord.level+1, 10);
@@ -105,17 +145,21 @@ $(document).ready(function(){
         else {
             reciteMainView();
         }
-    });
+    }
+    $("#master").click(master);
 
-    $("#wrong").click(function (){
+    $("#right").click(right);
+
+    function wrong() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level =  Math.max(currentWord.level/2, 10);
         itemStore.put(currentWord);
         reciteMainView();
-    });
+    }
+    $("#wrong").click(wrong);
 
-    $("#trivial").click(function (){
+    function trivial() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = 11;
@@ -134,21 +178,21 @@ $(document).ready(function(){
         else {
             reciteMainView();
         }
-    });
+    }
+    $("#trivial").click(trivial);
 
-    $("#next").click(function (){
-        reciteMainView();
-    });
+    $("#next").click(reciteMainView);
 
-    $(".audio").click(function (){
+    $(".audio").click(function () {
         var media = $(this).get(0).getElementsByTagName('audio')[0];
         audio(media, $(this).data("rel"));
     });
 
     progress = $('.progress-bar');
     percent = $('.percentage');
-    stripes = $('.progress-stripes');
-    stripes.text('////////////////////////');
+    total = $('.total');
+    //stripes = $('.progress-stripes');
+    //stripes.text('//////////');
 
     setSkin(demoColorArray[colorIndex]);
     animate();
@@ -413,4 +457,6 @@ function createNote() {
 
 function updateSetting() {
     limit = $("#unitNum").val() || 20;
+    $("#recite").attr("class", "tab-pane fade in active");
+    $("#setting").attr("class", "tab-pane fade");
 }

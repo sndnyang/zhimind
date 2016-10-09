@@ -47,10 +47,11 @@ $(document).ready(function(){
             return false;
         } else if (event.keyCode == 40) {
             //判断当event.keyCode 为40时（即下方面键）
-            if (section == "recall") { } //recall页面不存在
+            /*if (section == "recall") { } //recall页面不存在
             else if (section == "remember") { // remember页面对应 不重要单词
                 trivial();
-            }
+            }*/
+            audio($('audio')[0], $('a.us').data("rel"));
             return false;
         }
     });
@@ -185,6 +186,7 @@ $(document).ready(function(){
     $("#trivial").click(trivial);
 
     $("#next").click(reciteMainView);
+
 
     $(".audio").click(function () {
         var media = $(this).get(0).getElementsByTagName('audio')[0];

@@ -409,12 +409,12 @@ function start() {
 }
 
 function renderLenovo(text) {
-    var result = "<h3>" + text.replace(/<r>/, '<p style="color:red;display:inline-block">')
-        .replace(/<b>/, '<p style="color:blue;display:inline-block">')
-        .replace(/<g>/, '<p style="color:green;display:inline-block">')
-        .replace(/<\/g>/,'</p>').replace(/<\/r>/,'</p>').replace(/<\/b>/,'</p>')
-        .replace(/\(/, '<p style="color:red;display:inline-block">')
-        .replace(/\)/, '</p>') + "</h3>";
+    var result = "<h3>" + text.replace(/<r>/g, '<p style="color:red;display:inline-block">')
+        .replace(/<b>/g, '<p style="color:blue;display:inline-block">')
+        .replace(/<g>/g, '<p style="color:green;display:inline-block">')
+        .replace(/<\/g>/g,'</p>').replace(/<\/r>/g,'</p>').replace(/<\/b>/g,'</p>')
+        .replace(/\(/g, '<p style="color:red;display:inline-block">')
+        .replace(/\)/g, '</p>') + "</h3>";
     //console.log(result);
     return result;
 }
@@ -449,7 +449,8 @@ function reciteMainView() {
 }
 
 function addLenovo(obj) {
-    var text = $(obj).parent().get(0).getElementsByTagName('textarea')[0].value;
+    var textarea = $(obj).parent().children("textarea"),
+        text = textarea.val();
     if (text !== "") {
         $("#lenovo").html("自创记忆法:"+renderLenovo(text)+"参考记忆法:"+
             renderLenovo(currentWord.lenovo));
@@ -457,6 +458,7 @@ function addLenovo(obj) {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         itemStore.put(currentWord);
+        textarea.val("");
     }
 }
 

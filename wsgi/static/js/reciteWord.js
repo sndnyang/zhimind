@@ -109,19 +109,9 @@ $(document).ready(function(){
 
         localStorage.setItem('myBooks', JSON.stringify(myBooks));
 
+        if (completeNumber >= limit) { sessionEnd(); }
+        else { reciteMainView(); }
         animate();
-
-        if (completeNumber >= limit) {
-            sessionEnd();
-            progress.animate({
-                width: Math.floor(100.0*completeNumber/limit) + "%"
-            }, 100, function() {
-                percent.text(completeNumber);
-            })
-        }
-        else {
-            reciteMainView();
-        }
     }
     function right() {
         var transaction = db.transaction(["word"], "readwrite");
@@ -139,16 +129,11 @@ $(document).ready(function(){
                 $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
                 localStorage.setItem('myBooks', JSON.stringify(myBooks));
             }
-
-            animate();
         }
 
-        if (completeNumber >= limit) {
-            sessionEnd();
-        }
-        else {
-            reciteMainView();
-        }
+        if (completeNumber >= limit) { sessionEnd(); }
+        else { reciteMainView(); }
+        animate();
     }
     $("#master").click(master);
 
@@ -174,19 +159,13 @@ $(document).ready(function(){
         localStorage.setItem('myBooks', JSON.stringify(myBooks));
         $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
 
+        if (completeNumber >= limit) { sessionEnd(); }
+        else { reciteMainView(); }
         animate();
-
-        if (completeNumber >= limit) {
-            sessionEnd();
-        }
-        else {
-            reciteMainView();
-        }
     }
     $("#trivial").click(trivial);
 
     $("#next").click(reciteMainView);
-
 
     $(".audio").click(function () {
         var media = $(this).get(0).getElementsByTagName('audio')[0];

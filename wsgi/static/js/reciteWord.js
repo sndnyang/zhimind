@@ -1,4 +1,4 @@
-var db, limit = 20;
+﻿var db, limit = 20;
 var unit = [];
 var openRequest;
 var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
@@ -18,6 +18,9 @@ $(document).ready(function(){
     }
 
     $(document).keydown(function (event) {
+        if ($("textarea").is(":focus") || $("textarea").is(":focus")) {
+            return true;
+        }
         var section = $("div.active").attr("id"),
             forget = $("#next_right").css("display");
         if(event.keyCode == 37) {
@@ -209,11 +212,8 @@ $(document).ready(function(){
 
 // In the following line, you should include the prefixes of implementations you want to test.
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-// DON'T use "var indexedDB = ..." if you're not in a function.
-// Moreover, you may need references to some window.IDB* objects:
 window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
 window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
-// (Mozilla has never prefixed these objects, so we don't need window.mozIDB*)
 
 if (currentBook) {
     initIndexDB("init", null, null);
@@ -236,13 +236,16 @@ function initIndexDB(type, content, name) {
             window.alert("Database error: " + event.target.wePutrrorMessage || event.target.error.name || event.target.error || event.target.errorCode);
         };
 
-        if (type == "newbook" && !dbExists) {
-            console.log("create");
-            createNewBook(content, name);
-        }
-
-        if (dbExists) {
-            console.log('数据库已存在， 不需要重新下载， 连上就行');
+        if (type == "newbook") {
+            if (!dbExists) {
+                console.log("create");
+                createNewBook(content, name);
+            } else {
+                console.log('数据库已存在， 需要更新');
+                updateBook(content, name);
+            }
+        } else {
+            console.log('数据库已存在，连接成功');
         }
 
         if (type == "newbook") {
@@ -315,9 +318,64 @@ function toItemJson(item) {
     var jsonObj = {},
         cols = ['id', 'word', 'level', 'lenovo', 'etyma', 'meanZh', 'meanEn', 'example', 'selfLenovo'];
     for (var i = 1; i < cols.length; i++) {
-        jsonObj[cols[i]] = item[i] || "";
+        if (i == 2) jsonObj[cols[i]] = 0;
+        else jsonObj[cols[i]] = item[i] || "";
     }
     return jsonObj;
+}
+
+function updateItemJson(jsonObj, item) {
+    var flag = false, cols = ['id', 'word', 'level', 'lenovo', 'etyma',
+                              'meanZh', 'meanEn', 'example'];
+    for (var i = 3; i < cols.length; i++) {
+        if (item[i] && item[i] !== "" && jsonObj[cols[i]] !== item[i]) {
+            jsonObj[cols[i]] = item[i];
+            flag = true;
+        }
+    }
+    if (flag) return jsonObj;
+    else return null;
+}
+
+function updateBook(content, name) {
+
+    var i = 0, count = 0, items = content.values;
+    var transaction = db.transaction(["word"], "readwrite");
+    var itemStore = transaction.objectStore("word");
+
+    putNext();
+
+    function putNext() {
+        if (i < items.length) {
+            itemStore.get(items[i][1]).onsuccess = function (e) {
+                var item;
+                if (item) item = updateItemJson(e.target.result, items[i]);
+                else item = toItemJson(items[i]);
+
+                ++i;
+                if (item) {
+                    count++;
+                    itemStore.put(item).onsuccess = putNext;
+                } else {
+                    putNext();
+                }
+            }
+        } else {   // complete
+            console.log('populate complete  ' + i + ' 更新 单词书 ' + currentBook +
+                        " 变更单词 " + count + "个");
+            if (i !== myBooks[currentBook].num) {
+                myBooks[currentBook].num = i;
+                localStorage.setItem('myBooks', JSON.stringify(myBooks));
+                updateProgress(i, myBooks[currentBook].finish);
+            }
+
+            $("#myTab").children('li.active').removeClass('active');
+            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
+
+            $("#books").attr("class", "tab-pane fade");
+            $("#myBooks").attr("class", "tab-pane fade in active");
+        }
+    }
 }
 
 function createNewBook(content, name) {

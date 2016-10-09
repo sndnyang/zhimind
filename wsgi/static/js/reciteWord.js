@@ -409,10 +409,14 @@ function start() {
 }
 
 function renderLenovo(text) {
-    return text.replace(/<r>/, '<p style="color:red;display:inline-block">')
+    var result = "<h3>" + text.replace(/<r>/, '<p style="color:red;display:inline-block">')
         .replace(/<b>/, '<p style="color:blue;display:inline-block">')
         .replace(/<g>/, '<p style="color:green;display:inline-block">')
-        .replace(/<\/g>/,'</p>').replace(/<\/r>/,'</p>').replace(/<\/b>/,'</p>');
+        .replace(/<\/g>/,'</p>').replace(/<\/r>/,'</p>').replace(/<\/b>/,'</p>')
+        .replace(/\(/, '<p style="color:red;display:inline-block">')
+        .replace(/\)/, '</p>') + "</h3>";
+    //console.log(result);
+    return result;
 }
 
 function reciteMainView() {
@@ -432,10 +436,11 @@ function reciteMainView() {
     audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
 
     if (currentWord.selfLenovo !== "") {
-        $("#lenovo").html(renderLenovo(currentWord.selfLenovo)+renderLenovo(currentWord.lenovo));
+        $("#lenovo").html("自创记忆法:"+renderLenovo(currentWord.selfLenovo)+
+            "参考记忆法:"+renderLenovo(currentWord.lenovo));
     }
     else {
-        $("#lenovo").html(renderLenovo(currentWord.lenovo));
+        $("#lenovo").html("参考记忆法:"+renderLenovo(currentWord.lenovo));
     }
     $('#node').hide();
     $("#remember").attr("class", "tab-pane fade");
@@ -445,9 +450,13 @@ function reciteMainView() {
 
 function addLenovo(obj) {
     var text = $(obj).parent().get(0).getElementsByTagName('textarea')[0].value;
-    console.log(text);
     if (text !== "") {
-        $("#lenovo").html(renderLenovo(text)+renderLenovo(currentWord.lenovo));
+        $("#lenovo").html("自创记忆法:"+renderLenovo(text)+"参考记忆法:"+
+            renderLenovo(currentWord.lenovo));
+        currentWord.selfLenovo = text;
+        var transaction = db.transaction(["word"], "readwrite");
+        var itemStore = transaction.objectStore("word");
+        itemStore.put(currentWord);
     }
 }
 

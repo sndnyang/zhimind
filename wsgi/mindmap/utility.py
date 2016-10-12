@@ -28,7 +28,7 @@ def checkCmpExpression(s1, s2):
         # 一般矩阵乘法不满足交换律， 所以一般来说， 矩阵的表达式不需要化简
         # 貌似可以去掉空格而不影响式子， 所以处理方式是去掉空格后比较。
         answer = answer.replace(' ', '')
-        s1 = s1.replace(' ', '')
+        s2 = s2.replace(' ', '')
         if s2 == answer:
             return None
         else:

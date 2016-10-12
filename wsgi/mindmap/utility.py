@@ -32,7 +32,7 @@ def checkCmpExpression(s1, s2):
         if s2 == answer:
             return None
         else:
-            app.logger.debug('%s and %s matrix are not equal' % (s1, answer))
+            app.logger.debug('%s and %s matrix are not equal' % (s2, answer))
             return u'答案不匹配'
 
     if isExpressionCmp(s1):

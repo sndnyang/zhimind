@@ -122,10 +122,10 @@ function loadTutorial(link) {
                 lesson_div.attr('class', 'lesson lesson'+count);
                 lesson_div.html(lesson);
                 if (root !== 'practice') {
+                    lesson_div.append(prev_button);
                     if (!lesson_div.find('button').length) {
                         lesson_div.append(next_button);
                     }
-                    lesson_div.append(prev_button);
                 } 
                 lesson_div.append($('<br>'));
                 lesson_div.appendTo(tutorial);

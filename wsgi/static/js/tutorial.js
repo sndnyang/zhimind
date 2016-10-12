@@ -123,7 +123,7 @@ function loadTutorial(link) {
                 lesson_div.html(lesson);
                 if (root !== 'practice') {
                     lesson_div.append(prev_button);
-                    if (!lesson_div.find('button').length) {
+                    if (lesson_div.find('button').length === 1) {
                         lesson_div.append(next_button);
                     }
                 } 

@@ -509,3 +509,8 @@ def load_user(id):
 @app.before_request
 def before_request():
     g.user = current_user
+
+
+@app.route('/C9CE34ABC9CDFE5C072677CD535F7B02.txt')
+def sslstest():
+    return app.send_static_file('C9CE34ABC9CDFE5C072677CD535F7B02.txt')

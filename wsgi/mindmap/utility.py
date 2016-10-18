@@ -1,6 +1,6 @@
 ﻿#coding=utf-8 
 import re
-import md5
+import json
 import requests
 
 from xml.etree.ElementTree import tostring
@@ -22,6 +22,7 @@ def checkCmpExpression(s1, s2):
     :param s2: 用户输入结果
     :return:
     """
+
     if ':' in s1:
         answer_type, answer = s1.split(':')
         # 默认添加 : 的都是 矩阵类型的， 因为其他类型的貌似 sympy simplify 能处理
@@ -30,10 +31,11 @@ def checkCmpExpression(s1, s2):
         answer = answer.replace(' ', '')
         s2 = s2.replace(' ', '')
         if s2 == answer:
-            return None
+            return True
         else:
             app.logger.debug('%s and %s matrix are not equal' % (s2, answer))
-            return u'答案不匹配'
+            return False
+            #return u'答案不匹配'
 
     if isExpressionCmp(s1):
         app.logger.debug(s1 + ' has equation ')
@@ -49,96 +51,104 @@ def checkCmpExpression(s1, s2):
             input_answer = simplify_logic(s2)
         except:
             app.logger.debug('%s simplify error' % s2)
-            return '%s simplify error' % s2
+            return u'%s 式子不符合格式' % s2
 
         if input_answer != correct_answer:
             app.logger.debug('%s and %s are not equal' % (s1, s2))
-            return "%s is not right" % s2
+            return False
+        #return "%s is not right" % s2
 
-    return None
+    return True
+
+
+def parse_answer(line, p):
+    obj = re.findall(p, line)
+    if not obj:
+        return None
+    return obj[0].split("@")
+
+
+def parse_comment(line, p):
+    obj = re.findall(p, line)
+    if not obj:
+        return None
+    lists = obj[0].split("#")
+    for l in lists:
+        if l.startswith('"'):
+            l = json.loads(l)
+
+    return lists
+
 
 def md_qa_parse(real_link):
-
     qaparts = {}
     response = ''
     quiz_count = 0
     answers = []
-    comments = {}
+    comments = []
+
+    block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
+    inline_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}')
     r = requests.get(real_link)
 
     if not r.ok:
-        return {'response': False, 'info': real_link+u' not exists'}
+        return {'response': False, 'info': real_link + u' not exists'}
 
     if 'content-length' in r.headers and \
-        int(r.headers['content-length']) > 8 * 1024 * 1024 * 3:
-        return {'response': False, 'info': real_link+u' 太长'}
-   
-    line_count = 0
-    for line in r.iter_lines():
-        line_count += 1
-        if line_count > 1024:
-            return {'response': False, 'info': real_link+u' 太长, 超过1000行'}
+                    int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
+        return {'response': False, 'info': real_link + u' 太长'}
 
-        lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
-        if not lists:
-            response += line+'\n'
+    line_count = 0
+    block_flag = False
+
+    for line in r.iter_lines():
+
+        line_count += 1
+
+        if block_flag:
+
+            temp1 = parse_answer(line, '@([^#]*)')
+            temp2 = parse_comment(line, '#([^%]*)')
+            if temp1:
+                answer.append(temp1)
+                continue
+            elif temp2:
+                comment.append(temp2)
+            elif line.find("%}") >= 0:
+                if len(answer) == 1:
+                    answer = answer[0]
+                if len(comment) == 1:
+                    comment = comment[0]
+                answers.append(answer)
+                comments.append(comment)
+                block_flag = False
+                response += line
+            else:
+                response += line
             continue
 
-        sterm = lists[0]
-        pattern = '([^|]*)\|([^@]*)@([^#]*)'
-        parts = re.findall(pattern, sterm)[0]
+        if line_count > 5000:
+            return {'response': False, 'info': real_link + u' 太长, 超过5000行'}
 
-        question = parts[1]
+        if not line.startswith("{%"):
+            response += line + '\n'
+            continue
 
-        response += '<div class="math-container">\n'
-        submit = '<br><button onclick="checkQuiz(this, %d)">submit</button><br><br>\n'
-
-        if parts[0] == "radio" or parts[0] == "checkbox":
-            quiz_count += 1
-            etype = parts[0]
-            qparts = question.split('&')
-            question = '<p>%s</p>' % qparts[0]
-            response +=  question
-
-            template = '<input type="%s" class="quiz" name="quiz" value="%s">'\
-                    +'%s</input>'
-            for v in qparts[1:]:
-                ele = template % (etype, v, v)
-                #app.logger.debug(ele)
-                response += ele+'<br>'
-            response += submit % quiz_count
-
-        elif parts[0] == "text":
-            quiz_count += 1
-            blank = '<input type="text" class="quiz">'
-            question = question.replace('_', blank)
-            response += question
-            response += submit % quiz_count
-
-        if parts[0] == "formula":
-            quiz_count += 1
-            blank = '<input type="text" class="quiz formula" '
-            blank += 'onkeyup="Preview.Update(this)">\n'
-            blank += '<br><div id="MathPreview%d" class="MathPreview"></div>\n' % quiz_count
-
-            question = question.replace('_', '<br>'+blank+'<br>')
-
-            response += question
-            response += submit % quiz_count
-
-        if parts[0] == "formula" or parts[0] == "text":
-            answers.append(parts[2])
+        lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
+        if lists:
+            answer = parse_answer(line, '@([^#]*)')
+            answers.append(answer)
+            comment = parse_comment(line, '#([^%]*)')
+            comments.append(comment)
+            response += line[:line.find("@")] + '%}\n'
         else:
-            tmp = md5.new()
-            tmp.update(parts[2])
-            encry = tmp.hexdigest()
-            answers.append(encry)
-
-        comment_pos = line.find('#')
-        if comment_pos:
-            comment = re.findall('#([^#]*)', sterm)
-            comments[quiz_count] = comment
-        response += '</div>\n'
+            answer = []
+            comment = []
+            if line.find("@") < 0:
+                response += line + "\n"
+            else:
+                response += line[:line.find("@")] + "\n"
+            block_flag = True
 
     qaparts['response'] = response
     qaparts['answer'] = answers

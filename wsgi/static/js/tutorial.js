@@ -119,9 +119,10 @@ function qa_parse(c) {
         }
 
         response += submit.format(quiz_count);
-        html  += c.substring(start, c.indexOf(temp)) + response;
+        html += c.substring(start, c.indexOf(temp)) + response;
         start = c.indexOf(temp) + temp.length;
     }
+    html += c.substring(start, c.length);
     return html;
 }
 
@@ -147,8 +148,8 @@ function loadTutorial(link) {
 
             //呈现loading效果
             $(".container-fluid").append(_LoadingHtml);
+            //setTimeout("$('.loadingDiv').fadeOut('slow')", 5000);
         },
-
         success : function (data){
             var result = data,
                 loadingMask = document.getElementById('loadingDiv');
@@ -168,7 +169,7 @@ function loadTutorial(link) {
                 count = 0,
                 match,
                 html = md.render(qa_parse(result))+"<h1>",
-                reg = /<h[1234]>([\d\D]*?)<h[1234]>/g,
+                reg = /<h[1234]([\d\D]*?)<h[1234]/g,
                 matches = [];
 
             if (root === "practice") {
@@ -269,7 +270,7 @@ function checkQuiz(obj, id) {
         data: JSON.stringify({'id': id, 'expression': value,
                 'url': tutorial_url}),
         success : function (result){
-            console.log(result);
+            //console.log(result);
             if (result.info) {
                 $('.hint').css('display', 'block');
                 $('.flashes').html('');

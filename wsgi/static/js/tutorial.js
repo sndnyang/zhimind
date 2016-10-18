@@ -5,12 +5,9 @@ var error_times = 0,
     currentLesson = 1,
     global_link = 'currentLesson';
 
-/*MathJax.Hub.Config({
-    showProcessingMessages: false,
-    asciimath2jax: {
-        delimiters: [['`','`']]
-    }
-  });*/
+MathJax.Hub.Config({
+    showProcessingMessages: false
+});
 
 var Preview = {
     preview: null,     // filled in by Init below
@@ -50,6 +47,84 @@ function updateMastery() {
     });   
 }
 
+String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/\{(\d+)\}/g,
+        function(m,i){
+            return args[i];
+        });
+}
+
+String.prototype.trim=function() {
+    return this.replace(/(^\s*)|(\s*$)/g, "");
+}
+
+function qa_parse(c) {
+    var clists = [], type, stem, response, template, match,
+        answer, qparts, submit, html = "", quiz_count = 0,
+        p = /{%([\w\W]*?)%}/g,
+        typep = /([\w\W]*?)\|/,
+        stemp = /\|[\w\W]*/,
+        submit = '<br><button onclick="checkQuiz(this, {0})">submit</button><br><br>';
+
+    while (match = p.exec(c)) {
+        clists.push(match[0]);
+        p.lastIndex = match.index + 1;
+    }
+
+    var start = 0;
+
+    for (var i in clists) {
+        var stemend, temp = clists[i],
+            response = '<div class="math-container">';
+
+        type = temp.match(typep)[0];
+        type = type.substring(2, type.length-1).trim();
+        //console.log('temp ' + temp);
+
+        stem = temp.match(stemp)[0];
+        stemend = stem.indexOf("@");
+
+
+        if (stemend < 0)
+            stemend = stem.length
+        stem = stem.substring(1, stemend).trim();
+        //console.log(type + ' stem ' + stem);
+        if (stem.endsWith("%}")) {
+            stem = stem.substring(0, stem.length-2).trim();
+        }
+
+        if (type == "radio" || type == "checkbox") {
+            quiz_count++;
+            qparts = stem.split("&");
+            template = '<input type="{0}" class="quiz" name="quiz" value="{1}">{2}</input>';
+            response += '<p>{0}</p>'.format(qparts[0]);
+
+            for (var j = 1; j < qparts.length; j++) {
+                response += template.format(type, qparts[j], String.fromCharCode(64+j)
+                        + ". " + qparts[j]) + '<br>';
+            }
+        }
+        else if (type == "text") {
+            quiz_count++;
+            var blank = '<input type="text" class="quiz">';
+            response += stem.replace('_', blank);
+        }
+        else if (type == "formula") {
+            quiz_count++;
+            blank = '<input type="text" class="quiz formula" ';
+            blank += 'onkeyup="Preview.Update(this)">'
+            blank += '<br><div class="MathPreview"></div>';
+            response += stem.replace('_', '<br>'+blank+'<br>');
+        }
+
+        response += submit.format(quiz_count);
+        html  += c.substring(start, c.indexOf(temp)) + response;
+        start = c.indexOf(temp) + temp.length;
+    }
+    return html;
+}
+
 function loadTutorial(link) {
     'use strict';
     var root = document.URL.split('/')[3];
@@ -75,15 +150,10 @@ function loadTutorial(link) {
         },
 
         success : function (data){
-            var answers = data.answer,
-                comments = data.comment,
-                result = data.response,
+            var result = data,
                 loadingMask = document.getElementById('loadingDiv');
 
             loadingMask.parentNode.removeChild(loadingMask);
-
-            global_comment = comments;
-            global_answers = answers;
 
             if (!result) {
                 alert(data.info);
@@ -97,7 +167,7 @@ function loadTutorial(link) {
                 tutorial = $("#tutorial"),
                 count = 0,
                 match,
-                html = md.render(result)+"<h1>",
+                html = md.render(qa_parse(result))+"<h1>",
                 reg = /<h[1234]>([\d\D]*?)<h[1234]>/g,
                 matches = [];
 
@@ -150,14 +220,15 @@ function draw() {
 
 function checkQuiz(obj, id) {
     var value,
+        url = "/checkTextAnswer",
+        tutorial_url = document.URL.split('/')[4],
         your_answer,
         back_check = false,
         eleparent = $(obj).parent(),
         ele = eleparent.children(".quiz"),
         type = ele.attr("type"),
         lesson_name = eleparent.parent()[0].className,
-        lesson_id = parseInt(lesson_name.substr(13)),
-        correct = global_answers[id-1];
+        lesson_id = parseInt(lesson_name.substr(13));
 
     if (type === "radio") {
         ele.each(function() {
@@ -165,6 +236,9 @@ function checkQuiz(obj, id) {
                 value = $(this).val();
             }
         });
+
+        url = "/checkChoice";
+
     } else if (type === "checkbox") {
 
         value = '';
@@ -176,44 +250,50 @@ function checkQuiz(obj, id) {
         });
 
         value = value.substring(0, value.length-1);
+        url = "/checkChoice";
 
-    } 
-
-    //if (type === "text" && ele.hasClass("formula")) {
-    if (type === "text") {
-        var expression = [];
+    } else if (type === "text") {
+        value = [];
         for (var i = 0; i < ele.length; i++) {
-            expression.push(ele[i].value)
+            value.push(ele[i].value)
         }
 
-        var url = "/checkTextAnswer";
-        if (ele.hasClass("formula"))
-            url = "/cmp_math";
+        if (ele.hasClass("formula")) url = "/cmp_math";
+    } 
 
-        $.ajax({
-            method: "post",
-            url : url,
-            contentType: 'application/json',
-            dataType: "json",
-            data: JSON.stringify({'id': id, 'expression': expression}),
-            success : function (result){
-
-                if (!result.info)
-                    check_result(result.response, lesson_id, id);
-                else {
-                    $('.hint').css('display', 'block');
-                    $('.flashes').html('');
-                    $('.flashes').append("<li>对不起</li>")
-                    $('.flashes').append("<li>"+result.info+"</li>")
-                    setTimeout("$('.hint').fadeOut('slow')", 5000)
+    $.ajax({
+        method: "post",
+        url : url,
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({'id': id, 'expression': value,
+                'url': tutorial_url}),
+        success : function (result){
+            console.log(result);
+            if (result.info) {
+                $('.hint').css('display', 'block');
+                $('.flashes').html('');
+                $('.flashes').append("<li>对不起</li>")
+                $('.flashes').append("<li>"+result.info+"</li>")
+                setTimeout("$('.hint').fadeOut('slow')", 5000)
+            } else if (result.comment) {
+                $('.hint').css('display', 'block');
+                $('.flashes').html('');
+                $('.flashes').append("<li>不对哦，再想想!</li>");
+                var comment = result.comment;
+                if (typeof(result.comment) !== "string") {
+                    comment = result.comment[Math.min(error_times, result.comment.length)];
                 }
-                return;
+                $('.flashes').append("<li>"+comment+"</li>")
+
+                error_times++;
+                setTimeout("$('.hint').fadeOut('slow')", 5000)
+            } else {
+                check_result(result.response, lesson_id, id);
             }
-        });
-    } else {
-        your_answer = $.md5(value);
-        check_result(your_answer === correct, lesson_id, id);
-    }
+            return;
+        }
+    });
 }
 
 function check_result(result, id, quiz_id) {
@@ -224,14 +304,10 @@ function check_result(result, id, quiz_id) {
     } else {
         $('.hint').css('display', 'block');
         $('.flashes').html('');
-        if (quiz_id in global_comment) {
-            var comments = global_comment[quiz_id];
-                idx = Math.min(error_times, comments.length-1),
-                comment = comments[idx];
-            $('.flashes').append("<li>对不起， 答案错误</li>")
-            $('.flashes').append("<li>提示:</li>")
-            $('.flashes').append("<li>"+comment+"</li>")
-        }
+
+        $('.flashes').append("<li>不对哦，再想想!</li>")
+        $('.flashes').append("<li>"+result.comment+"</li>")
+
         error_times++;
         setTimeout("$('.hint').fadeOut('slow')", 5000)
     }
@@ -261,6 +337,28 @@ function to_backend_create(type, json) {
                 '<td>|</td> <td> <i> 您发布了:</i> <br> <a href="/'+type+'/'+
                 result.uuid+'">'+json.title+'</a> </td></tr></table>';
             div.append(entity);
+        }
+    });
+}
+
+function synchTutorial(obj) {
+    var eleps= $(obj).parentsUntil('div'),
+        tableele = $(eleps[eleps.length - 1]),
+        ele = $(eleps[1]).children('.link').children(".tutoriallink"),
+        tid = ele.attr("href").split("/")[2],
+        json = {'id': tid};
+
+    $.ajax({
+        url: '/synchTutorial',
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify(json),
+        success: function (result) {
+            if (result.error !== "success") {
+                alert(result.error);
+                return;
+            }
         }
     });
 }

@@ -65,7 +65,6 @@ def recommendlist():
             tutorials = tutorials)
 
 
-
 @app.route('/tutorial/<link>')
 def tutorial(link):
     try:
@@ -80,38 +79,109 @@ def tutorial(link):
 def convert(link):
 
     response = {'response': False}
-    try:
-        tutorial = Tutorial.query.get(link)
-        real_link = tutorial.get_url()
-        response = md_qa_parse(real_link)
+    entity = app.redis.get(link)
 
-        session['answer'] = response['answer']
-    except:
-        app.logger.debug(traceback.print_exc())
+    if not entity:
+        try:
+            tutorial = Tutorial.query.get(link)
+            real_link = tutorial.get_url()
+            response = md_qa_parse(real_link)
+            app.redis.set(link, response)
+        except:
+            app.logger.debug(traceback.print_exc())
 
+    backData = {}
+    backData['answer'] = eval(app.redis.get(link))['answer']
+    backData['comment'] = eval(app.redis.get(link))['comment']
+    session[link] = backData
+
+    response = eval(app.redis.get(link))['response']
     return json.dumps(response, ensure_ascii=False)
+
+
+@app.route('/checkChoice', methods=["POST"])
+def checkChoice():
+    no = int(request.json.get('id', None))-1
+    expression = request.json.get('expression', None)
+    tid = request.json.get('url', None)
+    response = {'response': False}
+
+    if not expression or not tid:
+        return json.dumps(response)
+
+    user_choose = expression.split("@")
+    if tid in session:
+        answers = session[tid]['answer'][no]
+        comments = session[tid]['comment'][no]
+    else:
+        answers = eval(app.redis.get(tid))['answer'][no]
+        comments = eval(app.redis.get(tid))['comment'][no]
+
+    app.logger.debug(user_choose[0])
+    app.logger.debug(answers[0])
+    app.logger.debug(user_choose[0] == answers[0])
+
+    s1 = set(user_choose)
+    s2 = set(answers)
+
+    match = 0
+    f = True
+    for e1 in s1:
+        flag = False
+        for e2 in s2:
+            if e1 == e2:
+                flag = True
+                match += 1
+
+        if not flag:
+            f = False
+            if e1 in comments:
+                response['comment'] = comments[e1]
+                return json.dumps(response)
+
+    if not f or match != len(s2):
+        response['comment'] = comments
+        return json.dumps(response)
+
+    response['response'] = True
+    return json.dumps(response)
 
 
 @app.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
     no = int(request.json.get('id', None))-1
     expression = request.json.get('expression', None)
+    tid = request.json.get('url', None)
     response = {'response': False}
 
-    if not expression:
+    if not expression or not tid:
         return json.dumps(response)
 
-    answers = session['answer'][no].split('@')
-    if len(answers) != len(expression):
+    if tid in session:
+        answers = session[tid]['answer'][no]
+        comments = session[tid]['comment'][no]
+    else:
+        answers = eval(app.redis.get(tid))['answer'][no]
+        comments = eval(app.redis.get(tid))['comment'][no]
+
+    if not answers or len(answers) != len(expression):
+        response['info'] = u'有些空没有填?'
         return json.dumps(response)
 
+    flag = False
     for i in range(len(answers)):
         keys = answers[i].split()
         user  = expression[i]
         for e in keys:
             if e not in user:
                 app.logger.debug("%s %s wrong" % (e, user))
-                return json.dumps(response)
+                flag = True
+                if e in comments:
+                    response['comment'] = comments[e]
+        if flag:
+            if 'comment' not in response:
+                response['comment'] = comments
+            return json.dumps(response)
 
     response['response'] = True
     return json.dumps(response)
@@ -122,23 +192,33 @@ def cmp_math():
 
     no = int(request.json.get('id', None))-1
     expression = request.json.get('expression', None)
-    ret = {'response': True}
-    if not expression:
-        ret['response'] = False
+    response = {'response': True}
+    tid = request.json.get('url', None)
 
-    answers = session['answer'][no].split('@')
-    if len(answers) != len(expression):
-        return json.dumps(ret, ensure_ascii=False)
+    if not expression or not tid:
+        return json.dumps(response)
+
+    if tid in session:
+        answers = session[tid]['answer'][no]
+        comments = session[tid]['comment'][no]
+    else:
+        answers = eval(app.redis.get(tid))['answer'][no]
+        comments = eval(app.redis.get(tid))['comment'][no]
+
+    if not answers or len(answers) != len(expression):
+        return json.dumps(response)
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
         #app.logger.debug(info)
-        if info:
-            ret['response'] = False
-            ret['info'] = info 
+        if info != True:
+            response['response'] = False
+            response['info'] = info
+            if 'comment' not in response:
+                response['comment'] = comments
             break
 
-    return json.dumps(ret, ensure_ascii=False)
+    return json.dumps(response, ensure_ascii=False)
 
 @app.route('/practice/<link>')
 def program_practice(link):
@@ -323,6 +403,31 @@ def edit_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
+@app.route('/synchTutorial', methods=['POST'])
+@login_required
+def synch_tutorial():
+    tutorial_id = request.json.get('id')
+
+    ret = {'error': u'重复数据异常'}
+    try:
+        tutorial = Tutorial.query.filter_by(id=tutorial_id,
+                user_id=g.user.get_id()).one_or_none()
+        if not tutorial:
+            return json.dumps({'error': tutorial_id + ' not exists'})
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps(ret, ensure_ascii=False)
+
+    real_link = tutorial.get_url()
+    response = md_qa_parse(real_link)
+    backData = {}
+    backData['answer'] = response['answer']
+    backData['comment'] = response['comment']
+    session[tutorial_id] = backData
+    app.redis.set(tutorial_id, response)
+
+    ret['error'] = 'success'
+    return json.dumps(ret, ensure_ascii=False)
+
 @app.route('/deleteTutorial', methods=['POST'])
 @login_required
 def delete_tutorial():
@@ -483,7 +588,7 @@ def user(nickname):
 def reciteWord():
     import requests
     real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt"
-    #real_link = "http://localhost:4321/book.txt"
+    #real_link = "http://localhost:4321/books.txt"
     r = requests.get(real_link)
     books = []
     for line in r.iter_lines():
@@ -509,8 +614,3 @@ def load_user(id):
 @app.before_request
 def before_request():
     g.user = current_user
-
-
-@app.route('/C9CE34ABC9CDFE5C072677CD535F7B02.txt')
-def sslstest():
-    return app.send_static_file('C9CE34ABC9CDFE5C072677CD535F7B02.txt')

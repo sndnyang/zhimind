@@ -453,7 +453,9 @@ function renderLenovo(text) {
         .replace(/<g>/g, '<p style="color:green;display:inline-block">')
         .replace(/<\/g>/g,'</p>').replace(/<\/r>/g,'</p>').replace(/<\/b>/g,'</p>')
         .replace(/\(/g, '<p style="color:red;display:inline-block">')
-        .replace(/\)/g, '</p>') + "</h3>";
+        .replace(/\)/g, '</p>')
+        .replace(/（/g, '<p style="color:red;display:inline-block">')
+        .replace(/）/g, '</p>') + "</h3>";
     //console.log(result);
     return result;
 }

@@ -81,14 +81,16 @@ def convert(link):
     response = {'response': False}
     entity = app.redis.get(link)
 
-    if not entity:
+    if entity is None or not eval(entity)['response']:
         try:
             tutorial = Tutorial.query.get(link)
             real_link = tutorial.get_url()
             response = md_qa_parse(real_link)
+
             app.redis.set(link, response)
         except:
             app.logger.debug(traceback.print_exc())
+    entity = app.redis.get(link)
 
     backData = {}
     backData['answer'] = eval(app.redis.get(link))['answer']
@@ -96,6 +98,7 @@ def convert(link):
     session[link] = backData
 
     response = eval(app.redis.get(link))['response']
+
     return json.dumps(response, ensure_ascii=False)
 
 
@@ -419,6 +422,7 @@ def synch_tutorial():
 
     real_link = tutorial.get_url()
     response = md_qa_parse(real_link)
+
     backData = {}
     backData['answer'] = response['answer']
     backData['comment'] = response['comment']

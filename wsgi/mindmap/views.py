@@ -28,7 +28,7 @@ import traceback
 @app.route('/index.html')
 def index():
     if g.user is None or not g.user.is_authenticated:
-        return render_template('index.html')
+        return recommendlist()
     else:
         return user(g.user.get_name())
 

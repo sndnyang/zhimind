@@ -120,9 +120,9 @@ def checkChoice():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
-    app.logger.debug(user_choose[0])
-    app.logger.debug(answers[0])
-    app.logger.debug(user_choose[0] == answers[0])
+    #app.logger.debug(user_choose[0])
+    #app.logger.debug(answers[0])
+    #app.logger.debug(user_choose[0] == answers[0])
 
     s1 = set(user_choose)
     s2 = set(answers)
@@ -174,8 +174,9 @@ def checkAnswer():
     flag = False
     for i in range(len(answers)):
         keys = answers[i].split()
-        user  = expression[i]
+        user  = expression[i].strip()
         for e in keys:
+            e = e.strip()
             if e not in user:
                 app.logger.debug("%s %s wrong" % (e, user))
                 flag = True

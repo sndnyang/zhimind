@@ -108,14 +108,14 @@ function qa_parse(c) {
         else if (type == "text") {
             quiz_count++;
             var blank = '<input type="text" class="quiz">';
-            response += stem.replace('_', blank);
+            response += stem.replace(/_/g, blank);
         }
         else if (type == "formula") {
             quiz_count++;
             blank = '<input type="text" class="quiz formula" ';
             blank += 'onkeyup="Preview.Update(this)">'
             blank += '<br><div class="MathPreview"></div>';
-            response += stem.replace('_', '<br>'+blank+'<br>');
+            response += stem.replace(/_/g, '<br>'+blank+'<br>');
         }
 
         response += submit.format(quiz_count);
@@ -289,7 +289,7 @@ function checkQuiz(obj, id) {
 
                 error_times++;
                 setTimeout("$('.hint').fadeOut('slow')", 5000)
-            } else {
+            } else if(result.response) {
                 check_result(result.response, lesson_id, id);
             }
             return;

@@ -6,7 +6,7 @@ var error_times = 0,
     global_link = 'currentLesson';
 
 MathJax.Hub.Config({
-    showProcessingMessages: false
+    messageStyle: "none"
 });
 
 var Preview = {
@@ -52,12 +52,17 @@ String.prototype.format = function() {
     return this.replace(/\{(\d+)\}/g,
         function(m,i){
             return args[i];
-        });
+        }
+    );
 }
 
-String.prototype.trim=function() {
+String.prototype.trim = function() {
     return this.replace(/(^\s*)|(\s*$)/g, "");
 }
+
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
 
 function qa_parse(c) {
     var clists = [], type, stem, response, template, match,

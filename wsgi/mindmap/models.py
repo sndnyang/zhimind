@@ -103,7 +103,7 @@ class Tutorial(db.Model):
     id = db.Column('tutor_id', db.String, primary_key=True, default=uuid_gen)
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     title = db.Column(db.String(60))
-    url = db.Column(db.String(250))
+    url = db.Column(db.String(300))
     type = db.Column(db.String(10))
     
     def __init__(self, title, url, type="tutorial"):

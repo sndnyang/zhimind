@@ -284,7 +284,7 @@ module.directive('mindMap', function ($compile) {
             // Compute the new tree layout.
 
             var nodes = tree.nodes(root).reverse();
-            console.log(nodes.length);
+            //console.log(nodes.length);
 
             var deepest = 0,
                 generationGutter = w;

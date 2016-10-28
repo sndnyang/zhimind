@@ -5,10 +5,6 @@ var error_times = 0,
     currentLesson = 1,
     global_link = 'currentLesson';
 
-MathJax.Hub.Config({
-    messageStyle: "none"
-});
-
 var Preview = {
     preview: null,     // filled in by Init below
     Update: function (obj) {
@@ -18,6 +14,9 @@ var Preview = {
             pid = preview.attr("id"),
             previewEle = document.getElementById(pid),
             text = ele.val();
+        MathJax.Hub.Config({
+            messageStyle: "none"
+        });
         preview.html("`" + text + "`");
         MathJax.Hub.Queue(["Typeset", MathJax.Hub, previewEle]);
     }

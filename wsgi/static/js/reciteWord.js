@@ -7,7 +7,7 @@ var updateWords = {};
 var currentWord, index;
 var completeNumber = 0;
 var limit = localStorage.getItem("limit") || 20;
-var currentBook = localStorage.getItem("book").trim();
+var currentBook = localStorage.getItem("book");
 var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
 
 String.prototype.trim=function() {

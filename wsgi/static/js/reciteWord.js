@@ -501,7 +501,7 @@ function updateProgress(total, finish) {
 function downloadbook(obj, name) {
 
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', name, true);
+    xhr.open('GET', name+"?v=32534", true);
     xhr.responseType = 'arraybuffer';
     currentBook = $(obj).html();
     localStorage.setItem("book", $(obj).html());

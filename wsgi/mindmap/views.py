@@ -607,7 +607,7 @@ def getWords(book):
 def putWords():
     book = request.json.get('book', None)
     data = request.json.get('data', None)
-    app.logger.debug("update %d" % len(data))
+
     if not book or not data:
         return json.dumps({})
 

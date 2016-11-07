@@ -637,8 +637,10 @@ def putWords():
 
 @app.route('/reciteWord.html')
 def reciteWord():
+    import random
     import requests
-    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v=20130910"
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v="\
+                + str(random.randint(1, 10000))
     #real_link = "http://localhost:4321/books.txt"
     r = requests.get(real_link)
     books = []

@@ -394,7 +394,8 @@ function deleteDB(name){
 
 function toItemJson(item) {
     var jsonObj = {},
-        cols = ['id', 'word', 'level', 'lenovo', 'etyma', 'meanZh', 'meanEn', 'example', 'selfLenovo'];
+        cols = ['id', 'word', 'level', 'lenovo', 'etyma', 'meanZh', 'meanEn',
+         'example', 'phonetic', 'selfLenovo'];
     for (var i = 1; i < cols.length; i++) {
         if (i == 2) jsonObj[cols[i]] = 0;
         else jsonObj[cols[i]] = item[i] || "";
@@ -404,7 +405,7 @@ function toItemJson(item) {
 
 function updateItemJson(jsonObj, item) {
     var flag = false, cols = ['id', 'word', 'level', 'lenovo', 'etyma',
-                              'meanZh', 'meanEn', 'example'];
+                              'meanZh', 'meanEn', 'example', 'phonetic'];
     for (var i = 3; i < cols.length; i++) {
         if (item[i] && item[i] !== "" && jsonObj[cols[i]] !== item[i]) {
             jsonObj[cols[i]] = item[i];
@@ -552,14 +553,16 @@ function start() {
 }
 
 function renderLenovo(text) {
-    var result = "<h3>" + text.replace(/<r>/g, '<p style="color:red;display:inline-block">')
+    var result = "<h3>" +
+    text.replace(/<r>/g, '<p style="color:red;display:inline-block">')
         .replace(/<b>/g, '<p style="color:blue;display:inline-block">')
         .replace(/<g>/g, '<p style="color:green;display:inline-block">')
-        .replace(/<\/g>/g,'</p>').replace(/<\/r>/g,'</p>').replace(/<\/b>/g,'</p>')
-        .replace(/\(/g, '<p style="color:red;display:inline-block">')
-        .replace(/\)/g, '</p>')
-        .replace(/（/g, '<p style="color:red;display:inline-block">')
-        .replace(/）/g, '</p>') + "</h3>";
+    //.replace(/<\/g>/g,'</p>').replace(/<\/r>/g,'</p>').replace(/<\/b>/g,'</p>')
+        .replace(/<\/[grb]>/g,'</p>')
+        .replace(/[\(（]/g, '<p style="color:red;display:inline-block">')
+        .replace(/[\)）]/g, '</p>')
+        .replace(/[\r\n]/g, '<br>')
+        + "</h3>";
     //console.log(result);
     return result;
 }
@@ -575,10 +578,10 @@ function reciteMainView() {
     $(".word").html(currentWord.word);
     $(".uk").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
     $(".us").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
-    $("#etyma").html(currentWord.etyma);
-    $("#example").html(currentWord.examle);
-    $("#zh").html(currentWord.meanZh);
-    $("#en").html(currentWord.meanEn);
+    $("#etyma").html(currentWord.etyma.replace(/[\r\n]/g, '<br>'));
+    $("#example").html(currentWord.example.replace(/[\r\n]/g, '<br>'));
+    $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
+    $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
     $("#youdao").attr("href", "http://dict.youdao.com/search?q=" + currentWord.word);
     $("#youdao").attr("target", "_blank");
 

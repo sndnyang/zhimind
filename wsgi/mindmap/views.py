@@ -566,6 +566,7 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
 @app.route('/user/<nickname>')
 def user(nickname):
     user = User.query.filter_by(username = nickname).first()
@@ -588,6 +589,51 @@ def user(nickname):
     return render_template('user.html', user = user, maps = mindmaps, 
             tutorials = tutorials, isSelf = user.get_id() == g.user.get_id())
 
+
+@app.route('/getWords/<book>', methods=["GET"])
+@login_required
+def getWords(book):
+
+    try:
+        wordDict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return u'重复数据异常'
+    data = wordDict.get_data() if wordDict else {}
+    return json.dumps(data, ensure_ascii=False)
+
+
+@app.route('/putWords', methods=["POST"])
+@login_required
+def putWords():
+    book = request.json.get('book', None)
+    data = request.json.get('data', None)
+    app.logger.debug("update %d" % len(data))
+    if not book or not data:
+        return json.dumps({})
+
+    try:
+        word_dict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps({'error': u'重复数据异常'})
+
+    if word_dict is None:
+        new_word_user = ReciteWord(g.user.get_id(), book.strip(), data)
+        db.session.add(new_word_user)
+        db.session.commit()
+    else:
+        stored_data = word_dict.data
+        new_data = data
+        for k in stored_data:
+            if k not in new_data:
+                new_data[k] = {}
+            for e in stored_data[k]:
+                if e not in new_data[k]:
+                    new_data[k][e] = stored_data[k][e]
+
+        word_dict.data = new_data
+        db.session.commit()
+
+    return json.dumps({})
 
 @app.route('/reciteWord.html')
 def reciteWord():

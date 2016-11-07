@@ -1,11 +1,14 @@
-﻿var db, limit = 20;
+﻿var db;
 var unit = [];
 var openRequest;
-var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
-var currentBook = localStorage.getItem("book");
+var serverData = {};
+var reciteTimes = {};
+var updateWords = {};
 var currentWord, index;
 var completeNumber = 0;
-var reciteTimes = {};
+var limit = localStorage.getItem("limit");
+var currentBook = localStorage.getItem("book");
+var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
 
 $(document).ready(function(){
     if (!currentBook || currentBook === "") {
@@ -13,8 +16,7 @@ $(document).ready(function(){
         $("#currentBook").html('未选中单词书，请先到词库选择');
     }
     else {
-        var num = myBooks[currentBook].num, finish = myBooks[currentBook].finish;
-        updateProgress(num, finish);
+        getWords();
     }
 
     $(document).keydown(function (event) {
@@ -51,7 +53,7 @@ $(document).ready(function(){
             else if (section == "remember") { // remember页面对应 不重要单词
                 trivial();
             }*/
-            audio($('audio')[0], $('a.us').data("rel"));
+            audio($('audio')[0], $('a.us').attr("data-rel"));
             return false;
         }
     });
@@ -78,6 +80,10 @@ $(document).ready(function(){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = Math.max(currentWord.level/2, 10);
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
         itemStore.put(currentWord);
         $("#next_right").css("display", "none");
         $("#next_wrong").css("display", "inline-block");
@@ -100,6 +106,10 @@ $(document).ready(function(){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = 10;
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
         itemStore.put(currentWord);
         unit.splice(index, 1);
 
@@ -117,6 +127,10 @@ $(document).ready(function(){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = Math.min(currentWord.level+1, 10);
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
         itemStore.put(currentWord);
         reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
 
@@ -143,6 +157,10 @@ $(document).ready(function(){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level =  Math.max(currentWord.level/2, 10);
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
         itemStore.put(currentWord);
         reciteMainView();
     }
@@ -152,6 +170,10 @@ $(document).ready(function(){
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = 11;
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
         itemStore.put(currentWord);
         unit.splice(index, 1);
         completeNumber++;
@@ -181,6 +203,18 @@ $(document).ready(function(){
     setSkin(demoColorArray[colorIndex]);
     animate();
 
+    function updateSetting() {
+        limit = $("#unitNum").val() || 20;
+        localStorage.setItem("limit", limit);
+        unit = [];
+        $("#recite").attr("class", "tab-pane fade in active");
+        $("#setting").attr("class", "tab-pane fade");
+        $("#myTab").children('li.active').removeClass('active');
+        $("#myTab").children('li').children('a[href="#recite"]').parent().addClass('active');
+        animate();
+    }
+    $(".unitNum").click(updateSetting);
+
     for (var book in myBooks) {
         var num = myBooks[book].num, finish = myBooks[book].finish,
             newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
@@ -198,6 +232,67 @@ window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.ms
 
 if (currentBook) {
     initIndexDB("init", null, null);
+}
+
+function putWords() {
+
+    $.ajax({
+        method: "post",
+        url : "/putWords",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({'data': updateWords, 'book': currentBook}),
+        success : function (data){
+            updateWords = {};
+        }
+    });
+}
+
+function getWords() {
+    var i = 0, num = myBooks[currentBook].num,
+        finish = myBooks[currentBook].finish;
+    $.ajax({
+        method: "get",
+        url : "/getWords/"+currentBook,
+        contentType: 'application/json',
+        dataType: "json",
+        success : function (data){
+            serverData = data;
+            var transaction = db.transaction(["word"], "readwrite");
+            var itemStore = transaction.objectStore("word"), keys = [];
+            for (var e in serverData) {
+                keys.push(e);
+            }
+
+            putNext();
+
+            function putNext() {
+                if (i < keys.length) {
+                    var word = keys[i];
+                    itemStore.get(word).onsuccess = function (e) {
+                        var item = e.target.result;
+                        for (var ele in serverData[word]) {
+                            if ('level' in serverData[word] && item['level']
+                             !== 10 && serverData[word]['level'] === 10) {
+                                myBooks[currentBook].finish++;
+                            }
+                            if (serverData[word][ele] && serverData[word][ele] !== "") {
+                                item[ele] = serverData[word][ele];
+                            }
+                        }
+                        ++i;
+                        itemStore.put(item).onsuccess = putNext;
+                    }
+                } else {
+                    localStorage.setItem('myBooks', JSON.stringify(myBooks));
+                    updateProgress(num, myBooks[currentBook].finish);
+                }
+            }
+        },
+        error: function(e) {
+            updateProgress(num, finish);
+        }
+    });
 }
 
 function initIndexDB(type, content, name) {
@@ -257,13 +352,14 @@ function chooseBooks(obj) {
 
     if (currentBook !== $(obj).html()) {
         console.log('更换单词书');
+        putWords();
         currentBook = $(obj).html();
+
         localStorage.setItem("book", currentBook);
 
         initIndexDB("init", null, null);
 
-        var num = myBooks[currentBook].num, finish = myBooks[currentBook].finish;
-        updateProgress(num, finish);
+        getWords();
     }
 
     $("#myTab").children('li.active').removeClass('active');
@@ -422,6 +518,7 @@ function downloadbook(obj, name) {
 
 function sessionEnd() {
     alert("恭喜您完成本次 " + limit + "个单词的背诵");
+    putWords();
     $("#recite").attr("class", "tab-pane fade in active");
     $("#recall").attr("class", "tab-pane fade");
     $("#remember").attr("class", "tab-pane fade");
@@ -436,9 +533,16 @@ function start() {
 
     cursorRequest.onsuccess = function (event) {
         var cursor = event.target.result;
-        if (cursor && unit.length < limit) {
-            unit.push(cursor.value);
-            i += 1;
+        if (cursor) {
+            if (unit.length < limit) {
+                unit.push(cursor.value);
+            } else {
+                var prob = 1.0 * limit / myBooks[currentBook].num;
+                if (Math.random() < prob) {
+                    unit[i%limit] = cursor.value;
+                }
+            }
+            i++;
             cursor.continue();
         }
         else {
@@ -461,7 +565,10 @@ function renderLenovo(text) {
 }
 
 function reciteMainView() {
-    index = Math.round(Math.random() * (unit.length - 1));
+    var new_index = Math.round(Math.random() * (unit.length - 1));
+    while (index === new_index)
+        new_index = Math.round(Math.random() * (unit.length - 1))
+    index = new_index;
     currentWord = unit[index];
 
     $(".word").html(currentWord.word);
@@ -496,6 +603,10 @@ function addLenovo(obj) {
         $("#lenovo").html("自创记忆法:"+renderLenovo(text)+"参考记忆法:"+
             renderLenovo(currentWord.lenovo));
         currentWord.selfLenovo = text;
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['selfLenovo'] = text;
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         itemStore.put(currentWord);
@@ -505,10 +616,4 @@ function addLenovo(obj) {
 
 function createNote() {
     $('#note').show();
-}
-
-function updateSetting() {
-    limit = $("#unitNum").val() || 20;
-    $("#recite").attr("class", "tab-pane fade in active");
-    $("#setting").attr("class", "tab-pane fade");
 }

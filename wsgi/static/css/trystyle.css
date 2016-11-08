@@ -155,7 +155,9 @@ button.right {
         -moz-box-orient: vertical;
         -moz-box-direction: normal;
         -ms-flex-direction: column;
-        flex-direction: column
+        flex-direction: column;
+        width: -webkit-calc(100% - 10px);
+        width: calc(100% - 10px);
     }
 
     .container-fluid .console {
@@ -225,6 +227,7 @@ button.right {
     border: 0;
     outline: none;
     width: -webkit-calc(100% - 30px);
+    border-color: rgba(82,168,236,0.8);
     width: calc(100% - 30px);
     height: 22px;
 }

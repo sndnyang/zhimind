@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="description" content="">
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
 
         <title>知维图 -- 互联网学习实验室</title>
 
@@ -14,9 +14,9 @@
 
         <script src="//cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
 
-        <link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
-        <link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap-responsive.min.css" rel="stylesheet">
-        <script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <link href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+        <script src="//cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
         <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -33,57 +33,58 @@
 
     </head>
     <body ng-app="mindMapApp">
-        <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <button type="button" class="btn btn-navbar" data-toggle="collapse"
-                        data-target=".nav-collapse">
-                        <span class="icon-bar"></span> 
-                        <span class="icon-bar"></span> 
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="brand" href="/">知维图</a>
-                    <div class="nav-collapse collapse">
-                        <ul class="nav">
-                            <li id="">
-                                <a href="{{ url_for('index') }}">主页</a>
-                            </li>
-                            {% if g %}
-                            {% if g.user.is_authenticated %}
-                            <li>
-                                <a href="{{ url_for('logout') }}">退出登录</a>
-                            </li>
-                            {% endif %}
-                            {% if not g.user.is_authenticated %}
-                            <li>
-                                <a href="{{ url_for('login') }}">登录</a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('register') }}">注册</a>
-                            </li>
-                            {% endif %}
-                            {% endif %}
-                            <li>
-                                <a href="{{ url_for('recommendlist') }}">推荐</a>
-                            </li>
-                            <li>
-                                <a
-                                    href="/intro.html">导图示例</a>
-                            </li>
-                            <li>
-                                <a
-                                    href="/reciteWord.html">脑洞记单词</a>
-                            </li>
-                            <li>
-                                <a
-                                    href="http://sndnyang.github.io/tags.html#zhimind-ref">开发者博客</a>
-                            </li>
-                            <li>
-                                <form class="navbar-search" action="/search" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search暂时无用" name="q" id="search_input">
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+                    <a class="navbar-brand" href="/">知维图</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="">
+                            <a href="{{ url_for('index') }}">主页</a>
+                        </li>
+                        {% if g %}
+                        {% if g.user.is_authenticated %}
+                        <li>
+                            <a href="{{ url_for('logout') }}">退出登录</a>
+                        </li>
+                        {% endif %}
+                        {% if not g.user.is_authenticated %}
+                        <li>
+                            <a href="{{ url_for('login') }}">登录</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('register') }}">注册</a>
+                        </li>
+                        {% endif %}
+                        {% endif %}
+                        <li>
+                            <a href="{{ url_for('recommendlist') }}">推荐</a>
+                        </li>
+                        <li>
+                            <a
+                                href="/intro.html">导图示例</a>
+                        </li>
+                        <li>
+                            <a
+                                href="/reciteWord.html">脑洞记单词</a>
+                        </li>
+                        <li>
+                            <a
+                                href="http://sndnyang.github.io/tags.html#zhimind-ref">开发者博客</a>
+                        </li>
+                        <li>
+                            <form class="navbar-form" action="/search" onsubmit="return validateForm(this.elements['q'].value);">
+                                <input type="text" class="form-control" placeholder="Search暂时无用" name="q" id="search_input">
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -107,7 +108,7 @@
         {% endblock %}
 
         <hr>
-        <div class="row-fluid">
+        <div class="row">
             <footer id="footer" style="text-align:center">
                 <!-- <p>&copy; Shekhar Gulati 2013 (注册这几个页面用了他的)</p>-->
 
@@ -116,6 +117,7 @@
                 <p class="platformintro">交互式智能学习+思维导图 实验（待完善）</p>
                 <p class="platformintro">基于openshift 免费Paas平台, 使用 Flask, PostgreSQL+Redis,
                 Twitter Bootstrap, D3.js等开发</p>
+                <p class="platformintro">参考了tryregex,runestone</p>
             </footer>
         </div>
     <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1258734700'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1258734700' type='text/javascript'%3E%3C/script%3E"));</script>

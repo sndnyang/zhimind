@@ -36,6 +36,10 @@ def index():
 def intro():
     return render_template('index.html')
 
+@app.route('/editor.html')
+def editor():
+    return render_template('zhimindEditor.html')
+
 @app.route('/android')
 @app.route('/android.html')
 def android():
@@ -104,7 +108,11 @@ def convert(link):
 
 @app.route('/checkChoice', methods=["POST"])
 def checkChoice():
-    no = int(request.json.get('id', None))-1
+    no = request.json.get('id', None)
+    response = {'response': False}
+    if not no:
+        return json.dumps(response)
+    no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
     response = {'response': False}
@@ -152,7 +160,11 @@ def checkChoice():
 
 @app.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
-    no = int(request.json.get('id', None))-1
+    no = request.json.get('id', None)
+    response = {'response': False}
+    if not no:
+        return json.dumps(response)
+    no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
     response = {'response': False}
@@ -193,12 +205,14 @@ def checkAnswer():
 
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
-
-    no = int(request.json.get('id', None))-1
+    no = request.json.get('id', None)
+    response = {'response': False}
+    if not no:
+        return json.dumps(response)
+    no = int(no) - 1
     expression = request.json.get('expression', None)
-    response = {'response': True}
     tid = request.json.get('url', None)
-
+    response = {'response': False}
     if not expression or not tid:
         return json.dumps(response)
 
@@ -216,11 +230,34 @@ def cmp_math():
         info = checkCmpExpression(answers[i], expression[i])
         #app.logger.debug(info)
         if info != True:
-            response['response'] = False
             response['info'] = info
             if 'comment' not in response:
                 response['comment'] = comments
             break
+    response['response'] = True
+    return json.dumps(response, ensure_ascii=False)
+
+@app.route('/checkProcess', methods=["POST"])
+def checkProcess():
+
+    no = request.json.get('id', None)
+    response = {'response': False}
+    if not no:
+        return json.dumps(response)
+    no = int(no)-1
+    expression = request.json.get('expression', None)
+    tid = request.json.get('url', None)
+
+    if not expression or not tid:
+        return json.dumps(response)
+    app.logger.debug(session[tid]['answer'])
+
+    if tid in session:
+        answers = session[tid]['answer'][no]
+        comments = session[tid]['comment'][no]
+    else:
+        answers = eval(app.redis.get(tid))['answer'][no]
+        comments = eval(app.redis.get(tid))['comment'][no]
 
     return json.dumps(response, ensure_ascii=False)
 

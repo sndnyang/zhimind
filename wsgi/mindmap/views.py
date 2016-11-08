@@ -32,24 +32,52 @@ def index():
     else:
         return user(g.user.get_name())
 
-@app.route('/intro.html')
-def intro():
-    return render_template('index.html')
+@app.route('/introMap.html')
+def introMap():
+    meta = {'title': u'知维图 -- 互联网学习实验室', 'description': u'知维图思维导图示例',
+            'keywords': u'zhimind mindmap 思维导图'}
+    return render_template('introMap.html', meta = meta)
 
 @app.route('/editor.html')
 def editor():
-    return render_template('zhimindEditor.html')
+    meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
+            'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
+            'keywords': u'zhimind mindmap 教程'}
+    return render_template('zhimindEditor.html', source = "", meta = meta)
+
+@app.route('/editor/<link>')
+def edit_online(link):
+    try:
+        tutorial = Tutorial.query.get(link)
+        name = tutorial.get_title()
+    except:
+        app.logger.debug(traceback.print_exc())
+    meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
+            'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
+            'keywords': u'zhimind mindmap 教程'}
+    return render_template('zhimindEditor.html', source = "", meta = meta)
 
 @app.route('/android')
 @app.route('/android.html')
 def android():
-    mapid = ""
-    return render_template('android.html', mapid = mapid)
+    meta = {'title': u'知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('android.html', mapid = "", meta = meta)
 
 
 @app.route('/android/<mapid>', methods=['GET'])
 def androidMap(mapid):
-    return render_template('android.html', mapid = mapid)
+    try:
+        mindmap = MindMap.query.get(mapid)
+        name = mindmap.title
+    except:
+        name = ""
+
+    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+    return render_template('android.html', mapid = mapid, meta = meta)
 
 @app.route('/recommendlist')
 @app.route('/recommendlist.html')
@@ -65,8 +93,11 @@ def recommendlist():
     except:
         app.logger.debug(traceback.print_exc())
 
+    meta = {'title': u'推荐 知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
     return render_template('recommendlist.html', maps = mindmaps, 
-            tutorials = tutorials)
+            tutorials = tutorials, meta = meta)
 
 
 @app.route('/tutorial/<link>')
@@ -75,8 +106,12 @@ def tutorial(link):
         tutorial = Tutorial.query.get(link)
         name = tutorial.get_title()
     except:
-        app.logger.debug(traceback.print_exc())
-    return render_template('tutorial.html', link = link, name=name)
+        name = ""
+    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+    return render_template('tutorial.html', link = link, name=name,
+                           meta = meta)
 
 
 @app.route('/convert/<link>')
@@ -272,18 +307,32 @@ def program_practice(link):
     except:
         app.logger.debug(traceback.print_exc())
 
+    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
     return render_template('practice.html', link = link, base=base_link,
-            name=name)
+            name=name, meta = meta)
     
 @app.route('/newmap')
 def newmap():
-    return render_template('map.html', mapid = 'null')
+    meta = {'title': u'创建新导图 知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('map.html', mapid = 'null', meta = meta)
 
 @app.route('/map/<mapid>', methods=['GET'])
 def map_page(mapid):
     if not mapid:
         return redirect(url_for('index'))
-    return render_template('map.html', mapid = mapid)
+    try:
+        mindmap = MindMap.query.get(mapid)
+        name = mindmap.title
+    except:
+        name = ""
+    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+    return render_template('map.html', mapid = mapid, meta = meta)
 
 @app.route('/loadmap/<mapid>', methods=['GET'])
 def load_map(mapid):
@@ -555,7 +604,10 @@ def register():
         username = request.form['username']
         if User.query.filter_by(username=username).first():
             flash(u'该用户名已被注册')
-            return render_template('register.html', form=form)
+            meta = {'title': u'注册 知维图 -- 互联网学习实验室',
+                    'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+                    'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+            return render_template('register.html', form=form, meta = meta)
 
         code_text = session['code_text']
 
@@ -571,14 +623,19 @@ def register():
                 flash(u'注册失败')
         else:
             flash(u'验证码错误')
-    
-    return render_template('register.html', form=form)
+    meta = {'title': u'注册 知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('register.html', form=form, meta = meta)
  
 
 @app.route('/login',methods=['GET','POST'])
 def login():
     if request.method == 'GET':
-        return render_template('login.html')
+        meta = {'title': u'登录 知维图 -- 互联网学习实验室',
+                'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+                'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+        return render_template('login.html', meta = meta)
 
     username = request.form['username']
     password = request.form['password']
@@ -621,10 +678,14 @@ def user(nickname):
     try:
         tutorials = Tutorial.query.filter_by(user_id=user.get_id()).all()
     except:
-        app.logger.error("use " + nickname + " fetch maps failed")
+        app.logger.error("use " + nickname + " fetch tutorials failed")
 
+    meta = {'title': u'用户 %s 主页 知维图 -- 互联网学习实验室' % nickname,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
     return render_template('user.html', user = user, maps = mindmaps, 
-            tutorials = tutorials, isSelf = user.get_id() == g.user.get_id())
+            tutorials = tutorials, isSelf = user.get_id() == g.user.get_id(),
+                           meta = meta)
 
 
 @app.route('/getWords/<book>', methods=["GET"])
@@ -693,7 +754,10 @@ def reciteWord():
         #app.logger.debug(line)
         books.append({'name': name, 'link': link, 'num': num})
     #app.logger.debug(books)
-    return render_template('reciteWord.html', books = books)
+    meta = {'title': u'脑洞背单词 知维图 -- 互联网学习实验室',
+            'description': u'脑洞计划之背单词， 联想记忆，词根词缀， 例句',
+            'keywords': u'zhimind 单词 智能学习 词根词缀 联想记忆'}
+    return render_template('reciteWord.html', books = books, meta = meta)
 
 
 @login_manager.user_loader

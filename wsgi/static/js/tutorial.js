@@ -64,7 +64,7 @@ String.prototype.endsWith = function(suffix) {
 };
 
 function qa_parse(c) {
-    var clists = [], type, stem, response, template, match,
+    var clists = [], type, stem, template, match,
         answer, qparts, submit, html = "", quiz_count = 0,
         p = /{%([\w\W]*?)%}/g,
         typep = /([\w\W]*?)\|/,
@@ -80,7 +80,7 @@ function qa_parse(c) {
 
     for (var i in clists) {
         var stemend, temp = clists[i],
-            response = '<div class="math-container">';
+            response = $('<div class="math-container"></div>');
 
         type = temp.match(typep)[0];
         type = type.substring(2, type.length-1).trim();
@@ -101,32 +101,75 @@ function qa_parse(c) {
         if (type == "radio" || type == "checkbox") {
             quiz_count++;
             qparts = stem.split("&");
+            var div = $('<div class="process"></div>'), span = $("<span>{0}</span>".format(qparts[0]));
             template = '<input type="{0}" class="quiz" name="quiz" value="{1}">{2}</input>';
-            response += '<p>{0}</p>'.format(qparts[0]);
-
+            span.append($("<br>"));
             for (var j = 1; j < qparts.length; j++) {
-                response += template.format(type, qparts[j], String.fromCharCode(64+j)
+                var option = template.format(type, qparts[j], String.fromCharCode(64+j)
                         + ". " + qparts[j]) + '<br>';
+                span.append($(option));
             }
+            div.append(span);
+            response.append(div);
         }
         else if (type == "text") {
             quiz_count++;
-            var blank = '<input type="text" class="quiz">';
-            response += stem.replace(/_/g, blank);
+            var div = $('<div class="process"></div>'),
+                blank = '<input type="text" class="quiz">';
+
+            div.append($('<span>'+stem.replace(/_/g, blank)+'</span>'));
+
+            response.append(div);
         }
         else if (type == "formula") {
             quiz_count++;
+            var div = $('<div class="process"></div>');
             blank = '<input type="text" class="quiz formula" ';
             blank += 'onkeyup="Preview.Update(this)">'
             blank += '<br><div class="MathPreview"></div>';
-            response += stem.replace(/_/g, '<br>'+blank+'<br>');
+            div.append($('<span>'+stem.replace(/_/g, blank)+'</span><br>'));
+            response.append(div);
+        } else if (type == "process") {
+            quiz_count++;
+            qparts = stem.split("$");
+            var div = $('<div class="process"></div>'),
+                step_div = $('<div class="step-div"></div>'),
+                input = $('<input type="text" class="small_step"/>'),
+                input3 = $('<input type="text" class="small_step"/>'),
+                input2 = $('<input type="text" class="small_step"/>');
+
+            input.attr("placeholder", "定理名或原理描述,回车验证");
+            input.attr("onkeydown", "return checkProcess(this, event,"+quiz_count+")");
+
+            div.append($('<p>{0}</p>'.format(qparts[0])));
+
+            step_div.append($('<span style="float: left">根据：</span>'));
+            step_div.append(input);
+            div.append(step_div);
+
+            step_div = $('<div class="step-div"></div>');
+            step_div.append($('<span style="float: left">根据：</span>'));
+            step_div.append(input2);
+            div.append(step_div);
+
+            step_div = $('<div class="step-div"></div>');
+            step_div.append($('<span style="float: left">根据：</span>'));
+            step_div.append(input3);
+            div.append(step_div);
+
+            for (var j = 1; j < qparts.length; j++) {
+                var t = String.fromCharCode(64+j) + ".$" + qparts[j] + "$";
+            }
+            response.append(div);
         }
 
-        response += submit.format(quiz_count);
-        html += c.substring(start, c.indexOf(temp)) + response;
+        response.append($(submit.format(quiz_count)));
+
+        html += c.substring(start, c.indexOf(temp)) + response[0].outerHTML;
         start = c.indexOf(temp) + temp.length;
     }
     html += c.substring(start, c.length);
+
     return html;
 }
 
@@ -213,6 +256,7 @@ function loadTutorial(link) {
             }
             initLesson(link);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+
         }
     });
 
@@ -223,6 +267,38 @@ function draw() {
     initData();
 }
 
+function checkProcess(obj, e, id) {
+    if(e.keyCode == 13) {
+        console.log("small step enter to backend");
+        var parent = $(obj).parents(".process"),
+            allStep = parent.children(".step-div").children(".small_step"),
+            allValue = [];
+        for (var i = 0; i < allStep.length; i++) {
+            allValue.push(allStep[i].value);
+        }
+        console.log(allValue);
+        console.log(id);
+        var tutorial_url = document.URL.split('/')[4];
+        $.ajax({
+            method: "post",
+            url : "/checkProcess",
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({'id': id, 'expression': allValue,
+                    'url': tutorial_url}),
+            success : function (result){
+                console.log(result);
+                //if(result.response) {
+                //    check_result(result.response, lesson_id, id);
+                //}
+                return;
+            }
+        });
+        return false;
+    }
+    return true;
+}
+
 function checkQuiz(obj, id) {
     var value,
         url = "/checkTextAnswer",
@@ -230,7 +306,7 @@ function checkQuiz(obj, id) {
         your_answer,
         back_check = false,
         eleparent = $(obj).parent(),
-        ele = eleparent.children(".quiz"),
+        ele = eleparent.children(".process").children().children(".quiz"),
         type = ele.attr("type"),
         lesson_name = eleparent.parent()[0].className,
         lesson_id = parseInt(lesson_name.substr(13));
@@ -274,7 +350,7 @@ function checkQuiz(obj, id) {
         data: JSON.stringify({'id': id, 'expression': value,
                 'url': tutorial_url}),
         success : function (result){
-            //console.log(result);
+            console.log(result);
             if (result.info) {
                 $('.hint').css('display', 'block');
                 $('.flashes').html('');

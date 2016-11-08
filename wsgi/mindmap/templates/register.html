@@ -1,50 +1,36 @@
-{% extends "layout.html" %}
-{% block body %}
+{% extends "login_base.html" %}
+{% block main %}
 
 {% from "_formhelpers.html" import render_field %}
 
-<form action="" method="post" class="form-horizontal">
-    <h2>注册 知维网账号 </h2>
-    <!-- <div class="control-group">
-        <div class="controls">
-            <input type="text" id="username" name="username" class="input-xlarge"
-            placeholder="输入用户名" value="{{ request.form.username }}"
-            required>
+<div class="col-sm-6 col-sm-offset-3 form-box">
+        <div class="form-top">
+            
         </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-            <input type="email" id="email" name="email" class="input-xlarge"
-            placeholder="Enter Email" value="{{ request.form.username }}"
-            required>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-            <button type="submit" class="btn btn-success">Signup</button>
-        </div>
-    </div> 
-    -->
+        <div class="form-bottom">
+<form role="form" action="" method="post" class="login-form form-horizontal">
     {{ render_field(form.username) }}
     {{ render_field(form.email) }}
     {{ render_field(form.password) }}
     {{ render_field(form.confirm) }}
-    <div class="control-group">
-        <div class="controls">
-            <label for="verification_code">验证码
-            <img onclick="this.setAttribute('src','/verifycode?random='+Math.random())" src="/verifycode" title="点击重新获取" /></label>
-            <input id="verification_code" name="verification_code" type="text" value="">
-            {% if form.verification_code.errors %}
-            <ul class=errors>
-                {% for error in form.verification_code.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+    <div class="form-group">
 
-        </div>
+        <label for="form-verification_code">验证码
+        <a href="#"><img onclick="this.setAttribute('src','/verifycode?random='+Math.random())" src="/verifycode" title="点击重新获取" /></a></label>
+        <input id="verification_code" name="verification_code" type="text" value="">
+        {% if form.verification_code.errors %}
+        <ul class=errors>
+            {% for error in form.verification_code.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
     </div> 
     {{ render_field(form.submit) }}
-
 </form>
+</div>
+    </div>
+</div>
+
 {% endblock %}

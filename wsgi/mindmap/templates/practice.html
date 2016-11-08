@@ -3,10 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="description" content="">
+        <meta name="author" content="sndnyang,http://blog.zhimind.com/"/>
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
 
-        <title>知维图 -- 互联网学习实验室</title>
+        <title>{{ meta.title }}</title>
 
         <style>
             body { padding-top: 50px; padding-bottom: 10px; }
@@ -30,7 +30,8 @@
         </script>
 
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
+        <meta name="keywords" content="{{ meta.keywords }}">
+        <meta name="description" content="{{ meta.description }}">
     </head>
     <body ng-app="mindMapApp">
         <div class="navbar navbar-fixed-top">

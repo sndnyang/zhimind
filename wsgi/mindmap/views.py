@@ -43,19 +43,33 @@ def editor():
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
-    return render_template('zhimindEditor.html', source = "", meta = meta)
+    source = "Title: \nslug: \n tags: \nsummary:"
+    return render_template('zhimindEditor.html', source = source, meta = meta)
 
 @app.route('/editor/<link>')
+@login_required
 def edit_online(link):
     try:
         tutorial = Tutorial.query.get(link)
         name = tutorial.get_title()
     except:
         app.logger.debug(traceback.print_exc())
+
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
-    return render_template('zhimindEditor.html', source = "", meta = meta)
+
+    if tutorial.user_id != g.user.get_id():
+        content = ""
+    else:
+        content = tutorial.content
+        if not content:
+            real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
+            app.logger.debug(real_link);
+            response, content, slug = md_qa_parse(real_link)
+            update_content(tutorial, content, slug)
+
+    return render_template('zhimindEditor.html', source = content, meta = meta)
 
 @app.route('/android')
 @app.route('/android.html')
@@ -124,7 +138,12 @@ def convert(link):
         try:
             tutorial = Tutorial.query.get(link)
             real_link = tutorial.get_url()
-            response = md_qa_parse(real_link)
+            if not real_link:
+                response, t, t2 = md_qa_parse(real_link)
+                update_content(tutorial, t, t2)
+            else:
+                content = tutorial.content
+                response, t2 = qa_parse(content)
 
             app.redis.set(link, response)
         except:
@@ -461,6 +480,42 @@ def create_tutorial():
 
     return json.dumps(ret, ensure_ascii=False)
 
+@app.route('/save_tutorial', methods=['POST'])
+@login_required
+def save_tutorial():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return u'用户上次操作在一分钟之内，太过频繁'
+
+    tutorial_id = request.json.get('id')
+    content = request.json.get('content')
+
+    ret = {'error': u'重复数据异常'}
+
+    try:
+        tutorial = Tutorial.query.filter_by(id=tutorial_id,
+                user_id=g.user.get_id()).one_or_none()
+        if not tutorial:
+            return json.dumps({'error': tutorial_id + ' not exists'})
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        return json.dumps(ret, ensure_ascii=False)
+
+    title, tags, summary, slug = meta_parse(content)
+    if tutorial is None:
+        tutorial = Tutorial(title, "")
+        tutorial.user_id = g.user.get_id()
+        db.session.add(tutorial)
+        g.user.last_edit = now
+        update_content(tutorial, content, slug)
+        db.session.commit()
+    else:
+        update_content(tutorial, content, slug)
+
+    response, slug = qa_parse(content)
+    app.redis.set(tutorial.get_id(), response)
+    ret['error'] = 'success'
+    return json.dumps(ret, ensure_ascii=False)
+
 @app.route('/editTutorial', methods=['POST'])
 @login_required
 def edit_tutorial():
@@ -512,7 +567,7 @@ def synch_tutorial():
 
     real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
     #app.logger.debug(real_link)
-    response = md_qa_parse(real_link)
+    response, content, slug = md_qa_parse(real_link)
     #for s in response['answer']:
     #    app.logger.debug(' '.join(s))
     backData = {}
@@ -520,6 +575,7 @@ def synch_tutorial():
     backData['comment'] = response['comment']
     session[tutorial_id] = backData
     app.redis.set(tutorial_id, response)
+    update_content(tutorial, content, slug)
 
     ret['error'] = 'success'
     return json.dumps(ret, ensure_ascii=False)
@@ -773,3 +829,17 @@ def load_user(id):
 @app.before_request
 def before_request():
     g.user = current_user
+
+def update_content(tutorial, content, slug):
+    try:
+        tutorial.content = content
+        db.session.commit()
+    except:
+        app.logger.debug(traceback.print_exc())
+
+    try:
+        if slug:
+            tutorial.slug = slug
+            db.session.commit()
+    except:
+        app.logger.debug("slug %s repeat" % slug)

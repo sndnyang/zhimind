@@ -8,6 +8,7 @@ from xml.etree.ElementTree import tostring
 from sympy import simplify_logic
 
 from mindmap import app
+import traceback
 
 def isExpressionCmp(s):
     for e in ['=', '>', '<']:
@@ -182,3 +183,26 @@ def add_mastery_in_json(json, entrys):
         return node
 
     node = dfs(json, '')
+
+def gen_meta_for_tp(name, entity):
+
+    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+    try:
+        if entity:
+            d = eval(entity)
+            if 'response' not in d or not d['response']:
+                pass
+            meta_lines = d['response'].split("\n")[:10]
+            for line in meta_lines:
+                l = line.lower()
+                if not l.find('summary'):
+                    meta['description'] = l.split(":")[1].strip() + \
+                                          meta['description']
+                elif not l.find('tags'):
+                    meta['keywords'] += ' '.join(l.split(":")[1].split(","))
+    except:
+        app.logger.debug(traceback.print_exc())
+
+    return meta

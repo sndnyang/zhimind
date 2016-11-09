@@ -129,14 +129,16 @@ def convert(link):
             app.redis.set(link, response)
         except:
             app.logger.debug(traceback.print_exc())
-    entity = app.redis.get(link)
+
+    entity = eval(app.redis.get(link))
 
     backData = {}
-    backData['answer'] = eval(app.redis.get(link))['answer']
-    backData['comment'] = eval(app.redis.get(link))['comment']
+    backData['answer'] = entity['answer']
+    backData['comment'] = entity['comment']
     session[link] = backData
-
-    response = eval(app.redis.get(link))['response']
+    #for s in response['answer']:
+    #    app.logger.debug(' '.join(s))
+    response = entity['response']
 
     return json.dumps(response, ensure_ascii=False)
 
@@ -506,9 +508,13 @@ def synch_tutorial():
     except sqlalchemy.orm.exc.MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
-    real_link = tutorial.get_url()
-    response = md_qa_parse(real_link)
+    import random
 
+    real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
+    #app.logger.debug(real_link)
+    response = md_qa_parse(real_link)
+    #for s in response['answer']:
+    #    app.logger.debug(' '.join(s))
     backData = {}
     backData['answer'] = response['answer']
     backData['comment'] = response['comment']

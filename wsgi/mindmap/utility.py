@@ -81,7 +81,7 @@ def parse_comment(line, p):
     return lists
 
 
-def md_qa_parse(real_link):
+def qa_parse(content):
     qaparts = {}
     response = ''
     quiz_count = 0
@@ -90,24 +90,15 @@ def md_qa_parse(real_link):
 
     block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
     inline_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}')
-    r = requests.get(real_link)
-
-    if not r.ok:
-        return {'response': False, 'info': real_link + u' not exists'}
-
-    if 'content-length' in r.headers and \
-                    int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
-        return {'response': False, 'info': real_link + u' 太长'}
-
+    slug = None
     line_count = 0
     block_flag = False
 
-    for line in r.iter_lines():
+    for line in content.split("\n"):
 
         line_count += 1
 
         if block_flag:
-
             temp1 = parse_answer(line, '@([^#]*)')
             temp2 = parse_comment(line, '#([^%]*)')
             if temp1:
@@ -128,8 +119,9 @@ def md_qa_parse(real_link):
                 response += line
             continue
 
-        if line_count > 5000:
-            return {'response': False, 'info': real_link + u' 太长, 超过5000行'}
+        if not line.lower().find('slug'):
+            slug = line.split(":")[1].strip()
+            continue
 
         if not line.startswith("{%"):
             response += line + '\n'
@@ -155,11 +147,30 @@ def md_qa_parse(real_link):
     qaparts['answer'] = answers
     qaparts['comment'] = comments
 
-    return qaparts
+    return qaparts, slug
+
+
+def md_qa_parse(real_link):
+
+    r = requests.get(real_link)
+
+    if not r.ok:
+        return {'response': False, 'info': real_link + u' not exists'}, "", None
+
+    if 'content-length' in r.headers and \
+                    int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
+        return {'response': False, 'info': real_link + u' 太长'}, "", None
+
+    content = r.content
+    qaparts, slug = qa_parse(content)
+
+    return qaparts, content, slug
+
 
 def add_mastery_in_json(json, entrys):
     node_map = dict((e.name, (e.parent, e.mastery)) for e in entrys)
     visited = []
+
     def dfs(node, parent):
         name = node['name']
         if name in node_map:
@@ -184,6 +195,7 @@ def add_mastery_in_json(json, entrys):
 
     node = dfs(json, '')
 
+
 def gen_meta_for_tp(name, entity):
 
     meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
@@ -206,3 +218,23 @@ def gen_meta_for_tp(name, entity):
         app.logger.debug(traceback.print_exc())
 
     return meta
+
+
+def meta_parse(content):
+    title = None
+    tags = None
+    summary = None
+    slug = None
+    meta_lines = content.split("\n")[:10]
+    for line in meta_lines:
+        l = line.lower()
+        if not l.find('summary'):
+            summary = l.split(":")[1].strip()
+        elif not l.find('tags'):
+            tags = ' '.join(l.split(":")[1].split(","))
+        elif not l.find('title'):
+            title = l.split(":")[1].strip()
+        elif not l.find('slug'):
+            slug = l.split(":")[1].strip()
+
+    return title, tags, summary, slug

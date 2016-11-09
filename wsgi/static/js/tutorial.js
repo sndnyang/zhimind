@@ -209,8 +209,11 @@ function loadTutorial(link) {
             } 
 
             var md = window.markdownit({html:true})
-                    .use(window.markdownitMathjax);
-                  
+                    .use(window.markdownitMathjax)
+                    .use(window.markdownitEmoji);
+            md.renderer.rules.emoji = function(token, idx) {
+              return twemoji.parse(token[idx].content);
+            };
             var content = result.split(/\r?\n/),
                 tutorial = $("#tutorial"),
                 count = 0,
@@ -255,6 +258,9 @@ function loadTutorial(link) {
                 draw();
             }
             initLesson(link);
+            MathJax.Hub.Config({
+                messageStyle: "none"
+            });
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
         }
@@ -422,13 +428,49 @@ function to_backend_create(type, json) {
     });
 }
 
+function save_tutorial() {
+    var tid = document.URL.split('/')[4], source = $('.source').val(), lines,
+        title = /^\s*title/im, slug = /^\s*slug/im, tags = /^\s*tags/im,
+        summary = /^\s*summary/im, temp = source.substr(0, 1000);
+    if (!temp.match(title)) {
+        alert("请在开头添加一行 title: 标题")
+        return;
+    }
+    if (!temp.match(slug)) {
+        alert("请在开头添加一行 slug: the-title-in-english-for-read")
+        return;
+    }
+    if (!temp.match(tags)) {
+        alert("请在开头添加一行 tags: tag1 tag2 tag3 tag4 只能用逗号隔开")
+        return;
+    }
+    if (!temp.match(summary)) {
+        alert("请在开头添加一行 summary: 总结描述")
+        return;
+    }
+
+    $.ajax({
+        method: "post",
+        url : "/save_tutorial",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({'id': tid, 'content': source}),
+        success : function (result){
+            console.log(result);
+            return;
+        }
+    });
+}
+
 function synchTutorial(obj) {
     var eleps= $(obj).parentsUntil('div'),
         tableele = $(eleps[eleps.length - 1]),
         ele = $(eleps[1]).children('.link').children(".tutoriallink"),
         tid = ele.attr("href").split("/")[2],
         json = {'id': tid};
-
+    if (!tid) {
+        alert("该教程没有远程url，不可同步，请使用在线编辑");
+    }
     $.ajax({
         url: '/synchTutorial',
         method: 'POST',

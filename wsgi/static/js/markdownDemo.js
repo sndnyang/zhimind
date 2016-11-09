@@ -9414,7 +9414,13 @@ $(function () {
   permalink = document.getElementById('permalink');
 
   // Setup listeners
-  $('.source').on('keyup paste cut mouseup', _.debounce(updateResult, 300, { maxWait: 500 }));
+  $('.source').on('paste cut', _.debounce(updateResult, 300, { maxWait: 500 }));
+  
+  $('.source').keyup(function (e) {
+    if (e.keyCode == 13) {
+        updateResult();
+    }
+  });
 
   $('.source').on('touchstart mouseover', function () {
     $('.result-html').off('scroll');

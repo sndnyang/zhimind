@@ -5,27 +5,31 @@
     <script src="http://cdn.bootcss.com/lodash.js/4.16.4/lodash.min.js"></script>
     <link href="http://cdn.bootcss.com/github-markdown-css/2.4.1/github-markdown.min.css" rel="stylesheet">
     <script src="http://cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
-    <script type="text/javascript" src="static/js/markdown-it-mathjax.js"> </script>
+    <script type="text/javascript" src="/static/js/markdown-it-mathjax.js"> </script>
 
     <script src="http://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
     <script src="http://cdn.bootcss.com/twemoji/2.2.1/twemoji.min.js"></script>
-    <link rel="stylesheet" href="static/css/markdownDemo.css">
-    <link rel="stylesheet" href="static/css/tutorial.css">
+    <link rel="stylesheet" href="/static/css/markdownDemo.css">
+    <link rel="stylesheet" href="/static/css/tutorial.css">
 
-    <script src="static/js/tutorial.js"></script>
-    <script src="static/js/markdownDemo.js"></script>
-    <!--<script type="text/javascript">
+    <script src="/static/js/tutorial.js"></script>
+    <script src="/static/js/markdownDemo.js"></script>
+    <script type="text/javascript">
         window.onbeforeunload = function() {
             return "确定离开页面吗？"; 
-        } 
-    </script>-->
+        }
+    </script>
   </head>
   <body class="opt_linkify opt_typographer opt_highlight result-as-html">
     <div class="container">
       <h1>
         zhimind教程编写
          <small>在线编辑器</small>
-         <small><a href="/">返回主页</a></small>
+         <small>
+           <button type="button" class="btn btn-success" onclick="save_tutorial()">
+           保存
+           </button>
+         </small>
       </h1>
       <div class="form-inline demo-options">
         <div class="checkbox not-strict">

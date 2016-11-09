@@ -16,7 +16,7 @@ def uuid_gen():
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column('user_id', db.String, primary_key=True, default=uuid_gen)
-    username = db.Column('username', db.String(20), unique=True , index=True)
+    username = db.Column('username', db.String(20), unique=True, index=True)
     password = db.Column('password', db.String(250))
     email = db.Column('email', db.String(50), unique=True, index=True)
     registered_on = db.Column('registered_on', db.DateTime)
@@ -105,6 +105,10 @@ class Tutorial(db.Model):
     title = db.Column(db.String(60))
     url = db.Column(db.String(300))
     type = db.Column(db.String(10))
+    username = db.Column(db.String(20))
+    like = db.Column(db.Integer, default=0)
+    slug = db.Column(db.String(50), unique=True, index=True)
+    content = db.Column(db.Text())
     
     def __init__(self, title, url, type="tutorial"):
         self.title = title

@@ -107,9 +107,9 @@ def tutorial(link):
         name = tutorial.get_title()
     except:
         name = ""
-    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
-            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
-            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+
+    meta = gen_meta_for_tp(name, app.redis.get(link))
+
     return render_template('tutorial.html', link = link, name=name,
                            meta = meta)
 
@@ -307,9 +307,8 @@ def program_practice(link):
     except:
         app.logger.debug(traceback.print_exc())
 
-    meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
-            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
-            'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
+    meta = gen_meta_for_tp(name, app.redis.get(link))
+
     return render_template('practice.html', link = link, base=base_link,
             name=name, meta = meta)
     

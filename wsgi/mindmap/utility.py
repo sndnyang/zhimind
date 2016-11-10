@@ -152,7 +152,10 @@ def qa_parse(content):
 
 def md_qa_parse(real_link):
 
-    r = requests.get(real_link)
+    try:
+        r = requests.get(real_link)
+    except requests.ConnectionError:
+        return {'response': False, 'info': real_link + u' not exists'}, "", None
 
     if not r.ok:
         return {'response': False, 'info': real_link + u' not exists'}, "", None

@@ -396,7 +396,11 @@ def load_map(mapid):
 @app.route('/linkquiz', methods=['POST'])
 @login_required
 def link_quiz():
-
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'response': False,
+                           'error': u'用户上次操作在一分钟之内，太过频繁'},
+                          ensure_ascii=False)
     name = request.json.get('name', None)
     mapid = request.json.get('mapid', None)
     tutorid = request.json.get('tutorid', None)
@@ -416,6 +420,7 @@ def link_quiz():
             entry.user_id = g.user.get_id()
             entry.mindmap_id = mapid
             entry.tutor_id = tutorid
+            g.user.last_edit = now
             db.session.add(entry)
             db.session.commit()
 
@@ -427,6 +432,11 @@ def link_quiz():
 @app.route('/update_mastery', methods=['POST'])
 @login_required
 def update_entry_master():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'response': False,
+                           'error': u'用户上次操作在一分钟之内，太过频繁'},
+                          ensure_ascii=False)
 
     ret = {'response': False}
     tutorid = request.json.get('tutor_id', None)
@@ -450,7 +460,7 @@ def update_entry_master():
             mindmap_id=mapid, name=name, tutor_id=tutorid)
 
     flag = False
-    
+    g.user.last_edit = now
     for entry in results:
         if parent and entry.parent == parent:
             entry.mastery += 1
@@ -472,6 +482,12 @@ def update_entry_master():
 @app.route('/newpractice', methods=['POST'])
 @login_required
 def create_tutorial():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'response': False,
+                           'error': u'用户上次操作在一分钟之内，太过频繁'},
+                          ensure_ascii=False)
+    
     title = request.json.get('title')
     url = request.json.get('url')
 
@@ -486,6 +502,8 @@ def create_tutorial():
     qtype = "tutorial"
     if 'practice' in path:
         qtype = 'practice'
+
+    g.user.last_edit = now
 
     if tutorial is None:
         tutorial = Tutorial(title, url, qtype)
@@ -503,7 +521,8 @@ def create_tutorial():
 def save_tutorial():
     now = datetime.now()
     if not g.user.check_frequence(now):
-        return u'用户上次操作在一分钟之内，太过频繁'
+        return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
+                                 ensure_ascii=False)
 
     tutorial_id = request.json.get('id')
     content = request.json.get('content')
@@ -527,6 +546,7 @@ def save_tutorial():
         update_content(tutorial, content, slug)
         db.session.commit()
     else:
+        g.user.last_edit = now
         update_content(tutorial, content, slug)
 
     response, slug = qa_parse(content)
@@ -570,6 +590,11 @@ def edit_tutorial():
 @app.route('/synchTutorial', methods=['POST'])
 @login_required
 def synch_tutorial():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
+                          ensure_ascii=False)
+
     tutorial_id = request.json.get('id')
 
     ret = {'error': u'重复数据异常'}
@@ -593,6 +618,7 @@ def synch_tutorial():
     backData['comment'] = response['comment']
     session[tutorial_id] = backData
     app.redis.set(tutorial_id, response)
+    g.user.last_edit = now
     update_content(tutorial, content, slug)
 
     ret['error'] = 'success'

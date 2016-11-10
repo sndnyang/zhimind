@@ -7,7 +7,7 @@ import sqlalchemy
 from sqlalchemy import desc
 
 from flask import request, flash, url_for, redirect, render_template, g,\
-session, json, send_from_directory
+session, json, abort
 
 from flask.ext.login import LoginManager, current_user, logout_user, \
 login_user, login_required
@@ -43,7 +43,8 @@ def editor():
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
-    source = "Title: \nslug: \n tags: \nsummary:"
+    source = u"Title: 标题\nslug: your-title-in-english\n"+\
+             "tags: tag1 tag2 tag3 用空格隔开\nsummary: 描述"
     return render_template('zhimindEditor.html', source = source, meta = meta)
 
 @app.route('/editor/<link>')
@@ -118,11 +119,21 @@ def recommendlist():
 def tutorial(link):
     try:
         tutorial = Tutorial.query.get(link)
-        name = tutorial.get_title()
+
+        if not tutorial:
+            tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
     except:
         name = ""
 
+    if not tutorial:
+        app.logger.debug("page not found")
+        abort(404)
+    name = tutorial.get_title()
     meta = gen_meta_for_tp(name, app.redis.get(link))
+
+    tid = tutorial.get_id()
+    if link != tid:
+        link = tid
 
     return render_template('tutorial.html', link = link, name=name,
                            meta = meta)
@@ -137,6 +148,8 @@ def convert(link):
     if entity is None or not eval(entity)['response']:
         try:
             tutorial = Tutorial.query.get(link)
+            if not tutorial:
+                tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
             real_link = tutorial.get_url()
             if not real_link:
                 response, t, t2 = md_qa_parse(real_link)
@@ -148,6 +161,7 @@ def convert(link):
             app.redis.set(link, response)
         except:
             app.logger.debug(traceback.print_exc())
+            return json.dumps(response, ensure_ascii=False)
 
     entity = eval(app.redis.get(link))
 
@@ -322,6 +336,8 @@ def program_practice(link):
     base_link = '/'
     try:
         tutorial = Tutorial.query.get(link)
+        if not tutorial:
+            tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
         real_link = tutorial.get_url()
         base_link = '/'.join(real_link.split('/')[:-1])
         name = tutorial.get_title()
@@ -329,7 +345,9 @@ def program_practice(link):
         app.logger.debug(traceback.print_exc())
 
     meta = gen_meta_for_tp(name, app.redis.get(link))
-
+    tid = tutorial.get_id()
+    if link != tid:
+        link = tid
     return render_template('practice.html', link = link, base=base_link,
             name=name, meta = meta)
     
@@ -843,3 +861,10 @@ def update_content(tutorial, content, slug):
             db.session.commit()
     except:
         app.logger.debug("slug %s repeat" % slug)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    meta = {'title': u'页面不存在 知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind 启发式学习 智能学习 在线教育'}
+    return render_template('404.html', meta=meta)

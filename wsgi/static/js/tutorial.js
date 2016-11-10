@@ -80,16 +80,15 @@ function qa_parse(c) {
 
     for (var i in clists) {
         var stemend, temp = clists[i],
-            response = $('<div class="math-container"></div>');
+            response = $('<div class="math-container"></div>'),
+            div = $('<div class="process"></div>'),
+            feedback = $('<div class="hidden"></div>');
 
         type = temp.match(typep)[0];
         type = type.substring(2, type.length-1).trim();
-        //console.log('temp ' + temp);
 
         stem = temp.match(stemp)[0];
         stemend = stem.indexOf("@");
-
-
         if (stemend < 0)
             stemend = stem.length
         stem = stem.substring(1, stemend).trim();
@@ -101,7 +100,10 @@ function qa_parse(c) {
         if (type == "radio" || type == "checkbox") {
             quiz_count++;
             qparts = stem.split("&");
-            var div = $('<div class="process"></div>'), span = $("<span>{0}</span>".format(qparts[0]));
+            if (qparts[0].trim() !== "") {
+                qparts[0] = "<br>" + qparts[0];
+            }
+            var span = $("<span>{0}</span>".format(qparts[0]));
             template = '<input type="{0}" class="quiz" name="quiz" value="{1}">{2}</input>';
             span.append($("<br>"));
             for (var j = 1; j < qparts.length; j++) {
@@ -110,36 +112,33 @@ function qa_parse(c) {
                 span.append($(option));
             }
             div.append(span);
-            response.append(div);
         }
         else if (type == "text") {
             quiz_count++;
-            var div = $('<div class="process"></div>'),
-                blank = '<input type="text" class="quiz">';
-
-            div.append($('<span>'+stem.replace(/_/g, blank)+'</span>'));
-
-            response.append(div);
+            var blank = $('<input type="text" class="quiz">');
+            blank.attr("onkeydown", 'return check(this, event, "quiz",'+quiz_count+")");
+            div.append($('<br><span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span><br>'));
         }
         else if (type == "formula") {
             quiz_count++;
-            var div = $('<div class="process"></div>');
-            blank = '<input type="text" class="quiz formula" ';
-            blank += 'onkeyup="Preview.Update(this)">'
-            blank += '<br><div class="MathPreview"></div>';
-            div.append($('<span>'+stem.replace(/_/g, blank)+'</span><br>'));
-            response.append(div);
+            var blank = $('<input type="text" class="quiz formula">'),
+                span;
+            blank.attr("onkeydown", 'return check(this, event, "quiz",'+quiz_count+")");
+            span = $('<span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span>');
+            span.append($('<br><div class="MathPreview"></div><br>'));
+            div.append("<br>")
+            div.append(span);
         } else if (type == "process") {
             quiz_count++;
             qparts = stem.split("$");
-            var div = $('<div class="process"></div>'),
-                step_div = $('<div class="step-div"></div>'),
+            var step_div = $('<div class="step-div"></div>'),
                 input = $('<input type="text" class="small_step"/>'),
                 input3 = $('<input type="text" class="small_step"/>'),
                 input2 = $('<input type="text" class="small_step"/>');
 
             input.attr("placeholder", "定理名或原理描述,回车验证");
-            input.attr("onkeydown", "return checkProcess(this, event,"+quiz_count+")");
+            input.attr("onkeydown", "return check(this, event, 'process'," +
+                                    quiz_count+")");
 
             div.append($('<p>{0}</p>'.format(qparts[0])));
 
@@ -152,17 +151,14 @@ function qa_parse(c) {
             step_div.append(input2);
             div.append(step_div);
 
-            step_div = $('<div class="step-div"></div>');
-            step_div.append($('<span style="float: left">根据：</span>'));
-            step_div.append(input3);
-            div.append(step_div);
-
             for (var j = 1; j < qparts.length; j++) {
                 var t = String.fromCharCode(64+j) + ".$" + qparts[j] + "$";
             }
-            response.append(div);
         }
 
+        div.append('<br>');
+        div.append(feedback);
+        response.append(div);
         response.append($(submit.format(quiz_count)));
 
         html += c.substring(start, c.indexOf(temp)) + response[0].outerHTML;
@@ -273,36 +269,48 @@ function draw() {
     initData();
 }
 
-function checkProcess(obj, e, id) {
+function check(obj, e, type, id) {
+    if ($(obj).is(".formula")) {
+        Preview.Update(obj);
+    }
     if(e.keyCode == 13) {
-        console.log("small step enter to backend");
-        var parent = $(obj).parents(".process"),
-            allStep = parent.children(".step-div").children(".small_step"),
-            allValue = [];
-        for (var i = 0; i < allStep.length; i++) {
-            allValue.push(allStep[i].value);
+        if (type === "quiz") {
+            checkQuiz($(obj).parent().parent(), id);
         }
-        console.log(allValue);
-        console.log(id);
-        var tutorial_url = document.URL.split('/')[4];
-        $.ajax({
-            method: "post",
-            url : "/checkProcess",
-            contentType: 'application/json',
-            dataType: "json",
-            data: JSON.stringify({'id': id, 'expression': allValue,
-                    'url': tutorial_url}),
-            success : function (result){
-                console.log(result);
-                //if(result.response) {
-                //    check_result(result.response, lesson_id, id);
-                //}
-                return;
-            }
-        });
+        else if (type === "process") {
+            checkProcess(obj, id);
+        }
         return false;
     }
     return true;
+}
+
+function checkProcess(obj, id) {
+    console.log("small step enter to backend");
+    var parent = $(obj).parents(".process"),
+        allStep = parent.children(".step-div").children(".small_step"),
+        allValue = [];
+    for (var i = 0; i < allStep.length; i++) {
+        allValue.push(allStep[i].value);
+    }
+    console.log(allValue);
+    console.log(id);
+    var tutorial_url = document.URL.split('/')[4];
+    $.ajax({
+        method: "post",
+        url : "/checkProcess",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({'id': id, 'expression': allValue,
+                'url': tutorial_url}),
+        success : function (result){
+            console.log(result);
+            //if(result.response) {
+            //    check_result(result.response, lesson_id, id);
+            //}
+            return;
+        }
+    });
 }
 
 function checkQuiz(obj, id) {
@@ -312,7 +320,8 @@ function checkQuiz(obj, id) {
         your_answer,
         back_check = false,
         eleparent = $(obj).parent(),
-        ele = eleparent.children(".process").children().children(".quiz"),
+        problem = eleparent.children(".process"),
+        ele = problem.children().children(".quiz"),
         type = ele.attr("type"),
         lesson_name = eleparent.parent()[0].className,
         lesson_id = parseInt(lesson_name.substr(13));
@@ -357,27 +366,29 @@ function checkQuiz(obj, id) {
                 'url': tutorial_url}),
         success : function (result){
             console.log(result);
+            if (result.comment) {
+                var comment = result.comment;
+                if (typeof(result.comment) !== "string") {
+                    comment = result.comment[Math.min(error_times, result.comment.length)];
+                }
+                problem.children('div').html(comment);
+                if (result.response)
+                    problem.children('div').attr('class', 'alert alert-success');
+                else
+                    problem.children('div').attr('class', 'alert alert-danger');
+                error_times++;
+            }
             if (result.info) {
                 $('.hint').css('display', 'block');
                 $('.flashes').html('');
                 $('.flashes').append("<li>对不起</li>")
                 $('.flashes').append("<li>"+result.info+"</li>")
                 setTimeout("$('.hint').fadeOut('slow')", 5000)
-            } else if (result.comment) {
-                $('.hint').css('display', 'block');
-                $('.flashes').html('');
-                $('.flashes').append("<li>不对哦，再想想!</li>");
-                var comment = result.comment;
-                if (typeof(result.comment) !== "string") {
-                    comment = result.comment[Math.min(error_times, result.comment.length)];
-                }
-                $('.flashes').append("<li>"+comment+"</li>")
-
-                error_times++;
-                setTimeout("$('.hint').fadeOut('slow')", 5000)
             } else if(result.response) {
+                problem.children('div').attr('class', 'hidden');
                 check_result(result.response, lesson_id, id);
             }
+
             return;
         }
     });
@@ -457,6 +468,11 @@ function save_tutorial() {
         data: JSON.stringify({'id': tid, 'content': source}),
         success : function (result){
             console.log(result);
+            if (result.error === "success") {
+                alert("更新成功！");
+            } else {
+                alert("更新失败！" + result.error);
+            }
             return;
         }
     });

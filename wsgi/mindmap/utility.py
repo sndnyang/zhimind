@@ -115,12 +115,55 @@ def parse_comment(line, p):
     obj = re.findall(p, line)
     if not obj:
         return None
+    
+    result = None
     lists = obj[0].split("#")
     for l in lists:
-        if l.startswith('"'):
-            l = json.loads(l)
+        if ':' not in l:
+            continue
 
-    return lists
+        t = []
+        for s in l.split(','):
+            t.append(':'.join(['"%s"' % e.strip() for e in s.strip().split(':')]))
+
+        l = json.loads('{%s}' % ','.join(t))
+        if not result:
+            result = l
+            continue
+        for e in l:            
+            result[e] = l[e]
+
+    if not result:
+        result = lists
+
+    return result
+
+
+def merge_all(items, item):
+    if not items:
+        return item
+    if type(items) != type(item):
+        print type(items), type(item)
+        return items
+
+    if isinstance(items, list):
+        for e in item: 
+            items.append(e)
+    elif isinstance(items, dict):
+        for e in item:
+            items[e] = item[e]
+
+    return items
+
+
+def parse_line(line, answer, comment):
+    temp1 = parse_answer(line, '@([^#]*)')
+    temp2 = parse_comment(line, '#([^%]*)')
+    if temp1:
+        answer = merge_all(answer, temp1)
+    if temp2:
+        comment = merge_all(comment, temp2)
+    return answer, comment
 
 
 def qa_parse(content):
@@ -133,22 +176,13 @@ def qa_parse(content):
     block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
     inline_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}')
     slug = None
-    line_count = 0
     block_flag = False
 
     for line in content.split("\n"):
 
-        line_count += 1
-
         if block_flag:
-            temp1 = parse_answer(line, '@([^#]*)')
-            temp2 = parse_comment(line, '#([^%]*)')
-            if temp1:
-                answer.append(temp1)
-                continue
-            elif temp2:
-                comment.append(temp2)
-            elif line.find("%}") >= 0:
+            answer, comment = parse_line(line, answer, comment)
+            if line.find("%}") >= 0:
                 if len(answer) == 1:
                     answer = answer[0]
                 if len(comment) == 1:
@@ -156,8 +190,6 @@ def qa_parse(content):
                 answers.append(answer)
                 comments.append(comment)
                 block_flag = False
-                response += line
-            else:
                 response += line
             continue
 
@@ -177,12 +209,13 @@ def qa_parse(content):
             comments.append(comment)
             response += line[:line.find("@")] + '%}\n'
         else:
-            answer = []
-            comment = []
+            answer = None
+            comment = None
             if line.find("@") < 0:
                 response += line + "\n"
             else:
                 response += line[:line.find("@")] + "\n"
+                answer, comment = parse_line(line, answer, comment)
             block_flag = True
 
     qaparts['response'] = response

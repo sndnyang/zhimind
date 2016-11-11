@@ -148,13 +148,15 @@ def convert(link):
             tutorial = Tutorial.query.get(link)
             if not tutorial:
                 tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
-            real_link = tutorial.get_url()
-            if not real_link:
-                response, t, t2 = md_qa_parse(real_link)
-                update_content(tutorial, t, t2)
-            else:
+
+            if tutorial.content:
                 content = tutorial.content
                 response, t2 = qa_parse(content)
+            else:
+                real_link = tutorial.get_url()
+                if real_link:
+                    response, t, t2 = md_qa_parse(real_link)
+                    update_content(tutorial, t, t2)
 
             app.redis.set(link, response)
         except:

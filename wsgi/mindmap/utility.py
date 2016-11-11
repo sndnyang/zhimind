@@ -190,7 +190,9 @@ def qa_parse(content):
                 answers.append(answer)
                 comments.append(comment)
                 block_flag = False
-                response += line
+                response += line + '\n'
+            elif line[0] != '@' and line[0] != '#':
+                response += line.split('@')[0] + '\n'
             continue
 
         if not line.lower().find('slug'):

@@ -469,7 +469,13 @@ function save_tutorial() {
         success : function (result){
             console.log(result);
             if (result.error === "success") {
-                alert("更新成功！");
+                if ('id' in result) {
+                    alert("添加新教程成功，即将跳转...");
+                    window.onbeforeunload = false;
+                    window.location.href = "/editor/" + result.id;
+                } else {
+                    alert("更新成功！");
+                }
             } else {
                 alert("更新失败！" + result.error);
             }

@@ -7,14 +7,60 @@ from xml.etree.ElementTree import tostring
 
 from sympy import simplify_logic
 
-from mindmap import app
-import traceback
-
 def isExpressionCmp(s):
     for e in ['=', '>', '<']:
         if e in s:
             return True
     return False
+
+
+def check_clause(text, s, clist):
+
+    for sub in s.split("|"):
+        match = []
+        #print 'or sub %s' % sub
+        for p in sub.split("&"):
+            if not p:
+                return False, u'作者编写的参考答案有bug，请联系管理员'
+            
+            #print 'and sub %s' % sub,
+            if p.startswith('part-'):
+                try:
+                    i = int(p[5:])
+                    flag, item = check_clause(text, clist[i], clist)
+                    if not flag:
+                        #print flag
+                        break
+                    match.append('(%s)'%item)
+                except ValueError:
+                    if p not in text:
+                        #print False
+                        break
+                    match.append(p)
+            else:
+                if p not in text:
+                    #print False
+                    break
+                match.append(p)
+        else:
+            #print 'match', '&'.join(match)
+            return True, '&'.join(match)
+    else:
+        return False, None
+        
+
+
+def checkText(text, answer):
+    b = re.findall('(\([^)]+\))', answer)
+    c = 0
+    s = answer
+    for e in b:
+        s = s.replace(e, 'part-'+str(c))
+        b[c] = e[1:-1]
+        c += 1
+    return check_clause(text, s, b)
+
+
 
 def checkCmpExpression(s1, s2):
     """
@@ -39,25 +85,21 @@ def checkCmpExpression(s1, s2):
             #return u'答案不匹配'
 
     if isExpressionCmp(s1):
-        app.logger.debug(s1 + ' has equation ')
-        return u'暂不支持带=><'
+        return u'代数式方可简化，但不是方程，不能带=><'
     else:
 
         try:
             correct_answer = simplify_logic(s1)
         except:
-            app.logger.debug('answer %s simplify error' % s1)
-            return u'参考答案bug 处理错误'
+            return u'作者编写的参考答案有bug，请联系管理员'
+
         try:
             input_answer = simplify_logic(s2)
         except:
-            app.logger.debug('%s simplify error' % s2)
-            return u'%s 式子不符合格式' % s2
+            return u'你输入的代数式 %s ' % s2
 
         if input_answer != correct_answer:
-            app.logger.debug('%s and %s are not equal' % (s1, s2))
             return False
-        #return "%s is not right" % s2
 
     return True
 
@@ -204,21 +246,22 @@ def gen_meta_for_tp(name, entity):
     meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
-    try:
-        if entity:
-            d = eval(entity)
-            if 'response' not in d or not d['response']:
-                pass
-            meta_lines = d['response'].split("\n")[:10]
-            for line in meta_lines:
-                l = line.lower()
-                if not l.find('summary'):
-                    meta['description'] = l.split(":")[1].strip() + \
-                                          meta['description']
-                elif not l.find('tags'):
-                    meta['keywords'] += ' '.join(l.split(":")[1].split(","))
-    except:
-        app.logger.debug(traceback.print_exc())
+
+    if not entity:
+        return meta
+
+    d = eval(entity)
+    if 'response' not in d or not d['response']:
+        pass
+
+    meta_lines = d['response'].split("\n")[:10]
+    for line in meta_lines:
+        l = line.lower()
+        if not l.find('summary:'):
+            meta['description'] = l.split(":")[1].strip() + \
+                                  meta['description']
+        elif not l.find('tags:'):
+            meta['keywords'] += ' '.join(l.split(":")[1].split(","))
 
     return meta
 

@@ -7,7 +7,7 @@ from sqlalchemy import desc
 from flask import request, flash, url_for, redirect, render_template, g,\
 session, json, abort
 
-from flask.ext.login import LoginManager, current_user, logout_user, \
+from flask_login import LoginManager, current_user, logout_user, \
 login_user, login_required
 
 from mindmap import app, db, login_manager
@@ -179,14 +179,14 @@ def checkChoice():
     no = request.json.get('id', None)
     response = {'response': False}
     if not no:
-        return json.dumps(response)
+        return json.dumps(response, ensure_ascii=False)
     no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
     response = {'response': False}
 
     if not expression or not tid:
-        return json.dumps(response)
+        return json.dumps(response, ensure_ascii=False)
 
     user_choose = expression.split("@")
     if tid in session:
@@ -205,25 +205,33 @@ def checkChoice():
 
     match = 0
     f = True
+    keys = []
+    if isinstance(comments, dict):
+        keys = comments.keys()
+
     for e1 in s1:
         flag = False
         for e2 in s2:
             if e1 == e2:
                 flag = True
                 match += 1
+                break
 
-        if not flag:
-            f = False
-            if e1 in comments:
-                response['comment'] = comments[e1]
-                return json.dumps(response)
+        if flag:
+            continue
+
+        f = False
+        for e in keys:
+            if e in e1:
+                response['comment'] = comments[e]
+                return json.dumps(response, ensure_ascii=False)
 
     if not f or match != len(s2):
         response['comment'] = comments
-        return json.dumps(response)
+        return json.dumps(response, ensure_ascii=False)
 
     response['response'] = True
-    return json.dumps(response)
+    return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/checkTextAnswer', methods=["POST"])
@@ -313,7 +321,6 @@ def checkProcess():
 
     if not expression or not tid:
         return json.dumps(response)
-    app.logger.debug(session[tid]['answer'])
 
     if tid in session:
         answers = session[tid]['answer'][no]

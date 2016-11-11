@@ -104,20 +104,62 @@ def checkCmpExpression(s1, s2):
     return True
 
 
-def parse_answer(line, p):
+def parse_answer(line, p, type):
+    """
+    1. 需要在js里判断':'和'@' 中间不存在 ','，一个答案只写一次，独占一空
+    1. 如果存在两个 : 需要在js里判断中间存在 ',' 而不是 '，'
+    """
     obj = re.findall(p, line)
     if not obj:
         return None
-    return obj[0].split("@")
+
+    result = None
+    lists = obj[0].split(p[0])
+    options = []
+    for l in lists:
+        if type != 'process':
+            break
+
+        t = l.split(';')
+        lt = len(t)
+        answer_map = {}
+        if lt == 1:
+            answer_map  = {t[0]: ([], '')}
+        if lt == 2:
+            pre = t[0].split(',')
+            if t[1][0] == '$' or t[1][0] == '!' or t[1][0] == '`':
+                answer_map = {t[0]: ([], t[1])}
+                options.append(t[1])
+            else:
+                answer_map = {t[0]: (t[1].split(','), '')}
+        if lt == 3:
+            answer_map  = {t[0]: (t[1].split(','), t[2])}
+            options.append(t[2])
+
+        if not result:
+            result = answer_map
+            result['options'] = options
+            continue
+
+        for e in answer_map:
+            result[e] = answer_map[e]
+
+    if not result:
+        result = lists
+
+    return result
 
 
 def parse_comment(line, p):
+    """
+    如果存在两个 : 需要在js里判断中间存在 ',' 而不是 '，'
+    """
     obj = re.findall(p, line)
     if not obj:
         return None
     
     result = None
-    lists = obj[0].split("#")
+    lists = obj[0].split(p[0])
     for l in lists:
         if ':' not in l:
             continue
@@ -143,7 +185,6 @@ def merge_all(items, item):
     if not items:
         return item
     if type(items) != type(item):
-        print type(items), type(item)
         return items
 
     if isinstance(items, list):
@@ -151,16 +192,25 @@ def merge_all(items, item):
             items.append(e)
     elif isinstance(items, dict):
         for e in item:
-            items[e] = item[e]
+            if e in items and isinstance(items[e], list):
+                for l in item[e]:
+                    items[e].append(l)
+            else:
+                items[e] = item[e]
 
     return items
 
 
-def parse_line(line, answer, comment):
-    temp1 = parse_answer(line, '@([^#]*)')
+def parse_line(line, answer, comment, type):
+    temp1 = parse_answer(line, '@([^#]*)', type)
     temp2 = parse_comment(line, '#([^%]*)')
     if temp1:
+       #if isinstance(temp1, dict):
+       #    print line
+       #    print temp1
         answer = merge_all(answer, temp1)
+       #if isinstance(answer, dict):
+       #    print answer
     if temp2:
         comment = merge_all(comment, temp2)
     return answer, comment
@@ -181,18 +231,13 @@ def qa_parse(content):
     for line in content.split("\n"):
 
         if block_flag:
-            answer, comment = parse_line(line, answer, comment)
+            answer, comment = parse_line(line, answer, comment, type)
+            if line[0] != '@' and line[0] != '#':
+                response += line.split('@')[0] + '\n'
             if line.find("%}") >= 0:
-                if len(answer) == 1:
-                    answer = answer[0]
-                if len(comment) == 1:
-                    comment = comment[0]
                 answers.append(answer)
                 comments.append(comment)
                 block_flag = False
-                response += line + '\n'
-            elif line[0] != '@' and line[0] != '#':
-                response += line.split('@')[0] + '\n'
             continue
 
         if not line.lower().find('slug'):
@@ -204,20 +249,22 @@ def qa_parse(content):
             continue
 
         lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
+        
         if lists:
-            answer = parse_answer(line, '@([^#]*)')
+            type = line[2:line.index('|')]
+            answer, comment = parse_line(line, answer, comment, type)
             answers.append(answer)
-            comment = parse_comment(line, '#([^%]*)')
             comments.append(comment)
             response += line[:line.find("@")] + '%}\n'
         else:
+            type = line[2:]
             answer = None
             comment = None
             if line.find("@") < 0:
                 response += line + "\n"
             else:
                 response += line[:line.find("@")] + "\n"
-                answer, comment = parse_line(line, answer, comment)
+                answer, comment = parse_line(line, answer, comment, type)
             block_flag = True
 
     qaparts['response'] = response
@@ -287,16 +334,11 @@ def gen_meta_for_tp(name, entity):
 
     d = eval(entity)
     if 'response' not in d or not d['response']:
-        pass
+        return meta
 
-    meta_lines = d['response'].split("\n")[:10]
-    for line in meta_lines:
-        l = line.lower()
-        if not l.find('summary:'):
-            meta['description'] = l.split(":")[1].strip() + \
-                                  meta['description']
-        elif not l.find('tags:'):
-            meta['keywords'] += ' '.join(l.split(":")[1].split(","))
+    title, tags, summary, slug = meta_parse(d['response'])
+    meta['description'] = summary + meta['description']
+    meta['keywords'] += tags
 
     return meta
 

@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-import os
-import urllib2
 from datetime import datetime
 
 import sqlalchemy
@@ -255,15 +253,10 @@ def checkAnswer():
 
     flag = False
     for i in range(len(answers)):
-        keys = answers[i].split()
         user  = expression[i].strip()
-        for e in keys:
-            e = e.strip()
-            if e not in user:
-                app.logger.debug("%s %s wrong" % (e, user))
-                flag = True
-                if e in comments:
-                    response['comment'] = comments[e]
+        f, r = checkText(user, answers[i])
+        if r in comments:
+            response['comment'] = comments[r]
         if flag:
             if 'comment' not in response:
                 response['comment'] = comments
@@ -532,7 +525,7 @@ def save_tutorial():
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
                 user_id=g.user.get_id()).one_or_none()
-        if not tutorial:
+        if not tutorial and tutorial_id:
             return json.dumps({'error': tutorial_id + ' not exists'})
     except sqlalchemy.orm.exc.MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
@@ -545,6 +538,7 @@ def save_tutorial():
         g.user.last_edit = now
         update_content(tutorial, content, slug)
         db.session.commit()
+        ret['id'] = tutorial.get_id()
     else:
         g.user.last_edit = now
         update_content(tutorial, content, slug)

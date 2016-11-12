@@ -42,7 +42,8 @@ function updateMastery() {
             if (!result.response) {
                 alert("更新掌握度失败! "+result.info);
             }
-        }
+        },
+        error: backendError
     });   
 }
 
@@ -83,7 +84,6 @@ function qa_parse(c) {
             response = $('<div class="math-container"></div>'),
             div = $('<div class="process"></div>'),
             feedback = $('<div class="hidden"></div>');
-
         type = temp.match(typep)[0];
         type = type.substring(2, type.length-1).trim();
 
@@ -132,11 +132,9 @@ function qa_parse(c) {
             quiz_count++;
             qparts = stem.split("$");
             var step_div = $('<div class="step-div"></div>'),
-                input = $('<input type="text" class="small_step"/>'),
-                input3 = $('<input type="text" class="small_step"/>'),
-                input2 = $('<input type="text" class="small_step"/>');
+            input = $('<input type="text" class="small_step form-control"/>');
 
-            input.attr("placeholder", "定理名或原理描述,回车验证");
+            input.attr("placeholder", "定理名或文字描述,可回车");
             input.attr("onkeydown", "return check(this, event, 'process'," +
                                     quiz_count+")");
 
@@ -144,11 +142,6 @@ function qa_parse(c) {
 
             step_div.append($('<span style="float: left">根据：</span>'));
             step_div.append(input);
-            div.append(step_div);
-
-            step_div = $('<div class="step-div"></div>');
-            step_div.append($('<span style="float: left">根据：</span>'));
-            step_div.append(input2);
             div.append(step_div);
 
             for (var j = 1; j < qparts.length; j++) {
@@ -161,7 +154,7 @@ function qa_parse(c) {
         response.append(div);
         response.append($(submit.format(quiz_count)));
 
-        html += c.substring(start, c.indexOf(temp)) + response[0].outerHTML;
+        html += c.substring(start, c.indexOf(temp, start)) + response[0].outerHTML;
         start = c.indexOf(temp) + temp.length;
     }
     html += c.substring(start, c.length);
@@ -196,7 +189,7 @@ function loadTutorial(link) {
         success : function (data){
             var result = data,
                 loadingMask = document.getElementById('loadingDiv');
-
+            //console.log(data);
             loadingMask.parentNode.removeChild(loadingMask);
 
             if (!result) {
@@ -210,8 +203,7 @@ function loadTutorial(link) {
             md.renderer.rules.emoji = function(token, idx) {
               return twemoji.parse(token[idx].content);
             };
-            var content = result.split(/\r?\n/),
-                tutorial = $("#tutorial"),
+            var tutorial = $("#tutorial"),
                 count = 0,
                 match,
                 html = md.render(qa_parse(result))+"<h1>",
@@ -259,7 +251,8 @@ function loadTutorial(link) {
             });
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
-        }
+        },
+        error: backendError
     });
 
     backToTop();
@@ -291,6 +284,10 @@ function checkProcess(obj, id) {
         allStep = parent.children(".step-div").children(".small_step"),
         allValue = [];
     for (var i = 0; i < allStep.length; i++) {
+        if (allStep[i].value.trim() === "") {
+            alert("请填入有效内容");
+            return;
+        }
         allValue.push(allStep[i].value);
     }
     console.log(allValue);
@@ -309,7 +306,8 @@ function checkProcess(obj, id) {
             //    check_result(result.response, lesson_id, id);
             //}
             return;
-        }
+        },
+        error: backendError
     });
 }
 
@@ -364,7 +362,7 @@ function checkQuiz(obj, id) {
         dataType: "json",
         data: JSON.stringify({'id': id, 'expression': value,
                 'url': tutorial_url}),
-        success : function (result){
+        success: function (result){
             console.log(result);
             if (result.comment) {
                 var comment = result.comment;
@@ -390,7 +388,8 @@ function checkQuiz(obj, id) {
             }
 
             return;
-        }
+        },
+        error: backendError
     });
 }
 
@@ -435,7 +434,8 @@ function to_backend_create(type, json) {
                 '<td>|</td> <td> <i> 您发布了:</i> <br> <a href="/'+type+'/'+
                 result.uuid+'">'+json.title+'</a> </td></tr></table>';
             div.append(entity);
-        }
+        },
+        error: backendError
     });
 }
 
@@ -467,7 +467,7 @@ function save_tutorial() {
         dataType: "json",
         data: JSON.stringify({'id': tid, 'content': source}),
         success : function (result){
-            console.log(result);
+
             if (result.error === "success") {
                 if ('id' in result) {
                     alert("添加新教程成功，即将跳转...");
@@ -480,7 +480,8 @@ function save_tutorial() {
                 alert("更新失败！" + result.error);
             }
             return;
-        }
+        },
+        error: backendError
     });
 }
 
@@ -504,7 +505,8 @@ function synchTutorial(obj) {
                 alert(result.error);
                 return;
             }
-        }
+        },
+        error: backendError
     });
 }
 
@@ -527,7 +529,8 @@ function deleteTutorial(obj) {
                 return;
             }
             tableele.remove();
-        }
+        },
+        error: backendError
     });
 }
 
@@ -568,7 +571,8 @@ function editTutorial(obj) {
             if (title !== "no") {
                 ele.html(title);
             }
-        }
+        },
+        error: backendError
     });
 }
 
@@ -617,6 +621,10 @@ function getRequest() {
        return null;
    }
    return theRequest;   
+}
+
+function backendError(e) {
+    alert("系统bug " + e.status + ' ' + e.statusText);
 }
 
 /**

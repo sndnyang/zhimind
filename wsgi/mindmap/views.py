@@ -21,6 +21,7 @@ from utility import *
 
 import traceback
 
+
 @app.route('/')
 @app.route('/index')
 @app.route('/index.html')
@@ -30,11 +31,13 @@ def index():
     else:
         return user(g.user.get_name())
 
+
 @app.route('/introMap.html')
-def introMap():
+def intro_map():
     meta = {'title': u'知维图 -- 互联网学习实验室', 'description': u'知维图思维导图示例',
             'keywords': u'zhimind mindmap 思维导图'}
     return render_template('introMap.html', meta = meta)
+
 
 @app.route('/editor.html')
 def editor():
@@ -44,6 +47,7 @@ def editor():
     source = u"Title: 标题\nslug: your-title-in-english\n"+\
              "tags: tag1 tag2 tag3 用空格隔开\nsummary: 描述"
     return render_template('zhimindEditor.html', source = source, meta = meta)
+
 
 @app.route('/editor/<link>')
 @login_required
@@ -64,11 +68,12 @@ def edit_online(link):
         content = tutorial.content
         if not content:
             real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
-            app.logger.debug(real_link);
+            app.logger.debug(real_link)
             response, content, slug = md_qa_parse(real_link)
             update_content(tutorial, content, slug)
 
     return render_template('zhimindEditor.html', source = content, meta = meta)
+
 
 @app.route('/android')
 @app.route('/android.html')
@@ -80,7 +85,7 @@ def android():
 
 
 @app.route('/android/<mapid>', methods=['GET'])
-def androidMap(mapid):
+def android_map(mapid):
     try:
         mindmap = MindMap.query.get(mapid)
         name = mindmap.title
@@ -91,6 +96,7 @@ def androidMap(mapid):
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
     return render_template('android.html', mapid = mapid, meta = meta)
+
 
 @app.route('/recommendlist')
 @app.route('/recommendlist.html')
@@ -165,11 +171,9 @@ def convert(link):
 
     entity = eval(app.redis.get(link))
 
-    backData = {}
-    backData['answer'] = entity['answer']
-    backData['comment'] = entity['comment']
-    session[link] = backData
-    #for s in response['answer']:
+    session[link] = {'answer': entity['answer'],
+                    'comment': entity['comment']}
+    # for s in response['answer']:
     #    app.logger.debug(' '.join(s))
     response = entity['response']
 
@@ -207,9 +211,6 @@ def checkChoice():
 
     match = 0
     f = True
-    keys = []
-    if isinstance(comments, dict):
-        keys = comments.keys()
 
     for e1 in s1:
         flag = False
@@ -223,13 +224,13 @@ def checkChoice():
             continue
 
         f = False
-        for e in keys:
+        for e in comments[0]:
             if e in e1:
-                response['comment'] = comments[e]
+                response['comment'] = comments[0][e]
                 return json.dumps(response, ensure_ascii=False)
 
     if not f or match != len(s2):
-        response['comment'] = comments
+        response['comment'] = comments[1]
         return json.dumps(response, ensure_ascii=False)
 
     response['response'] = True
@@ -261,15 +262,14 @@ def checkAnswer():
         response['info'] = u'有些空没有填?'
         return json.dumps(response)
 
-    flag = False
     for i in range(len(answers)):
         user  = expression[i].strip()
         f, r = checkText(user, answers[i])
-        if r in comments:
-            response['comment'] = comments[r]
-        if flag:
+        if r in comments[0]:
+            response['comment'] = comments[0][r]
+        if not f:
             if 'comment' not in response:
-                response['comment'] = comments
+                response['comment'] = comments[1]
             return json.dumps(response)
 
     response['response'] = True
@@ -305,10 +305,11 @@ def cmp_math():
         if info != True:
             response['info'] = info
             if 'comment' not in response:
-                response['comment'] = comments
+                response['comment'] = comments[1]
             break
     response['response'] = True
     return json.dumps(response, ensure_ascii=False)
+
 
 @app.route('/checkProcess', methods=["POST"])
 def checkProcess():
@@ -318,10 +319,10 @@ def checkProcess():
     if not no:
         return json.dumps(response)
     no = int(no)-1
-    expression = request.json.get('expression', None)
+    l = request.json.get('expression', None)
     tid = request.json.get('url', None)
 
-    if not expression or not tid:
+    if not l or not tid:
         return json.dumps(response)
 
     if tid in session:
@@ -331,7 +332,9 @@ def checkProcess():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
+    # result = check_process(l, answers, comments)
     return json.dumps(response, ensure_ascii=False)
+
 
 @app.route('/practice/<link>')
 def program_practice(link):
@@ -350,15 +353,16 @@ def program_practice(link):
     tid = tutorial.get_id()
     if link != tid:
         link = tid
-    return render_template('practice.html', link = link, base=base_link,
-            name=name, meta = meta)
-    
+    return render_template('practice.html', link=link, base=base_link, name=name, meta=meta)
+
+
 @app.route('/newmap')
-def newmap():
+def new_map():
     meta = {'title': u'创建新导图 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('map.html', mapid = 'null', meta = meta)
+    return render_template('map.html', mapid='null', meta=meta)
+
 
 @app.route('/map/<mapid>', methods=['GET'])
 def map_page(mapid):
@@ -518,6 +522,7 @@ def create_tutorial():
 
     return json.dumps(ret, ensure_ascii=False)
 
+
 @app.route('/save_tutorial', methods=['POST'])
 @login_required
 def save_tutorial():
@@ -556,6 +561,7 @@ def save_tutorial():
     app.redis.set(tutorial.get_id(), response)
     ret['error'] = 'success'
     return json.dumps(ret, ensure_ascii=False)
+
 
 @app.route('/editTutorial', methods=['POST'])
 @login_required
@@ -612,20 +618,20 @@ def synch_tutorial():
     import random
 
     real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
-    #app.logger.debug(real_link)
+    # app.logger.debug(real_link)
     response, content, slug = md_qa_parse(real_link)
-    #for s in response['answer']:
+    # for s in response['answer']:
     #    app.logger.debug(' '.join(s))
-    backData = {}
-    backData['answer'] = response['answer']
-    backData['comment'] = response['comment']
-    session[tutorial_id] = backData
+
+    session[tutorial_id] = {'answer': response['answer'],
+                            'comment': response['comment']}
     app.redis.set(tutorial_id, response)
     g.user.last_edit = now
     update_content(tutorial, content, slug)
 
     ret['error'] = 'success'
     return json.dumps(ret, ensure_ascii=False)
+
 
 @app.route('/deleteTutorial', methods=['POST'])
 @login_required
@@ -841,6 +847,7 @@ def putWords():
 
     return json.dumps({})
 
+
 @app.route('/reciteWord.html')
 def reciteWord():
     import random
@@ -877,6 +884,7 @@ def load_user(id):
 def before_request():
     g.user = current_user
 
+
 def update_content(tutorial, content, slug):
     try:
         tutorial.content = content
@@ -890,6 +898,7 @@ def update_content(tutorial, content, slug):
             db.session.commit()
     except:
         app.logger.debug("slug %s repeat" % slug)
+
 
 @app.errorhandler(404)
 def page_not_found(error):

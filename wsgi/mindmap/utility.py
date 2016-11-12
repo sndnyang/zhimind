@@ -1,13 +1,13 @@
-﻿#coding=utf-8 
+﻿#coding=utf-8
+import random
 import re
 import json
 import requests
 
-from xml.etree.ElementTree import tostring
-
 from sympy import simplify_logic
 
-def isExpressionCmp(s):
+
+def is_expression_cmp(s):
     for e in ['=', '>', '<']:
         if e in s:
             return True
@@ -18,32 +18,29 @@ def check_clause(text, s, clist):
 
     for sub in s.split("|"):
         match = []
-        #print 'or sub %s' % sub
+        # print 'or sub %s' % sub
         for p in sub.split("&"):
             if not p:
                 return False, u'作者编写的参考答案有bug，请联系管理员'
             
-            #print 'and sub %s' % sub,
+            # print 'and sub %s' % sub,
             if p.startswith('part-'):
                 try:
                     i = int(p[5:])
                     flag, item = check_clause(text, clist[i], clist)
                     if not flag:
-                        #print flag
                         break
                     match.append('(%s)'%item)
                 except ValueError:
                     if p not in text:
-                        #print False
                         break
                     match.append(p)
             else:
                 if p not in text:
-                    #print False
                     break
                 match.append(p)
         else:
-            #print 'match', '&'.join(match)
+            # print 'match', '&'.join(match)
             return True, '&'.join(match)
     else:
         return False, None
@@ -80,11 +77,9 @@ def checkCmpExpression(s1, s2):
         if s2 == answer:
             return True
         else:
-            app.logger.debug('%s and %s matrix are not equal' % (s2, answer))
             return False
-            #return u'答案不匹配'
 
-    if isExpressionCmp(s1):
+    if is_expression_cmp(s1):
         return u'代数式方可简化，但不是方程，不能带=><'
     else:
 
@@ -104,23 +99,48 @@ def checkCmpExpression(s1, s2):
     return True
 
 
-def parse_answer(line, p, type):
+def find_right_next(s, i, n, char):
+    if i == len(s):
+        return i
+
+    if s[i] == '{':
+        return find_right_next(s, i + 1, n + 1, char)
+    elif s[i] in '%' + char and n == 0:
+        return i
+    elif s[i] == '}' and n > 0:
+        return find_right_next(s, i + 1, n - 1, char)
+    else:
+        return find_right_next(s, i + 1, n, char)
+
+
+def finite_status_machine(c, char):
+    start = 0
+    end = 0
+    lists = []
+    while start < len(c)-2:
+        end = find_right_next(c, start, 0, char)
+        lists.append(c[start:end])
+        start = end+1
+    return lists
+
+
+def parse_answer(line, p, quiz_type):
     """
     1. 需要在js里判断':'和'@' 中间不存在 ','，一个答案只写一次，独占一空
     1. 如果存在两个 : 需要在js里判断中间存在 ',' 而不是 '，'
     """
-    obj = re.findall(p, line)
+    obj = re.findall(p, line, re.M)
     if not obj:
         return None
 
     result = None
-    lists = obj[0].split(p[0])
+    lists = [e.replace('\n', '').replace('\r', '') for e in obj[0].split(p[0])]
     options = []
     for l in lists:
-        if type != 'process':
+        if quiz_type != 'process':
             break
 
-        t = l.split(';')
+        t = [e.replace('\n', '').replace('\r', '') for e in l.split(';')]
         lt = len(t)
         answer_map = {}
         if lt == 1:
@@ -150,33 +170,25 @@ def parse_answer(line, p, type):
     return result
 
 
-def parse_comment(line, p):
+def parse_comment(c):
     """
     如果存在两个 : 需要在js里判断中间存在 ',' 而不是 '，'
     """
-    obj = re.findall(p, line)
-    if not obj:
-        return None
-    
-    result = None
-    lists = obj[0].split(p[0])
+    lists = finite_status_machine(c, '#')
+    result = [{},[]]
     for l in lists:
         if ':' not in l:
+            result[1].append(l)
             continue
 
         t = []
-        for s in l.split(','):
-            t.append(':'.join(['"%s"' % e.strip() for e in s.strip().split(':')]))
+        for s in finite_status_machine(l, '#,'):
+            t.append(':'.join(['"%s"' % e.replace('\n', '').replace('\r', '') for e in s.split(':',1)]))
 
         l = json.loads('{%s}' % ','.join(t))
-        if not result:
-            result = l
-            continue
-        for e in l:            
-            result[e] = l[e]
 
-    if not result:
-        result = lists
+        for e in l:
+            result[0][e] = l[e]
 
     return result
 
@@ -201,77 +213,58 @@ def merge_all(items, item):
     return items
 
 
-def parse_line(line, answer, comment, type):
-    temp1 = parse_answer(line, '@([^#]*)', type)
-    temp2 = parse_comment(line, '#([^%]*)')
-    if temp1:
-       #if isinstance(temp1, dict):
-       #    print line
-       #    print temp1
-        answer = merge_all(answer, temp1)
-       #if isinstance(answer, dict):
-       #    print answer
-    if temp2:
-        comment = merge_all(comment, temp2)
+def parse_quiz(content, quiz_type):
+    answer = parse_answer(content, '@([^#]*)', quiz_type)
+    comment = parse_comment(content[content.find('#')+1:])
     return answer, comment
 
 
 def qa_parse(content):
-    qaparts = {}
-    response = ''
-    quiz_count = 0
+    qa_parts = {}
+
     answers = []
     comments = []
 
-    block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
-    inline_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}')
-    slug = None
-    block_flag = False
+    try:
+        slug = re.search('\nsummary:\s*(.+)', content).group(1)
+    except AttributeError:
+        slug = ''
 
-    for line in content.split("\n"):
+    def extract(matched):
+        s = matched.group()
+        quiz_type = re.search('^{%(\w+)|', s, re.M).group(1)
+        answer, comment = parse_quiz(s, quiz_type)
+        answers.append(answer)
+        comments.append(comment)
+        s = s[:s.find('@')] + '%}'
+        return s
 
-        if block_flag:
-            answer, comment = parse_line(line, answer, comment, type)
-            if line[0] != '@' and line[0] != '#':
-                response += line.split('@')[0] + '\n'
-            if line.find("%}") >= 0:
-                answers.append(answer)
-                comments.append(comment)
-                block_flag = False
-            continue
+    start = content.find("{%")
+    lists = []
+    while start < len(content):
+        end = find_right_next(content, start, 0, '\n')
+        s = content[start:end]
+        lists.append(s)
+        quiz_type = re.search('^{%(\w+)|', s, re.M).group(1)
+        answer, comment = parse_quiz(s, quiz_type)
+        answers.append(answer)
+        comments.append(comment)
+        start = content.find("{%", end)
+        if start <= 0:
+            break
 
-        if not line.lower().find('slug'):
-            slug = line.split(":")[1].strip()
-            continue
+    for s in lists:
+        content = content.replace(s, s[:s.find('@')].strip() + '%}\n')
 
-        if not line.startswith("{%"):
-            response += line + '\n'
-            continue
+    response = content
+    #block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
+    #response = re.sub(block_pattern, extract, content)
 
-        lists = re.findall('{%(\w*|[^%{}@]*@[^%]*)%}', line)
-        
-        if lists:
-            type = line[2:line.index('|')]
-            answer, comment = parse_line(line, answer, comment, type)
-            answers.append(answer)
-            comments.append(comment)
-            response += line[:line.find("@")] + '%}\n'
-        else:
-            type = line[2:]
-            answer = None
-            comment = None
-            if line.find("@") < 0:
-                response += line + "\n"
-            else:
-                response += line[:line.find("@")] + "\n"
-                answer, comment = parse_line(line, answer, comment, type)
-            block_flag = True
+    qa_parts['response'] = response
+    qa_parts['answer'] = answers
+    qa_parts['comment'] = comments
 
-    qaparts['response'] = response
-    qaparts['answer'] = answers
-    qaparts['comment'] = comments
-
-    return qaparts, slug
+    return qa_parts, slug
 
 
 def md_qa_parse(real_link):
@@ -279,19 +272,19 @@ def md_qa_parse(real_link):
     try:
         r = requests.get(real_link)
     except requests.ConnectionError:
-        return {'response': False, 'info': real_link + u' not exists'}, "", None
+        return {'response': False, 'info': real_link + u'不存在'}, "", None
 
     if not r.ok:
-        return {'response': False, 'info': real_link + u' not exists'}, "", None
+        return {'response': False, 'info': real_link + u'不存在'}, "", None
 
     if 'content-length' in r.headers and \
                     int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
         return {'response': False, 'info': real_link + u' 太长'}, "", None
 
     content = r.content
-    qaparts, slug = qa_parse(content)
+    qa_parts, slug = qa_parse(content)
 
-    return qaparts, content, slug
+    return qa_parts, content, slug
 
 
 def add_mastery_in_json(json, entrys):
@@ -344,10 +337,10 @@ def gen_meta_for_tp(name, entity):
 
 
 def meta_parse(content):
-    title = None
-    tags = None
-    summary = None
-    slug = None
+    title = ''
+    tags = ''
+    summary = ''
+    slug = ''
     meta_lines = content.split("\n")[:10]
     for line in meta_lines:
         l = line.lower()

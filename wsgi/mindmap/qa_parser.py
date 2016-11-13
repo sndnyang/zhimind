@@ -1,4 +1,5 @@
 #coding=utf-8
+import re
 import json
 import requests
 
@@ -43,7 +44,7 @@ def parse_answer(line, p, quiz_type):
         if quiz_type != 'process':
             break
 
-        t = [e.replace('\n', '').replace('\r', '') for e in l.split(';')]
+        t = [e.replace('\n', '').replace('\r', '') for e in l.split(':')]
         lt = len(t)
         answer_map = {}
         if lt == 1:
@@ -132,15 +133,6 @@ def qa_parse(content):
         slug = re.search('\nsummary:\s*(.+)', content).group(1)
     except AttributeError:
         slug = ''
-
-    def extract(matched):
-        s = matched.group()
-        quiz_type = re.search('^{%(\w+)|', s, re.M).group(1)
-        answer, comment = parse_quiz(s, quiz_type)
-        answers.append(answer)
-        comments.append(comment)
-        s = s[:s.find('@')] + '%}'
-        return s
 
     start = content.find("{%")
     lists = []

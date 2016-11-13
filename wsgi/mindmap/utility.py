@@ -1,4 +1,24 @@
-﻿#coding=utf-8
+﻿# coding=utf-8
+
+from qa_parser import *
+
+
+def printDeep(item, deep):
+    if isinstance(item, (str, bool, int, float)):
+        print ' '*deep, item
+    elif isinstance(item, (list, tuple)):
+        print ' '*deep, 'a list'
+        for e in item:
+            if isinstance(e, (str, bool, int, float)):
+                print ' '*(deep+4), e
+            else:
+                printDeep(e, deep+4)
+    elif isinstance(item, dict):
+        print ' '*deep, 'a dict'
+        for e in item:
+            print ' '*(deep+4), e, ':', item[e]
+            if not isinstance(e, (str, bool, int, float)):
+                printDeep(e)
 
 
 def add_mastery_in_json(json, entrys):

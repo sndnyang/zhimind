@@ -1,10 +1,9 @@
-#coding=utf-8
+# coding=utf-8
 import re
+import random
 
 from sympy import simplify_logic
 
-from parser import *
-from checker import *
 
 def is_expression_cmp(s):
     for e in ['=', '>', '<']:
@@ -13,8 +12,11 @@ def is_expression_cmp(s):
     return False
 
 
-def check_clause(text, s, clist):
+def check_clause(text, s, items):
 
+    print text
+    if s == '':
+        return True, ''
     for sub in s.split("|"):
         match = []
         # print 'or sub %s' % sub
@@ -26,7 +28,7 @@ def check_clause(text, s, clist):
             if p.startswith('part-'):
                 try:
                     i = int(p[5:])
-                    flag, item = check_clause(text, clist[i], clist)
+                    flag, item = check_clause(text, items[i], items)
                     if not flag:
                         break
                     match.append('(%s)'%item)
@@ -56,19 +58,22 @@ def checkText(text, answer):
     return check_clause(text, s, b)
 
 
-def check_text_with_pre(item, answers, items):
-    for k in answers[::-1]:
+def check_text_with_pre(l, answers):
+    item = l[0]
+    for k in answers:
         f, r = checkText(item, k)
         if not f:
             continue
         for e in answers[k][0]:
-            if e in items:
-                if items[e]:
-                    continue
-                f, r = check_text_with_pre(e, answers, items)
+            if len(l) == 1 or e not in l[1]:
+                print 'e not in l[1]', e
+                return False, e
             else:
-                pass
-    return f, r
+                return True, r
+        else:
+            return True, r
+    print 'not find k in answers', item
+    return False, item
 
 
 def sample(l, s):
@@ -79,25 +84,37 @@ def sample(l, s):
     return nl
 
 
+def similar(k, r):
+    return k in r
+
+
+def get_comments(comments, r):
+    for k in comments[0]:
+        if not similar(k, r):
+            continue
+        return comments[0][k]
+    return comments[1]
+
+
 def check_process(l, answers, comments):
     if len(l) > 2:
-        c = l[-1][-2][0]
-        if c == '`' or c == '$' or c == '!':
-            for k in answers.keys():
-                f, r = checkText(l[-3], k)
-                if f and answers[k][1] == c:
-                    break
-            else:
-                return u'前一步推导结果选择错误'
-    f, r = check_text_with_pre(l[-1], answers)
+        c = l[2][1]
+        for k in answers:
+            if k == c:
+                break
+        else:
+            return False, u'前一步推导结果选择错误', None
+    f, r = check_text_with_pre(l, answers)
+    match = None
     if f:
+        match = {r: l[0]}
         if answers[r][1]:
             options = sample(answers['options'], answers[r][1])
         else:
             options = None
     else:
-        options = comments
-    return f, options
+        options = get_comments(comments, r)
+    return f, options, match
 
 
 def checkCmpExpression(s1, s2):

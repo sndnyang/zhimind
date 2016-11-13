@@ -5,23 +5,24 @@ from datetime import datetime
 
 import sqlalchemy
 from sqlalchemy import desc
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-from flask import request, flash, url_for, redirect, render_template, g,\
-session, json, abort
+from flask import request, flash, url_for, redirect, render_template, g, \
+    session, json, abort
 
 from flask_login import LoginManager, current_user, logout_user, \
-login_user, login_required
+    login_user, login_required
 
 from mindmap import app, db, login_manager
 
-from models import * 
+from models import *
 
 from forms import *
 
 from validation import *
-from utility import *
-from parser import *
+from qa_parser import *
 from checker import *
+from utility import *
 
 
 @app.route('/')
@@ -31,14 +32,14 @@ def index():
     if g.user is None or not g.user.is_authenticated:
         return recommendlist()
     else:
-        return user(g.user.get_name())
+        return get_user(g.user.get_name())
 
 
 @app.route('/introMap.html')
 def intro_map():
     meta = {'title': u'知维图 -- 互联网学习实验室', 'description': u'知维图思维导图示例',
             'keywords': u'zhimind mindmap 思维导图'}
-    return render_template('introMap.html', meta = meta)
+    return render_template('introMap.html', meta=meta)
 
 
 @app.route('/editor.html')
@@ -46,35 +47,34 @@ def editor():
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
-    source = u"Title: 标题\nslug: your-title-in-english\n"+\
+    source = u"Title: 标题\nslug: your-title-in-english\n" + \
              "tags: tag1 tag2 tag3 用空格隔开\nsummary: 描述"
-    return render_template('zhimindEditor.html', source = source, meta = meta)
+    return render_template('zhimindEditor.html', source=source, meta=meta)
 
 
 @app.route('/editor/<link>')
 @login_required
 def edit_online(link):
+    content = ""
     try:
         tutorial = Tutorial.query.get(link)
         name = tutorial.get_title()
-    except:
+
+        if tutorial and tutorial.user_id == g.user.get_id():
+            content = tutorial.content
+            if not content:
+                real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
+                # app.logger.debug(real_link)
+                response, content, slug = md_qa_parse(real_link)
+                update_content(tutorial, content, slug)
+    except NoResultFound:
         app.logger.debug(traceback.print_exc())
 
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
 
-    if tutorial.user_id != g.user.get_id():
-        content = ""
-    else:
-        content = tutorial.content
-        if not content:
-            real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
-            app.logger.debug(real_link)
-            response, content, slug = md_qa_parse(real_link)
-            update_content(tutorial, content, slug)
-
-    return render_template('zhimindEditor.html', source = content, meta = meta)
+    return render_template('zhimindEditor.html', source=content, meta=meta)
 
 
 @app.route('/android')
@@ -83,7 +83,7 @@ def android():
     meta = {'title': u'知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('android.html', mapid = "", meta = meta)
+    return render_template('android.html', mapid="", meta=meta)
 
 
 @app.route('/android/<mapid>', methods=['GET'])
@@ -91,13 +91,13 @@ def android_map(mapid):
     try:
         mindmap = MindMap.query.get(mapid)
         name = mindmap.title
-    except:
+    except NoResultFound:
         name = ""
 
     meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
-    return render_template('android.html', mapid = mapid, meta = meta)
+    return render_template('android.html', mapid=mapid, meta=meta)
 
 
 @app.route('/recommendlist')
@@ -106,29 +106,31 @@ def recommendlist():
     mindmaps = None
     tutorials = None
     try:
-        mindmaps = MindMap.query.join(User).add_columns(MindMap.id, 
-                MindMap.title, User.username).limit(100)
-        tutorials = Tutorial.query.join(User).add_columns(Tutorial.id,
-                Tutorial.type, Tutorial.title, User.username).limit(100)
-                       # .order_by(desc(Tutorial.like)).limit(100)
-    except:
+        mindmaps = MindMap.query.join(User)\
+            .add_columns(MindMap.id, MindMap.title, User.username)\
+            .limit(100)
+        tutorials = Tutorial.query.join(User)\
+            .add_columns(Tutorial.id, Tutorial.type, Tutorial.title, User.username)\
+            .limit(100)
+        # .order_by(desc(Tutorial.like)).limit(100)
+    except NoResultFound:
         app.logger.debug(traceback.print_exc())
 
     meta = {'title': u'推荐 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('recommendlist.html', maps = mindmaps, 
-            tutorials = tutorials, meta = meta)
+    return render_template('recommendlist.html', maps=mindmaps,
+                           tutorials=tutorials, meta=meta)
 
 
 @app.route('/tutorial/<link>')
-def tutorial(link):
+def get_tutorial(link):
     try:
         tutorial = Tutorial.query.get(link)
 
         if not tutorial:
             tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
-    except:
+    except NoResultFound:
         name = ""
 
     if not tutorial:
@@ -141,14 +143,13 @@ def tutorial(link):
     if link != tid:
         link = tid
 
-    return render_template('tutorial.html', link = link, name=name,
-                           meta = meta)
+    return render_template('tutorial.html', link=link, name=name,
+                           meta=meta)
 
 
 @app.route('/convert/<link>')
 def convert(link):
-
-    response = {'response': False}
+    response = {'status': False}
     entity = app.redis.get(link)
 
     if entity is None or not eval(entity)['response']:
@@ -174,7 +175,7 @@ def convert(link):
     entity = eval(app.redis.get(link))
 
     session[link] = {'answer': entity['answer'],
-                    'comment': entity['comment']}
+                     'comment': entity['comment']}
     # for s in response['answer']:
     #    app.logger.debug(' '.join(s))
     response = entity['response']
@@ -185,13 +186,13 @@ def convert(link):
 @app.route('/checkChoice', methods=["POST"])
 def checkChoice():
     no = request.json.get('id', None)
-    response = {'response': False}
+    response = {'status': False}
     if not no:
         return json.dumps(response, ensure_ascii=False)
     no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
-    response = {'response': False}
+    response = {'status': False}
 
     if not expression or not tid:
         return json.dumps(response, ensure_ascii=False)
@@ -204,9 +205,9 @@ def checkChoice():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
-    #app.logger.debug(user_choose[0])
-    #app.logger.debug(answers[0])
-    #app.logger.debug(user_choose[0] == answers[0])
+    # app.logger.debug(user_choose[0])
+    # app.logger.debug(answers[0])
+    # app.logger.debug(user_choose[0] == answers[0])
 
     s1 = set(user_choose)
     s2 = set(answers)
@@ -235,20 +236,20 @@ def checkChoice():
         response['comment'] = comments[1]
         return json.dumps(response, ensure_ascii=False)
 
-    response['response'] = True
+    response['status'] = True
     return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
     no = request.json.get('id', None)
-    response = {'response': False}
+    response = {'status': False}
     if not no:
         return json.dumps(response)
     no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
-    response = {'response': False}
+    response = {'status': False}
 
     if not expression or not tid:
         return json.dumps(response)
@@ -265,7 +266,7 @@ def checkAnswer():
         return json.dumps(response)
 
     for i in range(len(answers)):
-        user  = expression[i].strip()
+        user = expression[i].strip()
         f, r = checkText(user, answers[i])
         if r in comments[0]:
             response['comment'] = comments[0][r]
@@ -274,20 +275,20 @@ def checkAnswer():
                 response['comment'] = comments[1]
             return json.dumps(response)
 
-    response['response'] = True
+    response['status'] = True
     return json.dumps(response)
 
 
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
     no = request.json.get('id', None)
-    response = {'response': False}
+    response = {'status': False}
     if not no:
         return json.dumps(response)
     no = int(no) - 1
     expression = request.json.get('expression', None)
     tid = request.json.get('url', None)
-    response = {'response': False}
+    response = {'status': False}
     if not expression or not tid:
         return json.dumps(response)
 
@@ -303,24 +304,23 @@ def cmp_math():
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
-        #app.logger.debug(info)
+        # app.logger.debug(info)
         if info != True:
             response['info'] = info
             if 'comment' not in response:
                 response['comment'] = comments[1]
             break
-    response['response'] = True
+    response['status'] = True
     return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/checkProcess', methods=["POST"])
 def checkProcess():
-
     no = request.json.get('id', None)
-    response = {'response': False}
+    response = {'status': False}
     if not no:
         return json.dumps(response)
-    no = int(no)-1
+    no = int(no) - 1
     l = request.json.get('expression', None)
     tid = request.json.get('url', None)
 
@@ -334,13 +334,19 @@ def checkProcess():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
-    # result = check_process(l, answers, comments)
+    result = check_process(l, answers, comments)
+    response['status'] = result[0]
+    response['options'] = result[1]
+    response['match'] = result[2]
+    if result[0] and len(l[1]) + 1 == len(answers[0]):
+        response['finish'] = True
     return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/practice/<link>')
 def program_practice(link):
     base_link = '/'
+    name = ''
     try:
         tutorial = Tutorial.query.get(link)
         if not tutorial:
@@ -348,13 +354,13 @@ def program_practice(link):
         real_link = tutorial.get_url()
         base_link = '/'.join(real_link.split('/')[:-1])
         name = tutorial.get_title()
-    except:
+        tid = tutorial.get_id()
+        if link != tid:
+            link = tid
+    except NoResultFound:
         app.logger.debug(traceback.print_exc())
 
     meta = gen_meta_for_tp(name, app.redis.get(link))
-    tid = tutorial.get_id()
-    if link != tid:
-        link = tid
     return render_template('practice.html', link=link, base=base_link, name=name, meta=meta)
 
 
@@ -378,35 +384,37 @@ def map_page(mapid):
     meta = {'title': u'%s 知维图 -- 互联网学习实验室' % name,
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind %s 思维导图 启发式学习 智能学习 在线教育' % name}
-    return render_template('map.html', mapid = mapid, meta = meta)
+    return render_template('map.html', mapid=mapid, meta=meta)
+
 
 @app.route('/loadmap/<mapid>', methods=['GET'])
 def load_map(mapid):
     if mapid == 'null':
-        return json.dumps({'name':'root'})
+        return json.dumps({'name': 'root'})
 
-    ret_code = {'error':'not exist'}
-    
+    ret_code = {'error': 'not exist'}
+
     try:
         mindmap = MindMap.query.get(mapid)
         entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
-                mindmap_id=mindmap.get_id()).all()
+                                                 mindmap_id=mindmap.get_id()).all()
 
         ret_code = mindmap.map
         if len(entrylist):
             add_mastery_in_json(ret_code, entrylist)
-        
+
     except:
         app.logger.debug(traceback.print_exc())
 
     return json.dumps(ret_code)
+
 
 @app.route('/linkquiz', methods=['POST'])
 @login_required
 def link_quiz():
     now = datetime.now()
     if not g.user.check_frequence(now):
-        return json.dumps({'response': False,
+        return json.dumps({'status': False,
                            'error': u'用户上次操作在一分钟之内，太过频繁'},
                           ensure_ascii=False)
     name = request.json.get('name', None)
@@ -414,13 +422,13 @@ def link_quiz():
     tutorid = request.json.get('tutorid', None)
     parent = request.json.get('parent', None)
 
-    ret = {'response': False}
+    ret = {'status': False}
     if name and mapid and tutorid:
         try:
             result = EntryMastery.query.filter_by(user_id=g.user.get_id(),
-                    mindmap_id=mapid, name=name, tutor_id =
-                    tutorid).one_or_none()
-        except sqlalchemy.orm.exc.MultipleResultsFound:
+                                                  mindmap_id=mapid, name=name, tutor_id=
+                                                  tutorid).one_or_none()
+        except MultipleResultsFound:
             return json.dumps(ret, ensure_ascii=False)
 
         if result is None:
@@ -432,7 +440,7 @@ def link_quiz():
             db.session.add(entry)
             db.session.commit()
 
-    ret['response'] = True
+    ret['status'] = True
 
     return json.dumps(ret, ensure_ascii=False)
 
@@ -442,11 +450,11 @@ def link_quiz():
 def update_entry_master():
     now = datetime.now()
     if not g.user.check_frequence(now):
-        return json.dumps({'response': False,
+        return json.dumps({'status': False,
                            'error': u'用户上次操作在一分钟之内，太过频繁'},
                           ensure_ascii=False)
 
-    ret = {'response': False}
+    ret = {'status': False}
     tutorid = request.json.get('tutor_id', None)
     if not tutorid:
         ret['info'] = u'未指定教程id'
@@ -465,7 +473,7 @@ def update_entry_master():
         return json.dumps(ret, ensure_ascii=False)
 
     results = EntryMastery.query.filter_by(user_id=g.user.get_id(),
-            mindmap_id=mapid, name=name, tutor_id=tutorid)
+                                           mindmap_id=mapid, name=name, tutor_id=tutorid)
 
     flag = False
     g.user.last_edit = now
@@ -483,8 +491,9 @@ def update_entry_master():
         ret['info'] = u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
         return json.dumps(ret, ensure_ascii=False)
 
-    ret['response'] = True
+    ret['status'] = True
     return json.dumps(ret, ensure_ascii=False)
+
 
 @app.route('/newtutorial', methods=['POST'])
 @app.route('/newpractice', methods=['POST'])
@@ -492,10 +501,10 @@ def update_entry_master():
 def create_tutorial():
     now = datetime.now()
     if not g.user.check_frequence(now):
-        return json.dumps({'response': False,
+        return json.dumps({'status': False,
                            'error': u'用户上次操作在一分钟之内，太过频繁'},
                           ensure_ascii=False)
-    
+
     title = request.json.get('title')
     url = request.json.get('url')
 
@@ -503,7 +512,7 @@ def create_tutorial():
 
     try:
         tutorial = Tutorial.query.filter_by(url=url, user_id=g.user.get_id()).one_or_none()
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
     path = request.path
@@ -531,7 +540,7 @@ def save_tutorial():
     now = datetime.now()
     if not g.user.check_frequence(now):
         return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
-                                 ensure_ascii=False)
+                          ensure_ascii=False)
 
     tutorial_id = request.json.get('id')
     content = request.json.get('content')
@@ -540,10 +549,10 @@ def save_tutorial():
 
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
-                user_id=g.user.get_id()).one_or_none()
+                                            user_id=g.user.get_id()).one_or_none()
         if not tutorial and tutorial_id:
             return json.dumps({'error': tutorial_id + ' not exists'})
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
     title, tags, summary, slug = meta_parse(content)
@@ -576,10 +585,10 @@ def edit_tutorial():
 
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
-                user_id=g.user.get_id()).one_or_none()
+                                            user_id=g.user.get_id()).one_or_none()
         if not tutorial:
             return json.dumps({'error': tutorial_id + ' not exists'})
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
     if title != 'no':
@@ -598,9 +607,9 @@ def edit_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@app.route('/synchTutorial', methods=['POST'])
+@app.route('/syncTutorial', methods=['POST'])
 @login_required
-def synch_tutorial():
+def sync_tutorial():
     now = datetime.now()
     if not g.user.check_frequence(now):
         return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
@@ -611,10 +620,10 @@ def synch_tutorial():
     ret = {'error': u'重复数据异常'}
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
-                user_id=g.user.get_id()).one_or_none()
+                                            user_id=g.user.get_id()).one_or_none()
         if not tutorial:
             return json.dumps({'error': tutorial_id + ' not exists'})
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
     import random
@@ -644,10 +653,10 @@ def delete_tutorial():
 
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
-                user_id=g.user.get_id()).one_or_none()
+                                            user_id=g.user.get_id()).one_or_none()
         if not tutorial:
             return json.dumps({'error': tutorial_id + ' not exists'})
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
     try:
@@ -678,7 +687,7 @@ def save_map():
 
     try:
         mindmap = MindMap.query.filter_by(title=title, user_id=g.user.get_id()).one_or_none()
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return u'重复数据异常'
 
     if mindmap is None:
@@ -699,13 +708,13 @@ def save_map():
 
 @app.route('/verifycode')
 def verify_code():
-    code_img, strs = create_validate_code() 
+    code_img, strs = create_validate_code()
     session['code_text'] = strs
-    buf = StringIO.StringIO() 
-    code_img.save(buf,'JPEG',quality=70) 
- 
-    buf_str = buf.getvalue() 
-    response = app.make_response(buf_str)  
+    buf = StringIO.StringIO()
+    code_img.save(buf, 'JPEG', quality=70)
+
+    buf_str = buf.getvalue()
+    response = app.make_response(buf_str)
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
@@ -723,12 +732,12 @@ def register():
             meta = {'title': u'注册 知维图 -- 互联网学习实验室',
                     'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
                     'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-            return render_template('register.html', form=form, meta = meta)
+            return render_template('register.html', form=form, meta=meta)
 
         code_text = session['code_text']
 
         if form.verification_code.data == code_text:
-            user = User(username, request.form['password'],request.form['email'])
+            user = User(username, request.form['password'], request.form['email'])
             try:
                 db.session.add(user)
                 db.session.commit()
@@ -742,16 +751,16 @@ def register():
     meta = {'title': u'注册 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('register.html', form=form, meta = meta)
- 
+    return render_template('register.html', form=form, meta=meta)
 
-@app.route('/login',methods=['GET','POST'])
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
         meta = {'title': u'登录 知维图 -- 互联网学习实验室',
                 'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
                 'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-        return render_template('login.html', meta = meta)
+        return render_template('login.html', meta=meta)
 
     username = request.form['username']
     password = request.form['password']
@@ -761,12 +770,12 @@ def login():
 
     registered_user = User.query.filter_by(username=username).first()
     if registered_user is None:
-        flash('Username is invalid' , 'error')
+        flash('Username is invalid', 'error')
         return redirect(url_for('login'))
     if not registered_user.check_password(password):
-        flash('Password is invalid','error')
+        flash('Password is invalid', 'error')
         return redirect(url_for('login'))
-    login_user(registered_user, remember = remember_me)
+    login_user(registered_user, remember=remember_me)
     flash('Logged in successfully')
     return redirect(request.args.get('next') or url_for('index'))
 
@@ -778,15 +787,15 @@ def logout():
 
 
 @app.route('/user/<nickname>')
-def user(nickname):
-    user = User.query.filter_by(username = nickname).first()
-    if user == None:
+def get_user(nickname):
+    user = User.query.filter_by(username=nickname).first()
+    if not user:
         flash(u'不存在用户：' + nickname + '！')
         return redirect(url_for('index'))
 
-    mindmaps = None
+    mind_maps = None
     try:
-        mindmaps = MindMap.query.filter_by(user_id=user.get_id()).all()
+        mind_maps = MindMap.query.filter_by(user_id=user.get_id()).all()
     except:
         app.logger.error("use " + nickname + " fetch maps failed")
 
@@ -799,18 +808,17 @@ def user(nickname):
     meta = {'title': u'用户 %s 主页 知维图 -- 互联网学习实验室' % nickname,
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('user.html', user = user, maps = mindmaps, 
-            tutorials = tutorials, isSelf = user.get_id() == g.user.get_id(),
-                           meta = meta)
+    return render_template('user.html', user=user, maps=mind_maps,
+                           tutorials=tutorials, isSelf=user.get_id() == g.user.get_id(),
+                           meta=meta)
 
 
 @app.route('/getWords/<book>', methods=["GET"])
 @login_required
 def getWords(book):
-
     try:
         wordDict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return u'重复数据异常'
     data = wordDict.get_data() if wordDict else {}
     return json.dumps(data, ensure_ascii=False)
@@ -827,7 +835,7 @@ def putWords():
 
     try:
         word_dict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
-    except sqlalchemy.orm.exc.MultipleResultsFound:
+    except MultipleResultsFound:
         return json.dumps({'error': u'重复数据异常'})
 
     if word_dict is None:
@@ -854,9 +862,9 @@ def putWords():
 def reciteWord():
     import random
     import requests
-    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v="\
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v=" \
                 + str(random.randint(1, 10000))
-    #real_link = "http://localhost:4321/books.txt"
+    # real_link = "http://localhost:4321/books.txt"
     r = requests.get(real_link)
     books = []
     for line in r.iter_lines():
@@ -868,13 +876,13 @@ def reciteWord():
             num = ""
         else:
             name, link, num = items
-        #app.logger.debug(line)
+        # app.logger.debug(line)
         books.append({'name': name, 'link': link, 'num': num})
-    #app.logger.debug(books)
+    # app.logger.debug(books)
     meta = {'title': u'脑洞背单词 知维图 -- 互联网学习实验室',
             'description': u'脑洞计划之背单词， 联想记忆，词根词缀， 例句',
             'keywords': u'zhimind 单词 智能学习 词根词缀 联想记忆'}
-    return render_template('reciteWord.html', books = books, meta = meta)
+    return render_template('reciteWord.html', books=books, meta=meta)
 
 
 @login_manager.user_loader

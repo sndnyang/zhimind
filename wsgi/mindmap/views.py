@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+
+import traceback
 from datetime import datetime
 
 import sqlalchemy
@@ -18,8 +20,8 @@ from forms import *
 
 from validation import *
 from utility import *
-
-import traceback
+from parser import *
+from checker import *
 
 
 @app.route('/')

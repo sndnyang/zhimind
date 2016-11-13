@@ -33,23 +33,9 @@ class ProcessTestCase(unittest.TestCase):
     # 具体的测试用例，一定要以test开头
     def test_parse_block(self):
         qa, slug = qa_parse(content)
-#       print qa['answer']
-#       print qa['comment']
-
-    def test_parse_comments_1(self):
-        l = "#所有点:考虑极端情况，一条线离两个类的几个点非常近，离其他点非常远，效果并不好"
-        temp2 = parse_comment(l, '#([^%]*)')
-        self.assertEqual(isinstance(temp2, dict), True, 'test slug fail')
-
-    def test_parse_comments_2(self):
-        l = "#w范数:10x+8 = 0 是否等价于 5x+4=0?,所有点:考虑极端情况，一条线离两个类的几个点非常近，离其他点非常远，效果并不好"
-        temp2 = parse_comment(l, '#([^%]*)')
-        self.assertEqual(isinstance(temp2, dict), True, 'test struct fail')
-
-    def test_parse_comments_3(self):
-        l = "#10x+8 = 0 是否等价于 5x+4=0?,考虑极端情况，一条线离两个类的几个点非常近，离其他点非常远，效果并不好"
-        temp2 = parse_comment(l, '#([^%]*)')
-        self.assertEqual(isinstance(temp2, dict), False, 'test slug fail')
+      # print qa['response']
+        print qa['answer'][0]
+      # print qa['comment']
 
   # def test_qa_parse_slug(self):
   #     qa, slug = qa_parse(content)

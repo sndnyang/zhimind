@@ -103,15 +103,15 @@ def android_map(mapid):
 @app.route('/recommendlist')
 @app.route('/recommendlist.html')
 def recommendlist():
-    mindmaps = None
+    mind_maps = None
     tutorials = None
     try:
-        mindmaps = MindMap.query.join(User)\
+        mind_maps = MindMap.query.join(User)\
             .add_columns(MindMap.id, MindMap.title, User.username)\
-            .limit(100)
+            .limit(100).all()
         tutorials = Tutorial.query.join(User)\
             .add_columns(Tutorial.id, Tutorial.type, Tutorial.title, User.username)\
-            .limit(100)
+            .limit(100).all()
         # .order_by(desc(Tutorial.like)).limit(100)
     except NoResultFound:
         app.logger.debug(traceback.print_exc())
@@ -119,7 +119,7 @@ def recommendlist():
     meta = {'title': u'推荐 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('recommendlist.html', maps=mindmaps,
+    return render_template('recommendlist.html', maps=mind_maps,
                            tutorials=tutorials, meta=meta)
 
 

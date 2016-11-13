@@ -1,5 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
+
+{% from "tutorial_link.html" import render_li %}
+
 <table style="margin:0 auto">
     <tr valign="top">
         <!-- <td><img src=" "></td> -->
@@ -12,13 +15,20 @@
 
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <main>
-    <a href="/newmap">创建新思维导图</a>
-    |
-    <!--<a href="javascript:void(0)" onclick="linkTutorial()">创建新教程</a>-->
-    <a href="/editor.html">创建新教程</a>
-    |
-    <a href="javascript:void(0)" onclick="linkPractice()">创建新练习</a>
-    <br><br>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-md-10 col-md-offset-1">
+                <a href="/newmap">创建新思维导图</a>
+                |
+                <!--<a href="javascript:void(0)" onclick="linkTutorial()">创建新教程</a>-->
+                <a href="/editor.html">创建新教程</a>
+                |
+                <a href="javascript:void(0)" onclick="linkPractice()">创建新练习</a>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
     <input id="tab1" type="radio" name="tabs">
     <label for="tab1">思维导图</label>
 
@@ -31,18 +41,12 @@
     <section id="content1">
         <div class="container-fluid">
             <div class="row-fluid">
-                <div class="col-xs-8 col-md-offset-2">
-                    <div id="maps">
-                        <ul class="list-group">
+                <div class="col-md-10 col-md-offset-1">
+                    <ul class="list-group">
                         {% for map in maps %}
-                        <li class="list-group-item clearfix">
-                            <div>
-                        {% include 'map_link.html' %}
-                            </div>
-                        </li>
+                            {% include 'map_link.html' %}
                         {% endfor %}
-                        </ul>
-                    </div>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -51,26 +55,16 @@
     <section id="content2">
         <div class="container-fluid">
             <div class="row-fluid">
-                <div class="col-xs-8 col-md-offset-2">
+                <div class="col-md-10 col-md-offset-1">
+                    <ul class="list-group">
+                        {% for tutorial in tutorials %}
+                        {% if tutorial.type == "tutorial" %}
 
-                    <div id="tutorials">
+                        {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
 
-                        <ul class="list-group">
-                            {% for tutorial in tutorials %}
-                            {% if tutorial.type == "tutorial" %}
-                            <li class="list-group-item clearfix">
-                                <div>
-                                    {% include 'tutorial_link.html' %}
-                                    {% if isSelf %}
-                                    {% include 'edit_link.html' %}
-                                    {% endif %}
-                                </div>
-                            </li>
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
-
-                    </div>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
@@ -79,24 +73,16 @@
     <section id="content3">
         <div class="container-fluid">
             <div class="row-fluid">
-                <div class="col-xs-8 col-md-offset-2">
-                    <div id="practices">
-                        <ul class="list-group">
-                            {% for tutorial in tutorials %}
-                            {% if tutorial.type == "practice" %}
-                            <li class="list-group-item clearfix">
-                                <div>
-                                    {% include 'tutorial_link.html' %}
-                                    {% if isSelf %}
-                                    {% include 'edit_link.html' %}
-                                    {% endif %}
-                                </div>
-                            </li>
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
+                <div class="col-md-10 col-md-offset-1">
+                    <ul class="list-group">
+                        {% for tutorial in tutorials %}
+                        {% if tutorial.type == "practice" %}
 
-                    </div>
+                        {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
+
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>

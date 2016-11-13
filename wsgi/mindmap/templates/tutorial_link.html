@@ -1,9 +1,35 @@
-            {% if tutorial.type == "practice" %}
+{% macro render_li(item, i, isSelf) %}
+<li class="list-group-item clearfix">
+    <div class="navbar-default">
+        {% if isSelf %}
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse{{ i }}">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        {% endif %}
+        <div class="navbar-brand">
+            {% if item.type == "practice" %}
             练习
             {% else %}
             教程
             {% endif %}
+            <a class="tutoriallink" href="/{{item.type or 'tutorial'}}/{{item.id}}">{{item.title}}</a>
+        </div>
+        {% include 'tutorial_link.html' %}
+        {% if isSelf %}
+            <div style="float: right" class="navbar-collapse{{ i }} navbar-collapse collapse">
+                <a  href="/editor/{{item.id}}" target="_blank">在线编辑</a>
+                |
+                <a  href="javascript:void(0)" onclick="editTutorial(this)">修改(名称和链接)</a>
+                <!--|
+                <a  href="javascript:void(0)" onclick="syncTutorial(this)">同步</a>-->
+                |
+                <a  href="javascript:void(0)" onclick="deleteTutorial(this)">删除</a>
+            </div>
+        {% endif %}
+    </div>
+</li>
+{% endmacro %}
 
-
-            <a class="tutoriallink" href="/{{tutorial.type or 'tutorial'}}/{{tutorial.id}}">{{tutorial.title}}</a>
 

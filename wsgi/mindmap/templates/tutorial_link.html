@@ -1,10 +1,9 @@
-        <td> {% if tutorial.type == "practice" %}
+            {% if tutorial.type == "practice" %}
             练习
             {% else %}
             教程
             {% endif %}
-        </td>
-        <td class="link">
-            <br>
+
+
             <a class="tutoriallink" href="/{{tutorial.type or 'tutorial'}}/{{tutorial.id}}">{{tutorial.title}}</a>
-        </td>
+

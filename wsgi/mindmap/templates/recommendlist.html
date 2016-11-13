@@ -13,70 +13,71 @@
   <label for="tab3">练习</label>
 
   <section id="content1">
-    <div id="maps">
-    <p>思维导图列表</p>
-{% for map in maps %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                    <a href="/user/{{ map.username }}">
-                        {{ map.username }}
-                    </a> 发布了:
-                </i>
-            </td>
-            {% include 'map_link.html' %}
-        </tr>
-    </table>
-{% endfor %}
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
+                    <div id="maps">
+                        <ul class="list-group">
+                        {% for map in maps %}
+                        <li class="list-group-item clearfix">
+                            <div>
+                        {% include 'map_link.html' %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-</div>
-  </section>
+    <section id="content2">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
 
-  <section id="content2">
-    <div id="tutorials">
-    <p>教程列表</p>
-{% for tutorial in tutorials %}
-{% if tutorial.type == "tutorial" %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                    <a href="/user/{{ tutorial.username }}">
-                        {{ tutorial.username }}
-                    </a> 发布了:
-                </i>
-            </td>
-            {% include 'tutorial_link.html' %}
-        </tr>
-    </table>
-{% endif %}
-{% endfor %}
-</div>
-  </section>
+                    <div id="tutorials">
 
-  <section id="content3">
-    <div id="practices">
-    <p>编程练习列表</p>
-{% for tutorial in tutorials %}
-{% if tutorial.type == "practice" %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                    <a href="/user/{{ tutorial.username }}">
-                        {{ tutorial.username }}
-                    </a> 发布了:
-                </i>
-            </td>
-            {% include 'tutorial_link.html' %}
-        </tr>
-    </table>
-{% endif %}
-{% endfor %}
-</div>
+                        <ul class="list-group">
+                            {% for tutorial in tutorials %}
+                            {% if tutorial.type == "tutorial" %}
+                            <li class="list-group-item clearfix">
+                                <div>
+                                    {% include 'tutorial_link.html' %}
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
 
-  </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="content3">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
+                    <div id="practices">
+                        <ul class="list-group">
+                            {% for tutorial in tutorials %}
+                            {% if tutorial.type == "practice" %}
+                            <li class="list-group-item clearfix">
+                                <div>
+                                    {% include 'tutorial_link.html' %}
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </main>
 

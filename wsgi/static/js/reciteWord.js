@@ -223,7 +223,7 @@ $(document).ready(function(){
                 " onclick='chooseBooks(this)'>" + book + "</a> 总单词数:" + num +
                 ", 已完成:" + finish + "</div>";
 
-        $("#myBooks").append(newBook);
+        $("#myBooks2").append(newBook);
     }
 });
 
@@ -482,7 +482,7 @@ function createNewBook(content, name) {
                 " onclick='chooseBooks(this)'>" + currentBook + "</a> 总单词数:"
                  + i +  ", 已完成:" + 0 + "</div>";
 
-            $("#myBooks").append(newBook);
+            $("#myBooks2").append(newBook);
 
             $("#myTab").children('li.active').removeClass('active');
             $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');

@@ -1,121 +1,109 @@
 {% extends "layout.html" %}
 {% block body %}
-    <table style="margin:0 auto">
-        <tr valign="top">
-            <!-- <td><img src=" "></td> -->
-            <td>
-                <h1>用户: {{user.username}}</h1>
-            </td>
-        </tr>
-    </table>
+<table style="margin:0 auto">
+    <tr valign="top">
+        <!-- <td><img src=" "></td> -->
+        <td>
+            <h1>用户: {{user.username}}</h1>
+        </td>
+    </tr>
+</table>
 <hr>
 
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <main>
     <a href="/newmap">创建新思维导图</a>
-   |  
+    |
     <!--<a href="javascript:void(0)" onclick="linkTutorial()">创建新教程</a>-->
     <a href="/editor.html">创建新教程</a>
-   |  
+    |
     <a href="javascript:void(0)" onclick="linkPractice()">创建新练习</a>
     <br><br>
-  <input id="tab1" type="radio" name="tabs">
-  <label for="tab1">思维导图</label>
+    <input id="tab1" type="radio" name="tabs">
+    <label for="tab1">思维导图</label>
 
-  <input id="tab2" type="radio" name="tabs" checked="">
-  <label for="tab2">教程</label>
+    <input id="tab2" type="radio" name="tabs" checked="">
+    <label for="tab2">教程</label>
 
-  <input id="tab3" type="radio" name="tabs">
-  <label for="tab3">练习</label>
+    <input id="tab3" type="radio" name="tabs">
+    <label for="tab3">练习</label>
 
-  <section id="content1">
-    <div id="maps">
-{% for map in maps %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                {% if isSelf %}
-                    您 
-                {% else %}
-                    <a href="/user/{{ user.username }}">
-                        {{ user.username }}
-                    </a>
-                {% endif %}
-                    发布了:
-                </i>
-            </td>
-            {% include 'map_link.html' %}
-        </tr>
-    </table>
-{% endfor %}
-</div>
-  </section>
+    <section id="content1">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
+                    <div id="maps">
+                        <ul class="list-group">
+                        {% for map in maps %}
+                        <li class="list-group-item clearfix">
+                            <div>
+                        {% include 'map_link.html' %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <section id="content2">
-    
-<div id="tutorials">
-{% for tutorial in tutorials %}
-{% if tutorial.type == "tutorial" %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                {% if isSelf %}
-                    您 
-                {% else %}
-                    <a href="/user/{{ user.username }}">
-                        {{ user.username }}
-                    </a>
-                {% endif %}
-                    发布了:
-                </i>
-            </td>
-            {% include 'tutorial_link.html' %}
-            {% if isSelf %}
-                {% include 'edit_link.html' %}
-            {% endif %}
-        </tr>
-    </table>
-{% endif %}
-{% endfor %}
-</div>
+    <section id="content2">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
 
+                    <div id="tutorials">
 
+                        <ul class="list-group">
+                            {% for tutorial in tutorials %}
+                            {% if tutorial.type == "tutorial" %}
+                            <li class="list-group-item clearfix">
+                                <div>
+                                    {% include 'tutorial_link.html' %}
+                                    {% if isSelf %}
+                                    {% include 'edit_link.html' %}
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
 
-  </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <section id="content3">
-    <div id="practices">
-{% for tutorial in tutorials %}
-{% if tutorial.type == "practice" %}
-    <table>
-        <tr valign="top">
-            <td>
-                <i>
-                {% if isSelf %}
-                    您 
-                {% else %}
-                    <a href="/user/{{ user.username }}">
-                        {{ user.username }}
-                    </a>
-                {% endif %}
-                    发布了:
-                </i>
-            </td>
-            {% include 'tutorial_link.html' %}
-            {% if isSelf %}
-                {% include 'edit_link.html' %}
-            {% endif %}
-        </tr>
-    </table>
-{% endif %}
-{% endfor %}
-</div>
-  </section>
+    <section id="content3">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-8 col-md-offset-2">
+                    <div id="practices">
+                        <ul class="list-group">
+                            {% for tutorial in tutorials %}
+                            {% if tutorial.type == "practice" %}
+                            <li class="list-group-item clearfix">
+                                <div>
+                                    {% include 'tutorial_link.html' %}
+                                    {% if isSelf %}
+                                    {% include 'edit_link.html' %}
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </main>
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
-<script type="text/javascript" src="/static/js/tutorial.js"> </script>
+<script type="text/javascript" src="/static/js/user.js"></script>
 {% endblock %}
 

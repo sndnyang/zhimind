@@ -4,7 +4,7 @@ import json
 import requests
 
 def find_right_next(s, i, n, char):
-    if i == len(s):
+    if i >= len(s):
         return i
 
     if s[i] in '{[(':
@@ -51,7 +51,6 @@ def parse_answer(line, p, quiz_type):
         if lt == 1:
             answer_map  = {t[0]: ([], '')}
         if lt == 2:
-            pre = t[0].split(',')
             if t[1][0] == '$' or t[1][0] == '!' or t[1][0] == '`':
                 answer_map = {t[0]: ([], t[1])}
                 options.append(t[1])
@@ -137,7 +136,7 @@ def qa_parse(content):
 
     start = content.find("{%")
     lists = []
-    while start < len(content):
+    while start >= 0 and start < len(content):
         end = find_right_next(content, start, 0, '\n')
         s = content[start:end]
         lists.append(s)
@@ -146,8 +145,6 @@ def qa_parse(content):
         answers.append(answer)
         comments.append(comment)
         start = content.find("{%", end)
-        if start <= 0:
-            break
 
     for s in lists:
         content = content.replace(s, s[:s.find('@')].strip() + '%}\n')

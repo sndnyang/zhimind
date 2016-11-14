@@ -73,6 +73,13 @@ function display_comments(div, result) {
 
         }
     }
+    if (!comment.indexOf('{%')) {
+        var new_div = renderQuestion(comment, -1),
+            quiz_type = comment.substring(2, comment.indexOf('|')).trim();
+        global_answer = parse_answer(comment, quiz_type);
+        global_comment = parse_comment(comment);
+        comment = new_div[0].outerHTML;
+    }
     div.children(c).html(comment);
     div.children(".comment").html(comment);
     if (result.status) {
@@ -87,12 +94,195 @@ function display_comments(div, result) {
 }
 
 function validateOption(obj) {
-    console.log($(obj).attr("readonly"));
     if (obj.value.trim() === "") {
         alert("请填入有效内容");
         return false;
     }
     return true;
+}
+
+function find_right_next(s, i, n, c) {
+    if (i >= s.length) {
+        return i;
+    }
+
+    if ('{[('.indexOf(s[i]) >= 0) {
+        return find_right_next(s, i + 1, n + 1, c)
+    }
+    else if (('%'+c).indexOf(s[i]) >= 0 && n == 0) {
+        return i;
+    }
+    else if ('}])'.indexOf(s[i]) >= 0 && n > 0) {
+        return find_right_next(s, i + 1, n - 1, c)
+    }
+    else {
+        return find_right_next(s, i + 1, n, c)
+    }
+}
+
+function finite_status_machine(s, c) {
+    var start = 0, end = 0, lists = [];
+    while (start < s.length) {
+        end = find_right_next(s, start, 0, c);
+        lists.push(s.substring(start, end));
+        start = end+1;
+    }
+    return lists;
+}
+
+function parse_answer(line, quiz_type) {
+    var obj = /@([^#]*)/.exec(line)
+    if (!obj) {
+        return null;
+    }
+
+    var lists = obj[1].split('@')
+    var result = null;
+    options = []
+
+    for (var i in lists) {
+        var l = lists[i].replace(/\r|\n/,'');
+        var t = finite_status_machine(l, ':')
+        var lt = t.length
+
+        answer_map = {}
+        if (lt === 1) { answer_map[t[0]] = [[], '']}
+
+        if (lt === 2) { 
+            if (t[1][0] == '$' || t[1][0] == '!' || t[1][0] == '`') {
+                answer_map[t[0]] = [[], t[1]];
+                options.push(t[1]);
+            }
+            else {
+                answer_map[t[0]] = [t[1].split(','), '']
+            }
+        }
+        if (lt === 3) {
+            answer_map[t[0]] = [t[1].split(','), t[2]]
+            options.push(t[2]);
+        } 
+        if (!result) {
+            result = answer_map;
+            continue
+        }
+        for (var e in answer_map) {
+            result[e] = answer_map[e];
+        }
+
+        result['options'] = options;
+    }
+
+    if (!result) {
+        result = lists;
+    }
+
+    return result
+    
+}
+
+
+function parse_comment(c) {
+    c = c.substring(c.indexOf('#')+1)
+    lists = finite_status_machine(c, '#')
+    result = [{},[]]
+
+
+    for (var i in lists) {
+        l = lists[i];
+        if (l.indexOf(':') < 0) {
+            result[1].push(l);
+            continue;
+        }
+
+        var t = [], temp_list = finite_status_machine(l, '#,');
+
+        for (var j in temp_list) {
+            s = temp_list[j];
+            key = s.substring(0, s.indexOf(':')).replace(/\r|\n/,'');
+            value = s.substring(s.indexOf(':')+1).replace(/\r|\n/,'');
+            result[0][key] = value;
+        }
+    }
+    return result;
+}
+
+function renderQuestion(temp, quiz_count) {
+    typep = /([\w\W]*?)\|/;
+    stemp = /\|[\w\W]*/;
+
+    div = $('<div class="process"></div>');
+    feedback = $('<div class="hidden"></div>');
+    response = $('<div class="math-container"></div>'),
+    submit = $('<button class="btn btn-info">提交验证</button>');
+
+    type = temp.match(typep)[0];
+    type = type.substring(2, type.length-1).trim();
+
+    stem = temp.match(stemp)[0];
+    stemend = stem.indexOf("@");
+    if (stemend < 0)
+        stemend = stem.length
+    stem = stem.substring(1, stemend).trim();
+    //console.log(type + ' stem ' + stem);
+    if (stem.endsWith("%}")) {
+        stem = stem.substring(0, stem.length-2).trim();
+    }
+
+    if (type == "radio" || type == "checkbox") {
+        quiz_count++;
+        qparts = stem.split("&");
+        if (qparts[0].trim() !== "") {
+            qparts[0] = "<br>" + qparts[0];
+        }
+        var span = $("<span>{0}</span>".format(qparts[0]));
+        template = '<input type="{0}" class="quiz" name="quiz" value="{1}">{2}</input>';
+        span.append($("<br>"));
+        for (var j = 1; j < qparts.length; j++) {
+            var option = template.format(type, qparts[j],
+                String.fromCharCode(64+j) + ". " + qparts[j]) + '<br>';
+            span.append($(option));
+        }
+        div.append(span);
+    }
+    else if (type == "text") {
+        quiz_count++;
+        var blank = $('<input type="text" class="quiz">');
+        blank.attr("onkeydown", 'return enter_check(this, event, "quiz",'+quiz_count+")");
+        div.append($('<br><span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span><br>'));
+    }
+    else if (type == "formula") {
+        quiz_count++;
+        var blank = $('<input type="text" class="quiz formula">'),
+            span;
+        blank.attr("onkeydown", 'return enter_check(this, event, "quiz",'+quiz_count+")");
+        span = $('<span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span>');
+        span.append($('<br><div class="MathPreview"></div><br>'));
+        div.append("<br>")
+        div.append(span);
+    } else if (type == "process") {
+        quiz_count++;
+        qparts = stem.split("$");
+
+        var step_div = addStepDiv('根据:', quiz_count, 'step-div'),
+            mid_div = $('<div class="container"></div>');
+            reason_div = $('<div class="col-xs-5 left"></div>'),
+            option_div = $('<div class="col-xs-7 right"></div>');
+        mid_div.attr("style", "min-height: 80px; width: 100%")
+        reason_div.append(step_div);
+        mid_div.append(reason_div);
+        mid_div.append(option_div);
+        div.append($('<p>{0}</p>'.format(qparts[0])));
+        div.append(mid_div);
+    }
+
+    submit.attr("onclick", "check(this, '{0}', {1})".format(type, quiz_count));
+    div.append('<br>');
+    div.append(submit);
+    div.append(feedback);
+
+    response.append(div);
+
+    return response;
 }
 
 function addStepDiv(quote, quiz_count, type) {
@@ -117,98 +307,135 @@ function addStepDiv(quote, quiz_count, type) {
 }
 
 function qa_parse(c) {
-    var clists = [], type, stem, template, match,
-        answer, qparts, submit, html = "", quiz_count = 0,
-        p = /{%([\w\W]*?)%}/g,
-        typep = /([\w\W]*?)\|/,
-        stemp = /\|[\w\W]*/;
+    var end, lists = [], s, quiz_type,
+        start = c.indexOf("{%"), html = '';
 
-    while (match = p.exec(c)) {
-        clists.push(match[0]);
-        p.lastIndex = match.index + 1;
+    while (start >= 0 && start < c.length) {
+        end = find_right_next(c, start, 0, '\n')
+        s = c.substring(start, end).trim()
+        lists.push(s)
+        start = c.indexOf("{%", end)
     }
 
-    var start = 0;
+    start = 0;
 
-    for (var i in clists) {
-        var stemend, temp = clists[i],
-            response = $('<div class="math-container"></div>'),
-            div = $('<div class="process"></div>'),
-            feedback = $('<div class="hidden"></div>'),
-            submit = $('<button class="btn btn-info">提交验证</button>');
-        type = temp.match(typep)[0];
-        type = type.substring(2, type.length-1).trim();
-
-        stem = temp.match(stemp)[0];
-        stemend = stem.indexOf("@");
-        if (stemend < 0)
-            stemend = stem.length
-        stem = stem.substring(1, stemend).trim();
-        //console.log(type + ' stem ' + stem);
-        if (stem.endsWith("%}")) {
-            stem = stem.substring(0, stem.length-2).trim();
-        }
-
-        if (type == "radio" || type == "checkbox") {
-            quiz_count++;
-            qparts = stem.split("&");
-            if (qparts[0].trim() !== "") {
-                qparts[0] = "<br>" + qparts[0];
-            }
-            var span = $("<span>{0}</span>".format(qparts[0]));
-            template = '<input type="{0}" class="quiz" name="quiz" value="{1}">{2}</input>';
-            span.append($("<br>"));
-            for (var j = 1; j < qparts.length; j++) {
-                var option = template.format(type, qparts[j], 
-                    String.fromCharCode(64+j) + ". " + qparts[j]) + '<br>';
-                span.append($(option));
-            }
-            div.append(span);
-        }
-        else if (type == "text") {
-            quiz_count++;
-            var blank = $('<input type="text" class="quiz">');
-            blank.attr("onkeydown", 'return enter_check(this, event, "quiz",'+quiz_count+")");
-            div.append($('<br><span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span><br>'));
-        }
-        else if (type == "formula") {
-            quiz_count++;
-            var blank = $('<input type="text" class="quiz formula">'),
-                span;
-            blank.attr("onkeydown", 'return enter_check(this, event, "quiz",'+quiz_count+")");
-            span = $('<span>'+stem.replace(/_/g, blank[0].outerHTML)+'</span>');
-            span.append($('<br><div class="MathPreview"></div><br>'));
-            div.append("<br>")
-            div.append(span);
-        } else if (type == "process") {
-            quiz_count++;
-            qparts = stem.split("$");
-
-            var step_div = addStepDiv('根据:', quiz_count, 'step-div'),
-                mid_div = $('<div class="container"></div>');
-                reason_div = $('<div class="col-xs-5 left"></div>'),
-                option_div = $('<div class="col-xs-7 right"></div>');
-            mid_div.attr("style", "min-height: 80px; width: 100%")
-            reason_div.append(step_div);
-            mid_div.append(reason_div);
-            mid_div.append(option_div);
-            div.append($('<p>{0}</p>'.format(qparts[0])));
-            div.append(mid_div);
-        }
-
-        submit.attr("onclick", "check(this, '{0}', {1})".format(type, quiz_count));
-        div.append('<br>');
-        div.append(submit);
-        div.append(feedback);
-
-        response.append(div);
-
+    for (var i in lists) {
+        var temp = lists[i];
+        renderQuestion(temp, i);
         html += c.substring(start, c.indexOf(temp, start)) + response[0].outerHTML;
         start = c.indexOf(temp) + temp.length;
     }
     html += c.substring(start, c.length);
 
     return html;
+}
+
+function check_text_online(obj, id, answers, comments) {
+    console.log("check online");
+    var value, your_answer,
+        back_check = false,
+        tutorial_url = document.URL.split('/')[4],
+        problem = $(obj).parents('.process'),
+        ele = problem.children().children(".quiz"),
+        type = ele.attr("type"),
+        lesson_name = problem.parents('.lesson')[0].className,
+        lesson_id = parseInt(lesson_name.substr(13));
+
+    if (type === "radio") {
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
+                value = $(this).val();
+            }
+        });
+    } else if (type === "checkbox") {
+
+        value = '';
+
+        ele.each(function() {
+            if ($(this).prop('checked') === true) {
+                value += $(this).val()+"@";
+            }
+        });
+
+        value = value.substring(0, value.length-1);
+
+    } else if (type === "text") {
+        value = [];
+        for (var i = 0; i < ele.length; i++) {
+            value.push(ele[i].value)
+            console.log(answers[i]);
+        }
+    } 
+
+    console.log(value);
+    console.log(answers.length);
+    console.log(comments.length);
+}
+
+function check(obj, type, id) {
+    if (id === -1 && type === 'text') {
+        check_text_online(obj, id, global_answers, global_comment);
+    }
+    if (id > -1) {
+        if (type === "process") {
+            checkProcess(obj, id);
+        } else {
+            checkQuiz(obj, id);
+        }
+    }
+}
+
+function enter_check(obj, e, type, id) {
+    if ($(obj).is(".formula")) {
+        Preview.Update(obj);
+    }
+    if(e.keyCode == 13) {
+        check(obj, type, id);
+        return false;
+    }
+    return true;
+}
+
+function generate_lesson(div, html, root) {
+    var count = 0, match, matches = [], 
+        reg = /<h[1234]([\d\D]*?)<h[1234]/g; 
+
+    if (root === "practice") {
+        reg = /<h1>([\d\D]*?)<h1>/g;
+    }
+
+    while (match = reg.exec(html)) {
+        matches.push(match[0]);
+        reg.lastIndex = match.index + 1;
+    }
+
+    for (var i in matches) {
+        count += 1;
+        var lesson_div = $('<div></div>'),
+            nextclick = 'onclick="updateLesson('+(count+1)+')"',
+            prevclick = 'onclick="previousLesson('+(count-1)+')"',
+            next_button = $('<button '+nextclick+'>下一段</button>'),
+            prev_button = $('<button '+prevclick+'>上一段</button>'),
+            lesson = matches[i].substring(0, matches[i].length-4);
+        
+        lesson_div.attr('class', 'lesson lesson'+count);
+        lesson_div.html(lesson);
+        if (root !== 'practice') {
+            lesson_div.append(prev_button);
+            if (lesson_div.find('button').length === 1) {
+                lesson_div.append(next_button);
+            }
+        } 
+        lesson_div.append($('<br>'));
+        lesson_div.appendTo(div);
+    }
+
+    MathJax.Hub.Config({
+        messageStyle: "none"
+    });
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+
+    return count;
 }
 
 function loadTutorial(link) {
@@ -247,53 +474,13 @@ function loadTutorial(link) {
             } 
 
             var tutorial = $("#tutorial"),
-                count = 0,
-                match,
-                html = md.render(qa_parse(result))+"<h1>",
-                reg = /<h[1234]([\d\D]*?)<h[1234]/g,
-                matches = [];
-
-            if (root === "practice") {
-                reg = /<h1>([\d\D]*?)<h1>/g;
-            }
-
-            while (match = reg.exec(html)) {
-                matches.push(match[0]);
-                reg.lastIndex = match.index + 1;
-            }
-
-            for (var i in matches) {
-                count += 1;
-                var lesson_div = $('<div></div>'),
-                    nextclick = 'onclick="updateLesson('+(count+1)+')"',
-                    prevclick = 'onclick="previousLesson('+(count-1)+')"',
-                    next_button = $('<button '+nextclick+'>下一段</button>'),
-                    prev_button = $('<button '+prevclick+'>上一段</button>'),
-                    lesson = matches[i].substring(0, matches[i].length-4);
-                
-                lesson_div.attr('class', 'lesson lesson'+count);
-                lesson_div.html(lesson);
-                if (root !== 'practice') {
-                    lesson_div.append(prev_button);
-                    if (lesson_div.find('button').length === 1) {
-                        lesson_div.append(next_button);
-                    }
-                } 
-                lesson_div.append($('<br>'));
-                lesson_div.appendTo(tutorial);
-            }
-
-            global_lesson_count = count;
-
+                html = md.render(qa_parse(result))+"<h1>";
+            global_lesson_count = generate_lesson(tutorial, html, root);
+            
             if (root === "practice") {
                 draw();
             }
             initLesson(link);
-            MathJax.Hub.Config({
-                messageStyle: "none"
-            });
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-
         },
         error: backendError
     });
@@ -303,25 +490,6 @@ function loadTutorial(link) {
 
 function draw() {
     initData();
-}
-
-function check(obj, type, id) {
-    if (type === "process") {
-        checkProcess(obj, id);
-    } else {
-        checkQuiz(obj, id);
-    }
-}
-
-function enter_check(obj, e, type, id) {
-    if ($(obj).is(".formula")) {
-        Preview.Update(obj);
-    }
-    if(e.keyCode == 13) {
-        check(obj, type, id);
-        return false;
-    }
-    return true;
 }
 
 function renderOptions(div, options) {
@@ -342,180 +510,8 @@ function right_and_freeze(obj) {
     obj.append($('<i class="fa fa-check"></i>'))
 }
 
-function checkProcess(obj, id) {
-    console.log("small step enter to backend");
-    var json = [], parent = $(obj).parents(".process"),
-        lesson = parent.parents(".lesson"),
-        left = parent.children().children(".left"),
-        right_div = parent.children().children(".right"),
-        step = left.children(".step-div")
-        allStep = step.children(".small_step"),
-        optionsDiv = left.children(".option"),
-        allOptions = optionsDiv.children("input"); 
-
-    if (allStep[allStep.length - 1].value.trim() === "") {
-        alert("请填入有效内容");
-        return;
-    }
-
-    json[0] = allStep[allStep.length - 1].value;
-    json[1] = match;
-    console.log(allOptions.length);
-
-    if (allOptions.length) {
-        var obj = allOptions[allOptions.length - 1];
-        console.log(obj);
-        if (!validateOption(obj))
-            return;
-
-        console.log(obj.value.trim());
-        if (!$(obj).attr("readonly")) {
-            var v = obj.value.trim();
-            console.log(v);
-            if (v in option_match) {
-                json[2] = [option_match[v], allStep[allStep.length - 2].value];
-            }
-            else {
-                alert("请填写右边的选项序号")
-                return;
-            }
-        }
-    }
-
-    console.log(json);
-    console.log(left);
-
-    var tutorial_url = document.URL.split('/')[4];
-    $.ajax({
-        method: "post",
-        url : "/checkProcess",
-        contentType: 'application/json',
-        dataType: "json",
-        data: JSON.stringify({'id': id, 'expression': json,
-                'url': tutorial_url}),
-        success : function (result){
-            console.log(result);
-            if (result.status) {
-                parent.children('.comment').attr('class', 'hidden');
-                right_div.html('');
-
-                right_and_freeze($(step[step.length-1]));
-                if (json.length === 3) {
-                    console.log("freeze option");
-                    right_and_freeze($(optionsDiv[optionsDiv.length - 1]));
-                }
-
-                if (result.finish) {
-                    var lesson_id = parseInt(lesson.attr("class").substr(13));
-                    check_result(result.status, lesson_id, id);
-                } else {
-                    for (var e in result.match) {
-                        match[e] = result.match[e];
-                    }
-                    console.log(result.options);
-                    if (result.options) {
-                        var div = addStepDiv('接下来:', id, 'option');
-                        left.append(div);
-                        div.children("input")[0].focus();
-                        renderOptions(parent.children(), result.options);
-                        div = addStepDiv('接下来:', id, 'step-div');
-                        left.append(div);
-                    } else {
-                        var div = addStepDiv('接下来:', id, 'step-div');
-                        left.append(div);
-                        div.children("input")[0].focus();
-                    }
-                }
-            }
-            else {
-                result.comment = result.options;
-                wrong_and_cross($(step[step.length-1]));
-                if (json.length === 3) {
-                    wrong_and_cross($(optionsDiv[optionsDiv.length - 1]));
-                }
-                display_comments(parent, result);
-            }
-            return;
-        },
-        error: backendError
-    });
-}
-
 function wrong_and_cross(obj){
-
     obj.append($('<i class="fa fa-times"></i>'));
-}
-
-function checkQuiz(obj, id) {
-    var value, your_answer,
-        back_check = false,
-        url = "/checkTextAnswer",
-        tutorial_url = document.URL.split('/')[4],
-        problem = $(obj).parents('.process'),
-        ele = problem.children().children(".quiz"),
-        type = ele.attr("type"),
-        lesson_name = problem.parents('.lesson')[0].className,
-        lesson_id = parseInt(lesson_name.substr(13));
-    console.log(obj)
-
-    if (type === "radio") {
-        ele.each(function() {
-            if ($(this).prop('checked') === true) {
-                value = $(this).val();
-            }
-        });
-
-        url = "/checkChoice";
-
-    } else if (type === "checkbox") {
-
-        value = '';
-
-        ele.each(function() {
-            if ($(this).prop('checked') === true) {
-                value += $(this).val()+"@";
-            }
-        });
-
-        value = value.substring(0, value.length-1);
-        url = "/checkChoice";
-
-    } else if (type === "text") {
-        value = [];
-        for (var i = 0; i < ele.length; i++) {
-            value.push(ele[i].value)
-        }
-
-        if (ele.hasClass("formula")) url = "/cmp_math";
-    } 
-
-    $.ajax({
-        method: "post",
-        url : url,
-        contentType: 'application/json',
-        dataType: "json",
-        data: JSON.stringify({'id': id, 'expression': value,
-                'url': tutorial_url}),
-        success: function (result){
-            console.log(result);
-            if (result.comment) {
-                display_comments(problem, result);
-            }
-            if (result.info) {
-                $('.hint').css('display', 'block');
-                $('.flashes').html('');
-                $('.flashes').append("<li>对不起</li>")
-                $('.flashes').append("<li>"+result.info+"</li>")
-                setTimeout("$('.hint').fadeOut('slow')", 5000)
-            } else if(result.status) {
-                problem.children('div').attr('class', 'hidden');
-                check_result(result.status, lesson_id, id);
-            }
-
-            return;
-        },
-        error: backendError
-    });
 }
 
 function check_result(result, id, quiz_id) {
@@ -534,4 +530,3 @@ function check_result(result, id, quiz_id) {
         setTimeout("$('.hint').fadeOut('slow')", 5000)
     }
 }
-

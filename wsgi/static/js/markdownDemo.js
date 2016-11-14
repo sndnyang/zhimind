@@ -9646,18 +9646,10 @@ function updateResult() {
                 );
 
     } else { /*defaults._view === 'html'*/
-        source = qa_parse(source);
+        source = qa_parse_full(source);
 
-        MathJax.Hub.Config({
-            messageStyle: "none",
-            tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] }
-        });
-
-        var html = mdHtml.render(source);
-
-        $('#result-html').html(html);
-
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub, document.getElementById("result-html")])
+        var root = '', html = mdHtml.render(source);
+        generate_lesson($('#result-html'), html, root);
     }
 
     // reset lines mapping cache on content update

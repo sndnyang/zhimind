@@ -1,14 +1,26 @@
-function synchTutorial(obj) {
-    var eleps= $(obj).parentsUntil('div'),
-        tableele = $(eleps[eleps.length - 1]),
-        ele = $(eleps[1]).children('.link').children(".tutoriallink"),
-        tid = ele.attr("href").split("/")[2],
-        json = {'id': tid};
+function getLinkName(obj) {
+    var eleps= $(obj).parents('.navbar-default'),
+        ele = eleps.children('.navbar-brand'),
+        span = ele.children('span'),
+        a = ele.children(".tutoriallink");
+    return '{0} {1}'.format(span.html(), a.html());
+}
+
+function getLinkId(obj) {
+    var eleps= $(obj).parents('.navbar-default'),
+        ele = eleps.children('.navbar-brand').children(".tutoriallink"),
+        tid = ele.attr("href").split("/")[2];
+    return tid;
+}
+
+function syncTutorial(obj) {
+    var json = {'id': getLinkId(obj)};
     if (!tid) {
         alert("该教程没有远程url，不可同步，请使用在线编辑");
+        return;
     }
     $.ajax({
-        url: '/synchTutorial',
+        url: '/syncTutorial',
         method: 'POST',
         contentType: 'application/json',
         dataType: "json",
@@ -24,11 +36,15 @@ function synchTutorial(obj) {
 }
 
 function deleteTutorial(obj) {
-    var eleps= $(obj).parentsUntil('div'),
-        tableele = $(eleps[eleps.length - 1]),
-        ele = $(eleps[1]).children('.link').children(".tutoriallink"),
-        tid = ele.attr("href").split("/")[2],
-        json = {'id': tid};
+    var json = {'id': getLinkId(obj)},
+        name = getLinkName(obj),
+        li_element = $(obj).parents('li'),
+        sentence = "确定要删除 {0} 吗？".format(name);
+    
+    if (!confirm(sentence)) {
+        return;
+    }
+
 
     $.ajax({
         url: '/deleteTutorial',
@@ -41,7 +57,7 @@ function deleteTutorial(obj) {
                 alert(result.error);
                 return;
             }
-            tableele.remove();
+            li_element.remove();
         },
         error: backendError
     });
@@ -63,11 +79,9 @@ function editNameAndLink(obj) {
         return;
     }
 
-    var eleparent = $(obj).parent().parent(),
-        ele = eleparent.children(".link").children(".tutoriallink"),
-        link = ele.attr("href"),
-        tid = link.split("/")[2],
-        json = {'id': tid, 'url': url, 'title': title};
+    var json = {'id': getLinkId(obj), 'url': url, 'title': title},
+        ele = $(obj).parents('.navbar-default').children('.navbar-brand')
+                    .children(".tutoriallink");
 
     $.ajax({
         url: '/editTutorial',

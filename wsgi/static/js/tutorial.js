@@ -76,7 +76,7 @@ function display_comments(div, result) {
     if (!comment.indexOf('{%')) {
         var new_div = renderQuestion(comment, -1),
             quiz_type = comment.substring(2, comment.indexOf('|')).trim();
-        global_answer = parse_answer(comment, quiz_type);
+        global_answers = parse_answer(comment, quiz_type);
         global_comment = parse_comment(comment);
         comment = new_div[0].outerHTML;
     }
@@ -122,6 +122,9 @@ function find_right_next(s, i, n, c) {
 
 function finite_status_machine(s, c) {
     var start = 0, end = 0, lists = [];
+    if (s.endsWith('%}')) {
+        s = s.substr(0, s.length-2)
+    }
     while (start < s.length) {
         end = find_right_next(s, start, 0, c);
         lists.push(s.substring(start, end));
@@ -141,6 +144,10 @@ function parse_answer(line, quiz_type) {
     options = []
 
     for (var i in lists) {
+        if (quiz_type !== 'process') {
+            break;
+        }
+
         var l = lists[i].replace(/\r|\n/,'');
         var t = finite_status_machine(l, ':')
         var lt = t.length
@@ -183,9 +190,8 @@ function parse_answer(line, quiz_type) {
 
 function parse_comment(c) {
     c = c.substring(c.indexOf('#')+1)
-    lists = finite_status_machine(c, '#')
+    lists = finite_status_machine(c, '#%')
     result = [{},[]]
-
 
     for (var i in lists) {
         l = lists[i];
@@ -223,7 +229,6 @@ function renderQuestion(temp, quiz_count) {
     if (stemend < 0)
         stemend = stem.length
     stem = stem.substring(1, stemend).trim();
-    //console.log(type + ' stem ' + stem);
     if (stem.endsWith("%}")) {
         stem = stem.substring(0, stem.length-2).trim();
     }
@@ -335,11 +340,12 @@ function check_text_online(obj, id, answers, comments) {
     var value, your_answer,
         back_check = false,
         tutorial_url = document.URL.split('/')[4],
-        problem = $(obj).parents('.process'),
+        problem = $($(obj).parents('.process')[0]),
         ele = problem.children().children(".quiz"),
-        type = ele.attr("type"),
-        lesson_name = problem.parents('.lesson')[0].className,
-        lesson_id = parseInt(lesson_name.substr(13));
+        type = ele.attr("type");
+
+//  console.log(problem[0]);
+//  console.log(ele[0]);
 
     if (type === "radio") {
         ele.each(function() {
@@ -347,6 +353,23 @@ function check_text_online(obj, id, answers, comments) {
                 value = $(this).val();
             }
         });
+        if (value !== answers[0]) {
+            for (var j in comments[0]) {
+                if (value.indexOf(j) >= 0) {
+                    console.log('key {0} OK {1}'.format(j, comments[0][j]));
+                    result = {'comment': comments[0][j]};
+                    break
+                }
+            }
+            if (!result) {
+                result = {'comment': comments[1]};
+            }
+            console.log(result.comment)
+            display_comments(problem, result);
+            return;
+        }
+        result = {'comment': '就是这样'}
+        display_comments(problem, result);
     } else if (type === "checkbox") {
 
         value = '';
@@ -360,21 +383,32 @@ function check_text_online(obj, id, answers, comments) {
         value = value.substring(0, value.length-1);
 
     } else if (type === "text") {
-        value = [];
+        var result = null;
         for (var i = 0; i < ele.length; i++) {
-            value.push(ele[i].value)
-            console.log(answers[i]);
+            if (ele[i].value.indexOf(answers[i]) < 0) {
+                for (var j in comments[0]) {
+                    if (ele[i].value.indexOf(j) >= 0) {
+                        console.log('key {0} OK {1}'.format(j, comments[0][j]));
+                        result = {'comment': comments[0][j]};
+                        break
+                    }
+                }
+                if (!result) {
+                    result = {'comment': comments[1]};
+                }
+                display_comments(problem, result);
+                return;
+            }
         }
+        result = {'comment': '就是这样'}
+        display_comments(problem, result);
     } 
-
-    console.log(value);
-    console.log(answers.length);
-    console.log(comments.length);
 }
 
 function check(obj, type, id) {
-    if (id === -1 && type === 'text') {
+    if (id === 0) {
         check_text_online(obj, id, global_answers, global_comment);
+        return;
     }
     if (id > -1) {
         if (type === "process") {
@@ -390,6 +424,10 @@ function enter_check(obj, e, type, id) {
         Preview.Update(obj);
     }
     if(e.keyCode == 13) {
+        if (id === 0) {
+            check_text_online(obj, id, global_answers, global_comment);
+            return;
+        }
         check(obj, type, id);
         return false;
     }

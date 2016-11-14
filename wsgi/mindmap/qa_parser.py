@@ -21,6 +21,8 @@ def finite_status_machine(c, char):
     start = 0
     end = 0
     lists = []
+    if c[-2:] == '%}':
+        c = c[:-2]
     while start < len(c):
         end = find_right_next(c, start, 0, char)
         lists.append(c[start:end])

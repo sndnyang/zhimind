@@ -14,7 +14,7 @@ def is_expression_cmp(s):
 
 def check_clause(text, s, items):
 
-    print text
+    # print text
     if s == '':
         return True, ''
     for sub in s.split("|"):
@@ -64,15 +64,15 @@ def check_text_with_pre(l, answers):
         f, r = checkText(item, k)
         if not f:
             continue
+#       print item, 'has pre', answers[k][0]
+#       print l[1]
         for e in answers[k][0]:
             if len(l) == 1 or e not in l[1]:
-                print 'e not in l[1]', e
+#               print '%s not in l[1]' % e, l[1]
                 return False, e
-            else:
-                return True, r
         else:
             return True, r
-    print 'not find k in answers', item
+#   print 'not find k in answers', item
     return False, item
 
 
@@ -100,7 +100,7 @@ def check_process(l, answers, comments):
     if len(l) > 2:
         c = l[2][1]
         for k in answers:
-            if k == c:
+            if k == c and answers[k][1] == l[2][0]:
                 break
         else:
             return False, u'前一步推导结果选择错误', None

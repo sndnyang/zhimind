@@ -7,11 +7,11 @@ def find_right_next(s, i, n, char):
     if i == len(s):
         return i
 
-    if s[i] == '{':
+    if s[i] in '{[(':
         return find_right_next(s, i + 1, n + 1, char)
     elif s[i] in '%' + char and n == 0:
         return i
-    elif s[i] == '}' and n > 0:
+    elif s[i] in '}])' and n > 0:
         return find_right_next(s, i + 1, n - 1, char)
     else:
         return find_right_next(s, i + 1, n, char)
@@ -21,7 +21,7 @@ def finite_status_machine(c, char):
     start = 0
     end = 0
     lists = []
-    while start < len(c)-2:
+    while start < len(c):
         end = find_right_next(c, start, 0, char)
         lists.append(c[start:end])
         start = end+1
@@ -40,11 +40,12 @@ def parse_answer(line, p, quiz_type):
     result = None
     lists = [e.replace('\n', '').replace('\r', '') for e in obj[0].split(p[0])]
     options = []
+    # print len(lists), quiz_type
     for l in lists:
         if quiz_type != 'process':
             break
 
-        t = [e.replace('\n', '').replace('\r', '') for e in l.split(':')]
+        t = finite_status_machine(l, ':')
         lt = len(t)
         answer_map = {}
         if lt == 1:

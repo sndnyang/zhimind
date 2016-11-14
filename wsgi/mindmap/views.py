@@ -338,7 +338,7 @@ def checkProcess():
     response['status'] = result[0]
     response['options'] = result[1]
     response['match'] = result[2]
-    if result[0] and len(l[1]) + 1 == len(answers[0]):
+    if result[0] and len(l) > 1 and len(l[1]) + 2 == len(answers):
         response['finish'] = True
     return json.dumps(response, ensure_ascii=False)
 

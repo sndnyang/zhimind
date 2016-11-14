@@ -105,7 +105,9 @@ textarea.quiz:focus {
     border-right-width:0px;   
     border-bottom-width:1px;   
     border-left-width:0px;
-    border-radius: 0px;
+    border-radius: 8px;
+    width: 90%;
+    display: inline-block;
 }
 
 .process {

@@ -57,8 +57,6 @@ function qa_parse_full(c) {
         s = c.substring(start, end).trim()
         lists.push(s)
         quiz_type = s.substring(2, s.indexOf('|')).trim();
-        console.log(quiz_type);
-
         answer = parse_answer(s, quiz_type);
         comment = parse_comment(s);
         online_answers.push(answer)
@@ -245,3 +243,10 @@ function checkQuiz(obj, id) {
     });
 }
 
+function updateLesson(no) {
+    var pos = $('.lesson' + (no-1)).offset().top - $('.lesson1').offset().top + $('.lesson' + (no-1)).height();
+
+    $('.result-html').animate({
+        scrollTop: pos
+    }, 500);
+}

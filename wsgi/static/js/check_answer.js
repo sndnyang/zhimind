@@ -36,7 +36,7 @@ function checkProcess(obj, id) {
         }
     }
 
-    console.log(json);
+    //console.log(json);
 
     var tutorial_url = document.URL.split('/')[4];
     $.ajax({

@@ -127,14 +127,12 @@ def recommendlist():
 def get_tutorial(link):
     try:
         tutorial = Tutorial.query.get(link)
-
         if not tutorial:
             tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
     except NoResultFound:
         name = ""
 
     if not tutorial:
-        app.logger.debug("page not found")
         abort(404)
     name = tutorial.get_title()
     meta = gen_meta_for_tp(name, app.redis.get(link))
@@ -150,6 +148,10 @@ def get_tutorial(link):
 @app.route('/convert/<link>')
 def convert(link):
     response = {'status': False}
+    link = get_real_tid(Tutorial, link)
+    if not link:
+        response['info'] = u'没有找到'
+        return json.dumps(response, ensure_ascii=False)
     entity = app.redis.get(link)
 
     if entity is None or not eval(entity)['response']:
@@ -176,26 +178,17 @@ def convert(link):
 
     session[link] = {'answer': entity['answer'],
                      'comment': entity['comment']}
-    # for s in response['answer']:
-    #    app.logger.debug(' '.join(s))
-    response = entity['response']
-
+    response['content'] = entity['response']
+    response['status'] = True
     return json.dumps(response, ensure_ascii=False)
 
 
 @app.route('/checkChoice', methods=["POST"])
 def checkChoice():
-    no = request.json.get('id', None)
     response = {'status': False}
-    if not no:
-        return json.dumps(response, ensure_ascii=False)
-    no = int(no) - 1
-    expression = request.json.get('expression', None)
-    tid = request.json.get('url', None)
-    response = {'status': False}
-
-    if not expression or not tid:
-        return json.dumps(response, ensure_ascii=False)
+    no, tid, expression = validate_check_para(request.json, Tutorial)
+    if no is None:
+        return json.dumps(tid, ensure_ascii=False)
 
     user_choose = expression.split("@")
     if tid in session:
@@ -207,7 +200,6 @@ def checkChoice():
 
     # app.logger.debug(user_choose[0])
     # app.logger.debug(answers[0])
-    # app.logger.debug(user_choose[0] == answers[0])
 
     s1 = set(user_choose)
     s2 = set(answers)
@@ -242,17 +234,12 @@ def checkChoice():
 
 @app.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
-    no = request.json.get('id', None)
     response = {'status': False}
-    if not no:
-        return json.dumps(response)
-    no = int(no) - 1
-    expression = request.json.get('expression', None)
-    tid = request.json.get('url', None)
-    response = {'status': False}
-
-    if not expression or not tid:
-        return json.dumps(response)
+    no, tid, expression = validate_check_para(request.json, Tutorial)
+    app.logger.debug('%s %s %s' % (str(no), str(tid), str(expression)))
+    app.logger.debug(no is not None)
+    if no is None:
+        return json.dumps(tid, ensure_ascii=False)
 
     if tid in session:
         answers = session[tid]['answer'][no]
@@ -285,16 +272,12 @@ def checkAnswer():
 
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
-    no = request.json.get('id', None)
     response = {'status': False}
-    if not no:
-        return json.dumps(response)
-    no = int(no) - 1
-    expression = request.json.get('expression', None)
-    tid = request.json.get('url', None)
-    response = {'status': False}
-    if not expression or not tid:
-        return json.dumps(response)
+    no, tid, expression = validate_check_para(request.json, Tutorial)
+    if no is None:
+        return json.dumps(tid, ensure_ascii=False)
+
+    user_choose = expression.split("@")
 
     if tid in session:
         answers = session[tid]['answer'][no]
@@ -320,16 +303,10 @@ def cmp_math():
 
 @app.route('/checkProcess', methods=["POST"])
 def checkProcess():
-    no = request.json.get('id', None)
     response = {'status': False}
-    if not no:
-        return json.dumps(response)
-    no = int(no) - 1
-    l = request.json.get('expression', None)
-    tid = request.json.get('url', None)
-
-    if not l or not tid:
-        return json.dumps(response)
+    no, tid, l = validate_check_para(request.json, Tutorial)
+    if no is None:
+        return json.dumps(tid, ensure_ascii=False)
 
     if tid in session:
         answers = session[tid]['answer'][no]
@@ -920,3 +897,5 @@ def page_not_found(error):
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind 启发式学习 智能学习 在线教育'}
     return render_template('404.html', meta=meta)
+
+

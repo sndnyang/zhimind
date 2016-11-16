@@ -501,18 +501,18 @@ function loadTutorial(link) {
             //setTimeout("$('.loadingDiv').fadeOut('slow')", 5000);
         },
         success : function (data){
-            var result = data,
+            var content = data.content,
                 loadingMask = document.getElementById('loadingDiv');
             //console.log(data);
             loadingMask.parentNode.removeChild(loadingMask);
 
-            if (!result) {
+            if (!content || !data.status) {
                 alert(data.info);
                 return;
             } 
 
             var tutorial = $("#tutorial"),
-                html = md.render(qa_parse(result))+"<h1>";
+                html = md.render(qa_parse(content))+"<h1>";
             global_lesson_count = generate_lesson(tutorial, html, root);
             
             if (root === "practice") {

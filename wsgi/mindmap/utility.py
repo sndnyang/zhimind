@@ -1,7 +1,7 @@
 ﻿# coding=utf-8
 
 from qa_parser import *
-
+from sqlalchemy.orm.exc import NoResultFound
 
 def printDeep(item, deep):
     if isinstance(item, (str, bool, int, float)):
@@ -18,7 +18,7 @@ def printDeep(item, deep):
         for e in item:
             print ' '*(deep+4), e, ':', item[e]
             if not isinstance(e, (str, bool, int, float)):
-                printDeep(e)
+                printDeep(e, deep+4)
 
 
 def add_mastery_in_json(json, entrys):
@@ -69,4 +69,40 @@ def gen_meta_for_tp(name, entity):
 
     return meta
 
+
+def validate_check_para(data, Tutorial):
+    response = {'status': False}
+    print data
+    no = data.get('id', None)
+    if not no:
+        return None, response, None
+    try:
+        no = int(no) - 1
+    except ValueError:
+        return None, response, None
+
+    expression = data.get('expression', None)
+    tid = data.get('url', None)
+    if not expression or not tid:
+        return None, response, None
+
+    tid = get_real_tid(Tutorial, tid)
+    if not tid:
+        response['info'] = u'url不正确？'
+        return None, response, None
+    return no, tid, expression
+
+
+def get_real_tid(Tutorial, tid):
+    try:
+        tutorial = Tutorial.query.get(tid)
+        if not tutorial:
+            tutorial = Tutorial.query.filter_by(slug=tid).one_or_none()
+            if tutorial:
+                tid = tutorial.get_id()
+            else:
+                return None
+    except NoResultFound:
+        return None
+    return tid
 

@@ -271,6 +271,10 @@ def checkAnswer():
         if r in comments[0]:
             response['comment'] = comments[0][r]
         if not f:
+            for e in comments[0]:
+                if e in user:
+                    response['comment'] = comments[0][e]
+                    return json.dumps(response, ensure_ascii=False)
             if 'comment' not in response:
                 response['comment'] = comments[1]
             return json.dumps(response)

@@ -20,6 +20,9 @@
                     <div id="maps">
                         <ul class="list-group">
                         {% for map in maps %}
+                            <a href="/user/{{ map.username }}">
+                                {{ map.username }}
+                            </a> 发布了:
                         {% include 'map_link.html' %}
                         {% endfor %}
                         </ul>
@@ -36,6 +39,9 @@
                     <ul class="list-group">
                         {% for tutorial in tutorials %}
                         {% if tutorial.type == "tutorial" %}
+                        <a href="/user/{{ tutorial.username }}">
+                        {{ tutorial.username }}
+                        </a> 发布了:
                         {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
                         {% endif %}
                         {% endfor %}
@@ -52,6 +58,9 @@
                     <ul class="list-group">
                         {% for tutorial in tutorials %}
                         {% if tutorial.type == "practice" %}
+                        <a href="/user/{{ tutorial.username }}">
+                        {{ tutorial.username }}
+                        </a> 发布了:
                         {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
                         {% endif %}
                         {% endfor %}

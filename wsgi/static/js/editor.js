@@ -97,18 +97,18 @@ function checkProcess(obj, id) {
 
     json[0] = allStep[allStep.length - 1].value;
     json[1] = match;
-    console.log(allOptions.length);
+    // console.log(allOptions.length);
 
     if (allOptions.length) {
         var obj = allOptions[allOptions.length - 1];
-        console.log(obj);
+
         if (!validateOption(obj))
             return;
 
-        console.log(obj.value.trim());
+        //console.log(obj.value.trim());
         if (!$(obj).attr("readonly")) {
             var v = obj.value.trim();
-            console.log(v);
+
             if (v in option_match) {
                 json[2] = [option_match[v], allStep[allStep.length - 2].value];
             }
@@ -118,10 +118,7 @@ function checkProcess(obj, id) {
             }
         }
     }
-
-    console.log(json);
-    console.log(left);
-
+    //console.log(json);
     var tutorial_url = document.URL.split('/')[4];
     $.ajax({
         method: "post",
@@ -149,7 +146,6 @@ function checkProcess(obj, id) {
                     for (var e in result.match) {
                         match[e] = result.match[e];
                     }
-                    console.log(result.options);
                     if (result.options) {
                         var div = addStepDiv('接下来:', id, 'option');
                         left.append(div);
@@ -188,7 +184,6 @@ function checkQuiz(obj, id) {
         type = ele.attr("type"),
         lesson_name = problem.parents('.lesson')[0].className,
         lesson_id = parseInt(lesson_name.substr(13));
-    console.log(obj)
 
     if (type === "radio") {
         ele.each(function() {

@@ -410,6 +410,7 @@ def link_quiz():
                                                   mindmap_id=mapid, name=name, tutor_id=
                                                   tutorid).one_or_none()
         except MultipleResultsFound:
+            ret['error'] = u'搜索到多条数据，请联系管理员'
             return json.dumps(ret, ensure_ascii=False)
 
         if result is None:

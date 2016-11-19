@@ -463,9 +463,9 @@ module.directive('mindMap', function ($compile) {
                                 'parent':p}
                                 ),
                             success : function (result){
-                                var response = result.response;
+                                var response = result.status;
                                 if (!response) {
-                                    alert("与练习网页间的关联创建失败!");
+                                    alert("与网页的关联创建失败! " + result.error);
                                 }
                                 else {
                                     d.link.push(dict);

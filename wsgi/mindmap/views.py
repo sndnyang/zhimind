@@ -277,8 +277,6 @@ def cmp_math():
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
-    user_choose = expression.split("@")
-
     if tid in session:
         answers = session[tid]['answer'][no]
         comments = session[tid]['comment'][no]
@@ -291,7 +289,7 @@ def cmp_math():
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
-        # app.logger.debug(info)
+
         if info != True:
             response['info'] = info
             if 'comment' not in response:

@@ -189,9 +189,9 @@ function parse_answer(line, quiz_type) {
 
 
 function parse_comment(c) {
-    c = c.substring(c.indexOf('#')+1)
-    lists = finite_status_machine(c, '#%')
-    result = [{},[]]
+    c = c.substring(c.indexOf('#')+1);
+    var lists = finite_status_machine(c, '#%');
+    var result = [{},[]];
 
     for (var i in lists) {
         l = lists[i];
@@ -203,9 +203,15 @@ function parse_comment(c) {
         var t = [], temp_list = finite_status_machine(l, '#,');
 
         for (var j in temp_list) {
-            s = temp_list[j];
-            key = s.substring(0, s.indexOf(':')).replace(/\r|\n/,'');
-            value = s.substring(s.indexOf(':')+1).replace(/\r|\n/,'');
+            var s = temp_list[j];
+            var key = s.substring(0, s.indexOf(':')).replace(/\r|\n/,'');
+            var value = s.substring(s.indexOf(':')+1).replace(/\r|\n/,'');
+            for (var k in result[0]) {
+                if (k.indexOf(key) >= 0 || key.indexOf(k) >= 0) {
+                    alert("提示的关键词存在包含关系，可能造成错误提示，请修正");
+                    break;
+                }
+            }
             result[0][key] = value;
         }
     }
@@ -353,46 +359,39 @@ function check_text_online(obj, id, answers, comments) {
                 value = $(this).val();
             }
         });
-        if (value !== answers[0]) {
+
+        for (var j in comments[0]) {
+            if (value.indexOf(j) >= 0) {
+                // console.log('key {0} OK {1}'.format(j, comments[0][j]));
+                result = {'comment': comments[0][j]};
+                break
+            }
+        }
+        if (!result) {
+            if (value === answers[0]) {
+                result = {'comment': '就是这样'};
+            }
+            else {
+                result = {'comment': comments[1]};
+            }
+        }
+        display_comments(problem, result);
+        return;
+
+    } else if (type === "checkbox") {
+        alert("暂不支持 checkbox, 请联系教程作者");
+        return;
+    } else if (type === "text") {
+        var result = null;
+        for (var i = 0; i < ele.length; i++) {
             for (var j in comments[0]) {
-                if (value.indexOf(j) >= 0) {
-                    console.log('key {0} OK {1}'.format(j, comments[0][j]));
+                if (ele[i].value.indexOf(j) >= 0) {
+                    // console.log('key {0} OK {1}'.format(j, comments[0][j]));
                     result = {'comment': comments[0][j]};
                     break
                 }
             }
-            if (!result) {
-                result = {'comment': comments[1]};
-            }
-            console.log(result.comment)
-            display_comments(problem, result);
-            return;
-        }
-        result = {'comment': '就是这样'}
-        display_comments(problem, result);
-    } else if (type === "checkbox") {
-
-        value = '';
-
-        ele.each(function() {
-            if ($(this).prop('checked') === true) {
-                value += $(this).val()+"@";
-            }
-        });
-
-        value = value.substring(0, value.length-1);
-
-    } else if (type === "text") {
-        var result = null;
-        for (var i = 0; i < ele.length; i++) {
             if (ele[i].value.indexOf(answers[i]) < 0) {
-                for (var j in comments[0]) {
-                    if (ele[i].value.indexOf(j) >= 0) {
-                        console.log('key {0} OK {1}'.format(j, comments[0][j]));
-                        result = {'comment': comments[0][j]};
-                        break
-                    }
-                }
                 if (!result) {
                     result = {'comment': comments[1]};
                 }
@@ -400,7 +399,9 @@ function check_text_online(obj, id, answers, comments) {
                 return;
             }
         }
-        result = {'comment': '就是这样'}
+        if (!result) {
+            result = {'comment': '就是这样'};
+        }
         display_comments(problem, result);
     } 
 }

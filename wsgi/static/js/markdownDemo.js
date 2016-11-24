@@ -9632,7 +9632,6 @@ function setHighlightedlContent(selector, content, lang) {
 
 function updateResult() {
     var source = $('.source').val();
-    console.log(source.length);
 
     // Update only active view to avoid slowdowns
     // (debug & src view with highlighting are a bit slow)

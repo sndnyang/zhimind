@@ -200,7 +200,7 @@ function parse_comment(c) {
             continue;
         }
 
-        var t = [], temp_list = finite_status_machine(l, '#,');
+        var t = [], temp_list = finite_status_machine(l, '#');
 
         for (var j in temp_list) {
             var s = temp_list[j];
@@ -208,7 +208,7 @@ function parse_comment(c) {
             var value = s.substring(s.indexOf(':')+1).replace(/\r|\n/,'');
             for (var k in result[0]) {
                 if (k.indexOf(key) >= 0 || key.indexOf(k) >= 0) {
-                    alert("提示的关键词存在包含关系，可能造成错误提示，请修正");
+                    alert("提示的关键词{0}, {1}存在包含关系，可能造成错误提示，请修正".format(k, key));
                     break;
                 }
             }

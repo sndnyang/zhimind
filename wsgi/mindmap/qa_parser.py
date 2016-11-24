@@ -88,7 +88,7 @@ def parse_comment(c):
             continue
 
         t = []
-        for s in finite_status_machine(l, '#,'):
+        for s in finite_status_machine(l, '#'):
             t.append(':'.join(['"%s"' % e.replace('\n', '').replace('\r', '') for e in s.split(':',1)]))
 
         l = json.loads('{%s}' % ','.join(t))

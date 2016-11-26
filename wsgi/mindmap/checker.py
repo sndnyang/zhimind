@@ -76,6 +76,7 @@ def check_text_with_pre(l, answers):
 
 def sample(l, s):
     if len(l) < 6:
+        random.shuffle(l)
         return l
     nl = random.sample([e for e in l if e != s], 4)
     nl.append(s)

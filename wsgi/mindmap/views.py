@@ -235,8 +235,7 @@ def checkChoice():
 def checkAnswer():
     response = {'status': False}
     no, tid, expression = validate_check_para(request.json, Tutorial)
-    app.logger.debug('%s %s %s' % (str(no), str(tid), str(expression)))
-    app.logger.debug(no is not None)
+    # app.logger.debug('%s %s %s' % (str(no), str(tid), str(expression)))
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -291,7 +290,7 @@ def cmp_math():
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
 
-        if info != True:
+        if info is not True:
             response['info'] = info
             if 'comment' not in response:
                 response['comment'] = comments[1]
@@ -320,7 +319,7 @@ def checkProcess():
     response['status'] = result[0]
     response['options'] = result[1]
     response['match'] = result[2]
-    if result[0] and len(l) > 1 and len(l[1]) + 2 == len(answers):
+    if result[0] and (l[0] == 'Q.E.D.' or l[0] == '证毕'):
         response['finish'] = True
     return json.dumps(response, ensure_ascii=False)
 

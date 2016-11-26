@@ -13,8 +13,6 @@ def is_expression_cmp(s):
 
 
 def check_clause(text, s, items):
-
-    # print text
     if s == '':
         return True, ''
     for sub in s.split("|"):
@@ -31,7 +29,7 @@ def check_clause(text, s, items):
                     flag, item = check_clause(text, items[i], items)
                     if not flag:
                         break
-                    match.append('(%s)'%item)
+                    match.append('(%s)'%items[i])
                 except ValueError:
                     if p not in text:
                         break
@@ -97,9 +95,11 @@ def get_comments(comments, r):
 
 
 def check_process(l, answers, comments):
-    if len(l) > 2:
+    if l[2]:
         c = l[2][1]
+        # print c
         for k in answers:
+            # print k, k == c
             if k == c and answers[k][1] == l[2][0]:
                 break
         else:
@@ -113,7 +113,10 @@ def check_process(l, answers, comments):
         else:
             options = None
     else:
-        options = get_comments(comments, r)
+        if l[3] and l[3] in comments[0].keys():
+            options = get_comments(comments, l[3])
+        else:
+            options = get_comments(comments, r)
     return f, options, match
 
 

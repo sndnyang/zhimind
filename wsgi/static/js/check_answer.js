@@ -5,10 +5,10 @@ function checkProcess(obj, id) {
         lesson = parent.parents(".lesson"),
         left = parent.children().children(".left"),
         right_div = parent.children().children(".right"),
-        step = left.children(".step-div")
+        step = left.children(".step-div"),
         allStep = step.children(".small_step"),
         optionsDiv = left.children(".option"),
-        allOptions = optionsDiv.children("input"); 
+        allOptions = optionsDiv.children("input");
 
     if (allStep[allStep.length - 1].value.trim() === "") {
         alert("请填入有效内容");
@@ -17,17 +17,33 @@ function checkProcess(obj, id) {
 
     json[0] = allStep[allStep.length - 1].value;
     json[1] = match;
+    json[2] = null;
+    json[3] = null;
     // console.log(allOptions.length);
+    var t = null;
+    if (allStep.length > 1) {
+        var temp = allStep[allStep.length - 2].value;
+        for (var k in match) {
+            if (match[k] === temp) {
+                t = k;
+                json[3] = k;
+                break;
+            }
+        }
+    }
 
     if (allOptions.length) {
         var obj = allOptions[allOptions.length - 1];
+
         if (!validateOption(obj))
             return;
 
+        //console.log(obj.value.trim());
         if (!$(obj).attr("readonly")) {
             var v = obj.value.trim();
             if (v in option_match) {
-                json[2] = [option_match[v], allStep[allStep.length - 2].value];
+                json[2] = [option_match[v], t];
+                t = "readonly";
             }
             else {
                 alert("请填写右边的选项序号")
@@ -35,8 +51,6 @@ function checkProcess(obj, id) {
             }
         }
     }
-
-    //console.log(json);
 
     var tutorial_url = document.URL.split('/')[4];
     $.ajax({
@@ -53,7 +67,8 @@ function checkProcess(obj, id) {
                 right_div.html('');
 
                 right_and_freeze($(step[step.length-1]));
-                if (json.length === 3) {
+                if (optionsDiv.length > 0 && t === "readonly") {
+                    console.log("freeze option");
                     right_and_freeze($(optionsDiv[optionsDiv.length - 1]));
                 }
 

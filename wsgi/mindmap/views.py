@@ -198,9 +198,6 @@ def checkChoice():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
-    # app.logger.debug(user_choose[0])
-    # app.logger.debug(answers[0])
-
     s1 = set(user_choose)
     s2 = set(answers)
 
@@ -229,6 +226,8 @@ def checkChoice():
         return json.dumps(response, ensure_ascii=False)
 
     response['status'] = True
+    if '你答对了' in comments[0]:
+        response['comment'] = comments[0]['你答对了']
     return json.dumps(response, ensure_ascii=False)
 
 
@@ -267,6 +266,8 @@ def checkAnswer():
             return json.dumps(response)
 
     response['status'] = True
+    if '你答对了' in comments[0]:
+        response['comment'] = comments[0]['你答对了']
     return json.dumps(response)
 
 
@@ -296,6 +297,8 @@ def cmp_math():
                 response['comment'] = comments[1]
             break
     response['status'] = True
+    if '你答对了' in comments[0]:
+        response['comment'] = comments[0]['你答对了']
     return json.dumps(response, ensure_ascii=False)
 
 

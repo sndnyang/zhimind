@@ -72,7 +72,7 @@ def gen_meta_for_tp(name, entity):
 
 def validate_check_para(data, Tutorial):
     response = {'status': False}
-    print data
+
     no = data.get('id', None)
     if not no:
         return None, response, None

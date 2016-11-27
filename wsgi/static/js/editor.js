@@ -251,37 +251,37 @@ function checkQuiz(obj, id) {
                 $('.flashes').append("<li>"+result.info+"</li>")
                 setTimeout("$('.hint').fadeOut('slow')", 5000)
             } else if(result.status) {
+                if (!document.URL.split('/')[3].indexOf('gewu.html')) {
+                    var tutorial = $("#tutorial"), text = ele.parent().html();
+
+                    if (id === 1) {
+                        localStorage.setItem('name', ele[0].value);
+                        var tutorial = $("#tutorial"),
+                            root = document.URL.split('/')[3],
+                            temp = gewu_content.replace(/{{它}}/g, ele[0].value),
+                            html = md.render(qa_parse_full(temp))+"<h1>";
+                        tutorial.html('')
+                        global_lesson_count = generate_lesson(tutorial, html, root, 0);
+                        startLesson(3);
+                        display_comments($($('.process')[0]), result);
+                        $($(".quiz")[0]).val(ele[0].value);
+                    }
+                    if (id === 2) {
+                     // var type_map = {'问题': 'concept', '概念': 'concept',
+                     //     '方法': 'concept', '定理': 'method', '公理': 'method',
+                     //     '定律': 'method', '算法': 'method', '其他'},
+                     //     tutorial = $("#tutorial"),
+                     //     root = document.URL.split('/')[3],
+                     //     temp = type_map[ele[0].value],
+                     //     html = md.render(qa_parse_full(temp))+"<h1>";
+                     // tutorial.html('')
+                     // global_lesson_count = generate_lesson(tutorial, html, root,
+                     //     global_lesson_count);
+                    }
+
+                }
                 // problem.children('div').attr('class', 'hidden');
                 check_result(result.status, lesson_id, id);
-            }
-            if (!document.URL.split('/')[3].indexOf('gewu.html')) {
-                var tutorial = $("#tutorial"), text = ele.parent().html();
-
-                if (id === 1) {
-                    localStorage.setItem('name', ele[0].value);
-                    var tutorial = $("#tutorial"),
-                        root = document.URL.split('/')[3],
-                        temp = gewu_content.replace(/{{它}}/g, ele[0].value),
-                        html = md.render(qa_parse_full(temp))+"<h1>";
-                    tutorial.html('')
-                    global_lesson_count = generate_lesson(tutorial, html, root, 0);
-                    startLesson(3);
-                    display_comments($($('.process')[0]), result);
-                    $($(".quiz")[0]).val(ele[0].value);
-                }
-                if (id === 2) {
-                 // var type_map = {'问题': 'concept', '概念': 'concept', 
-                 //     '方法': 'concept', '定理': 'method', '公理': 'method',
-                 //     '定律': 'method', '算法': 'method', '其他'},
-                 //     tutorial = $("#tutorial"),
-                 //     root = document.URL.split('/')[3],
-                 //     temp = type_map[ele[0].value],
-                 //     html = md.render(qa_parse_full(temp))+"<h1>";
-                 // tutorial.html('')
-                 // global_lesson_count = generate_lesson(tutorial, html, root,
-                 //     global_lesson_count);
-                }
-
             }
             return;
         },
@@ -290,7 +290,7 @@ function checkQuiz(obj, id) {
 }
 
 function updateLesson(no) {
-    var pos = $('.lesson' + (no-1)).offset().top - $('.lesson1').offset().top + $('.lesson' + (no-1)).height();
+    var pos = $('.lesson' + (no-1)).offset().top - $('.lesson1').offset().top + $('.lesson' + (no-1)).height() - 50;
 
     $('.result-html').animate({
         scrollTop: pos

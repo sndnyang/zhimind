@@ -50,6 +50,8 @@ def parse_answer(line, p, quiz_type):
         t = finite_status_machine(l, ':')
         lt = len(t)
         answer_map = {}
+        if lt == 0:
+            answer_map  = {'': ([], '')}
         if lt == 1:
             answer_map  = {t[0]: ([], '')}
         if lt == 2:

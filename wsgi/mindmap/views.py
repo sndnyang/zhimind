@@ -3,15 +3,13 @@
 import traceback
 from datetime import datetime
 
-import sqlalchemy
 from sqlalchemy import desc
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from flask import request, flash, url_for, redirect, render_template, g, \
     session, json, abort
 
-from flask_login import LoginManager, current_user, logout_user, \
-    login_user, login_required
+from flask_login import current_user, logout_user, login_user, login_required
 
 from mindmap import app, db, login_manager
 
@@ -130,7 +128,7 @@ def get_tutorial(link):
         if not tutorial:
             tutorial = Tutorial.query.filter_by(slug=link).one_or_none()
     except NoResultFound:
-        name = ""
+        tutorial = None
 
     if not tutorial:
         abort(404)
@@ -198,6 +196,11 @@ def checkChoice():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
+    if len(answers) == 1 and not answers[0]:
+        response['status'] = True
+        response['comment'] = '有自己的判断就好了，不是吗？'
+        return json.dumps(response, ensure_ascii=False)
+    # app.logger.debug(answers)
     s1 = set(user_choose)
     s2 = set(answers)
 
@@ -552,6 +555,8 @@ def save_tutorial():
 
     response, slug = qa_parse(content)
     app.redis.set(tutorial.get_id(), response)
+    session[tutorial_id] = {'answer': response['answer'],
+                            'comment': response['comment']}
     ret['error'] = 'success'
     return json.dumps(ret, ensure_ascii=False)
 
@@ -900,3 +905,12 @@ def page_not_found(error):
     return render_template('404.html', meta=meta)
 
 
+@app.route('/gewu.html')
+def gewu():
+    link = "gewu-learning-methods-template"
+    name = "格物学习法"
+    meta = {'title': u'格物君 格物以致知。知维图互联网学习实验室',
+            'description': u'格物君--',
+            'keywords': u'格物致知, 费曼技巧, 思维导图, 启发式学习, 智能学习, 在线教育'}
+    return render_template('gewu.html', link=link, name=name,
+                           meta=meta)

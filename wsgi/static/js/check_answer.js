@@ -168,7 +168,7 @@ function checkQuiz(obj, id) {
                 $('.flashes').append("<li>"+result.info+"</li>")
                 setTimeout("$('.hint').fadeOut('slow')", 5000)
             } else if(result.status) {
-                problem.children('div').attr('class', 'hidden');
+                // problem.children('div').attr('class', 'hidden');
                 check_result(result.status, lesson_id, id);
             }
 

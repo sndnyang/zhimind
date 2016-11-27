@@ -1,6 +1,4 @@
-var online_answers = [],
-    online_comments = [],
-    options = [];
+var options = [];
 
 function save_tutorial() {
     var tid = document.URL.split('/')[4], source = $('.source').val(), lines,
@@ -52,6 +50,8 @@ function qa_parse_full(c) {
     var start = c.indexOf("{%"), end, lists = [],
         s, quiz_type, html = "";
 
+    global_answers = [''];
+    global_comment = [''];
     while (start >= 0 && start < c.length) {
         end = find_right_next(c, start, 0, '\n')
         s = c.substring(start, end).trim()
@@ -59,8 +59,8 @@ function qa_parse_full(c) {
         quiz_type = s.substring(2, s.indexOf('|')).trim();
         answer = parse_answer(s, quiz_type);
         comment = parse_comment(s);
-        online_answers.push(answer)
-        online_comments.push(comment)
+        global_answers.push(answer)
+        global_comment.push(comment)
         start = c.indexOf("{%", end)
     }
 
@@ -196,6 +196,10 @@ function checkQuiz(obj, id) {
         lesson_name = problem.parents('.lesson')[0].className,
         lesson_id = parseInt(lesson_name.substr(13));
 
+    if (!document.URL.split('/')[3].indexOf('gewu.html')) {
+        tutorial_url = "gewu-learning-methods-template";
+    }
+
     if (type === "radio") {
         ele.each(function() {
             if ($(this).prop('checked') === true) {
@@ -227,6 +231,7 @@ function checkQuiz(obj, id) {
         if (ele.hasClass("formula")) url = "/cmp_math";
     } 
 
+    console.log(tutorial_url + ' ' + id + " " + value)
     $.ajax({
         method: "post",
         url : url,
@@ -246,10 +251,38 @@ function checkQuiz(obj, id) {
                 $('.flashes').append("<li>"+result.info+"</li>")
                 setTimeout("$('.hint').fadeOut('slow')", 5000)
             } else if(result.status) {
-                problem.children('div').attr('class', 'hidden');
+                // problem.children('div').attr('class', 'hidden');
                 check_result(result.status, lesson_id, id);
             }
+            if (!document.URL.split('/')[3].indexOf('gewu.html')) {
+                var tutorial = $("#tutorial"), text = ele.parent().html();
 
+                if (id === 1) {
+                    localStorage.setItem('name', ele[0].value);
+                    var tutorial = $("#tutorial"),
+                        root = document.URL.split('/')[3],
+                        temp = gewu_content.replace(/{{它}}/g, ele[0].value),
+                        html = md.render(qa_parse_full(temp))+"<h1>";
+                    tutorial.html('')
+                    global_lesson_count = generate_lesson(tutorial, html, root, 0);
+                    startLesson(3);
+                    display_comments($($('.process')[0]), result);
+                    $($(".quiz")[0]).val(ele[0].value);
+                }
+                if (id === 2) {
+                 // var type_map = {'问题': 'concept', '概念': 'concept', 
+                 //     '方法': 'concept', '定理': 'method', '公理': 'method',
+                 //     '定律': 'method', '算法': 'method', '其他'},
+                 //     tutorial = $("#tutorial"),
+                 //     root = document.URL.split('/')[3],
+                 //     temp = type_map[ele[0].value],
+                 //     html = md.render(qa_parse_full(temp))+"<h1>";
+                 // tutorial.html('')
+                 // global_lesson_count = generate_lesson(tutorial, html, root,
+                 //     global_lesson_count);
+                }
+
+            }
             return;
         },
         error: backendError

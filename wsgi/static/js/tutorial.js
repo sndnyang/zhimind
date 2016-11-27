@@ -5,7 +5,8 @@ var error_times = 0,
     currentLesson = 1,
     global_link = 'currentLesson',
     match = {},
-    option_match = {};
+    option_match = {},
+    gewu_content = '';
 
 var md = window.markdownit({html:true})
         .use(window.markdownitMathjax)
@@ -76,8 +77,8 @@ function display_comments(div, result) {
     if (!comment.indexOf('{%')) {
         var new_div = renderQuestion(comment, -1),
             quiz_type = comment.substring(2, comment.indexOf('|')).trim();
-        global_answers = parse_answer(comment, quiz_type);
-        global_comment = parse_comment(comment);
+        global_answers[0] = parse_answer(comment, quiz_type);
+        global_comment[0] = parse_comment(comment);
         comment = new_div[0].outerHTML;
     }
     div.children(c).html(comment);
@@ -348,10 +349,9 @@ function check_text_online(obj, id, answers, comments) {
         tutorial_url = document.URL.split('/')[4],
         problem = $($(obj).parents('.process')[0]),
         ele = problem.children().children(".quiz"),
-        type = ele.attr("type");
-
-//  console.log(problem[0]);
-//  console.log(ele[0]);
+        type = ele.attr("type"),
+        lesson = $(obj).parents(".lesson"),
+        lesson_id = parseInt(lesson.attr("class").substr(13));
 
     if (type === "radio") {
         ele.each(function() {
@@ -375,7 +375,11 @@ function check_text_online(obj, id, answers, comments) {
                 result = {'comment': comments[1]};
             }
         }
+        if (value === answers[0]) {
+            check_result(true, lesson_id, id);
+        }
         display_comments(problem, result);
+        check_result(true, lesson_id, id);
         return;
 
     } else if (type === "checkbox") {
@@ -402,13 +406,15 @@ function check_text_online(obj, id, answers, comments) {
         if (!result) {
             result = {'comment': '就是这样'};
         }
+        
         display_comments(problem, result);
+        check_result(true, lesson_id, id);
     } 
 }
 
 function check(obj, type, id) {
     if (id === 0) {
-        check_text_online(obj, id, global_answers, global_comment);
+        check_text_online(obj, id, global_answers[id], global_comment[id]);
         return;
     }
     if (id > -1) {
@@ -426,7 +432,7 @@ function enter_check(obj, e, type, id) {
     }
     if(e.keyCode == 13) {
         if (id === 0) {
-            check_text_online(obj, id, global_answers, global_comment);
+            check_text_online(obj, id, global_answers[id], global_comment[id]);
             return;
         }
         check(obj, type, id);
@@ -435,8 +441,8 @@ function enter_check(obj, e, type, id) {
     return true;
 }
 
-function generate_lesson(div, html, root) {
-    var count = 0, match, matches = [], 
+function generate_lesson(div, html, root, count) {
+    var match, matches = [], 
         reg = /<h[1234]([\d\D]*?)<h[1234]/g; 
 
     if (root === "practice") {
@@ -504,7 +510,7 @@ function loadTutorial(link) {
         success : function (data){
             var content = data.content,
                 loadingMask = document.getElementById('loadingDiv');
-            //console.log(data);
+            // console.log(content);
             loadingMask.parentNode.removeChild(loadingMask);
 
             if (!content || !data.status) {
@@ -513,8 +519,21 @@ function loadTutorial(link) {
             } 
 
             var tutorial = $("#tutorial"),
+                html = '';
+            
+            if (!root.indexOf('gewu.html') || !root.indexOf('editor.html')) {
+                if (!root.indexOf('gewu.html')) {
+                    gewu_content = content;
+                    var name = localStorage.getItem("name") || "";
+                    if (name) {
+                        content = content.replace(/{{它}}/g, name);
+                    }
+                }
+                html = md.render(qa_parse_full(content))+"<h1>";
+            } else {
                 html = md.render(qa_parse(content))+"<h1>";
-            global_lesson_count = generate_lesson(tutorial, html, root);
+            }
+            global_lesson_count = generate_lesson(tutorial, html, root, 0);
             
             if (root === "practice") {
                 draw();

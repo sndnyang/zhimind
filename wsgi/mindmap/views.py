@@ -242,6 +242,11 @@ def checkAnswer():
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
+    if expression[0].strip().startswith("不知道"):
+        response['status'] = True
+        response['comment'] = '看来作者编写题目还得加强啊'
+        return json.dumps(tid, ensure_ascii=False)
+
     if tid in session:
         answers = session[tid]['answer'][no]
         comments = session[tid]['comment'][no]

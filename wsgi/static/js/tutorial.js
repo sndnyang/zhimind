@@ -227,6 +227,7 @@ function renderQuestion(temp, quiz_count) {
     feedback = $('<div class="hidden"></div>');
     response = $('<div class="math-container"></div>'),
     submit = $('<button class="btn btn-info">提交验证</button>');
+    skip = $('<button class="btn btn-danger">跳过本题</button>');
 
     type = temp.match(typep)[0];
     type = type.substring(2, type.length-1).trim();
@@ -288,8 +289,10 @@ function renderQuestion(temp, quiz_count) {
     }
 
     submit.attr("onclick", "check(this, '{0}', {1})".format(type, quiz_count));
+    skip.attr("onclick", "skip_qa(this, '{0}', {1})".format(type, quiz_count));
     div.append('<br>');
     div.append(submit);
+    div.append(skip);
     div.append(feedback);
 
     response.append(div);
@@ -424,6 +427,18 @@ function check(obj, type, id) {
             checkQuiz(obj, id);
         }
     }
+}
+
+function skip_qa(obj, type, id) {
+    if (error_times < 3) {
+        alert("请多动动脑筋, 再猜猜");
+        return;
+    }
+    var problem = $(obj).parents('.process'),
+        lesson_name = problem.parents('.lesson')[0].className,
+        lesson_id = parseInt(lesson_name.substr(13));
+    check_result(true, lesson_id, id);
+    display_comments(problem, {'comment': '真是太遗憾了，您没回答出来, 看来作者编写题目和提示的能力还得加强'});
 }
 
 function enter_check(obj, e, type, id) {

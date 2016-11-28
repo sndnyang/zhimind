@@ -19,7 +19,7 @@ function checkProcess(obj, id) {
     json[1] = match;
     json[2] = null;
     json[3] = null;
-    // console.log(allOptions.length);
+
     var t = null;
     if (allStep.length > 1) {
         var temp = allStep[allStep.length - 2].value;
@@ -38,7 +38,6 @@ function checkProcess(obj, id) {
         if (!validateOption(obj))
             return;
 
-        //console.log(obj.value.trim());
         if (!$(obj).attr("readonly")) {
             var v = obj.value.trim();
             if (v in option_match) {
@@ -61,7 +60,6 @@ function checkProcess(obj, id) {
         data: JSON.stringify({'id': id, 'expression': json,
                 'url': tutorial_url}),
         success : function (result){
-            console.log(result);
             if (result.status) {
                 parent.children('.comment').attr('class', 'hidden');
                 right_div.html('');
@@ -137,7 +135,6 @@ function checkQuiz(obj, id) {
             }
         });
 
-        value = value.substring(0, value.length-1);
         url = "/checkChoice";
 
     } else if (type === "text") {
@@ -157,10 +154,7 @@ function checkQuiz(obj, id) {
         data: JSON.stringify({'id': id, 'expression': value,
                 'url': tutorial_url}),
         success: function (result){
-            console.log(result);
-            if (result.comment) {
-                display_comments(problem, result);
-            }
+
             if (result.info) {
                 $('.hint').css('display', 'block');
                 $('.flashes').html('');
@@ -171,7 +165,15 @@ function checkQuiz(obj, id) {
                 // problem.children('div').attr('class', 'hidden');
                 check_result(result.status, lesson_id, id);
             }
-
+            if (result.comment) {
+                if (typeof(result.comment) !== "string" && error_times > result.comment.length) {
+                    result.comment = "真是太遗憾了，您没回答出来, 看来作者编写题目和提示的能力还得加强";
+                    display_comments(problem, result);
+                    check_result(true, lesson_id, id);
+                } else {
+                    display_comments(problem, result);
+                }
+            }
             return;
         },
         error: backendError

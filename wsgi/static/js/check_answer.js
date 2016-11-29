@@ -134,7 +134,7 @@ function checkQuiz(obj, id) {
                 value += $(this).val()+"@";
             }
         });
-
+        value = value.substring(0, value.length-1);
         url = "/checkChoice";
 
     } else if (type === "text") {

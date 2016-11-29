@@ -325,6 +325,9 @@ function qa_parse(c) {
     var end, lists = [], s, quiz_type,
         start = c.indexOf("{%"), html = '';
 
+    global_answers = [''];
+    global_comment = [''];
+
     while (start >= 0 && start < c.length) {
         end = find_right_next(c, start, 0, '\n')
         s = c.substring(start, end).trim()
@@ -382,7 +385,7 @@ function check_text_online(obj, id, answers, comments) {
             check_result(true, lesson_id, id);
         }
         display_comments(problem, result);
-        check_result(true, lesson_id, id);
+        error_times--;
         return;
 
     } else if (type === "checkbox") {
@@ -403,6 +406,7 @@ function check_text_online(obj, id, answers, comments) {
                     result = {'comment': comments[1]};
                 }
                 display_comments(problem, result);
+                error_times--;
                 return;
             }
         }
@@ -437,8 +441,8 @@ function skip_qa(obj, type, id) {
     var problem = $(obj).parents('.process'),
         lesson_name = problem.parents('.lesson')[0].className,
         lesson_id = parseInt(lesson_name.substr(13));
-    check_result(true, lesson_id, id);
     display_comments(problem, {'comment': '真是太遗憾了，您没回答出来, 看来作者编写题目和提示的能力还得加强'});
+    check_result(true, lesson_id, id);
 }
 
 function enter_check(obj, e, type, id) {

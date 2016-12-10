@@ -22,29 +22,34 @@ def printDeep(item, deep):
 
 
 def add_mastery_in_json(json, entrys):
-    node_map = dict((e.name, (e.parent, e.mastery)) for e in entrys)
+    node_map = dict((e.tutor_id, e.mastery) for e in entrys)
     visited = []
 
     def dfs(node, parent):
         name = node['name']
-        if name in node_map:
-            if parent == '' or parent == node_map[name][0]:
-                node['level'] = node_map[name][1]
+        if "link" in node and len(node['link']):
+            for e in node['link']:
+                if "url" not in e:
+                    continue
+                if "/tutorial/" in e['url'] or "/practice/" in e['url']:
+                    tid = e['url'].split('/')[-1].split('?')[0]
+                    if tid in node_map:
+                        node['level'] = node_map[tid]
 
         if 'children' not in node:
             return node
 
-        childlevel = 0
+        child_level = 0
         for child in node['children']:
             if child not in visited:
-                childnode = dfs(child, name)
-                if childnode and 'level' in childnode:
-                    childlevel += child['level']
+                child_node = dfs(child, name)
+                if child_node and 'level' in child_node:
+                    child_level += child['level']
 
-        if childlevel:
+        if child_level:
             if 'level' not in node:
                 node['level'] = 0
-            node['level'] += childlevel * 1.0 / len(node['children'])
+            node['level'] += child_level * 1.0 / len(node['children'])
         return node
 
     node = dfs(json, '')

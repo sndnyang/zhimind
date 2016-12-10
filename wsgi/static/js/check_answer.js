@@ -109,7 +109,7 @@ function checkQuiz(obj, id) {
     var value, your_answer,
         back_check = false,
         url = "/checkTextAnswer",
-        tutorial_url = document.URL.split('/')[4],
+        tutorial_url = document.URL.split('/')[4].split('?')[0],
         problem = $(obj).parents('.process'),
         ele = problem.children().children(".quiz"),
         type = ele.attr("type"),

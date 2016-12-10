@@ -238,7 +238,6 @@ def checkChoice():
 def checkAnswer():
     response = {'status': False}
     no, tid, expression = validate_check_para(request.json, Tutorial)
-    # app.logger.debug('%s %s %s' % (str(no), str(tid), str(expression)))
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -380,8 +379,7 @@ def load_map(mapid):
 
     try:
         mindmap = MindMap.query.get(mapid)
-        entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id(),
-                                                 mindmap_id=mindmap.get_id()).all()
+        entrylist = EntryMastery.query.filter_by(user_id=mindmap.get_user_id()).all()
 
         ret_code = mindmap.map
         if len(entrylist):
@@ -410,17 +408,14 @@ def link_quiz():
     if name and mapid and tutorid:
         try:
             result = EntryMastery.query.filter_by(user_id=g.user.get_id(),
-                                                  mindmap_id=mapid, name=name, tutor_id=
-                                                  tutorid).one_or_none()
+                                    name=name, tutor_id=tutorid).one_or_none()
         except MultipleResultsFound:
             ret['error'] = u'搜索到多条数据，请联系管理员'
             return json.dumps(ret, ensure_ascii=False)
 
         if result is None:
-            entry = EntryMastery(name, parent)
+            entry = EntryMastery(tutorid)
             entry.user_id = g.user.get_id()
-            entry.mindmap_id = mapid
-            entry.tutor_id = tutorid
             g.user.last_edit = now
             db.session.add(entry)
             db.session.commit()
@@ -436,7 +431,8 @@ def update_entry_master():
     now = datetime.now()
     if not g.user.check_frequence(now):
         return json.dumps({'status': False,
-                           'error': u'用户上次操作在一分钟之内，太过频繁'},
+                           'error': u'用户上次操作在一分钟之内，太过频繁',
+                          'info': u'用户上次操作在一分钟之内，太过频繁'},#
                           ensure_ascii=False)
 
     ret = {'status': False}
@@ -444,37 +440,24 @@ def update_entry_master():
     if not tutorid:
         ret['info'] = u'未指定教程id'
 
-    name = request.json.get('name', None)
-    if not tutorid:
-        ret['info'] = u'未指定id'
-
-    mapid = request.json.get('id', None)
-    if not mapid:
-        ret['info'] = u'未指定导图id'
-
-    parent = request.json.get('parent', None)
-
     if 'info' in ret:
         return json.dumps(ret, ensure_ascii=False)
 
-    results = EntryMastery.query.filter_by(user_id=g.user.get_id(),
-                                           mindmap_id=mapid, name=name, tutor_id=tutorid)
-
-    flag = False
-    g.user.last_edit = now
-    for entry in results:
-        if parent and entry.parent == parent:
-            entry.mastery += 1
-            db.session.commit()
-            flag = True
-        if not parent:
-            entry.mastery += 1
-            db.session.commit()
-            flag = True
-
-    if not flag:
-        ret['info'] = u'未找到名为 %s, 且父结点为 %s 的结点' % (name, parent)
+    ret = {'info': u'重复数据异常'}
+    app.logger.debug(tutorid)
+    try:
+        result = EntryMastery.query.filter_by(user_id=g.user.get_id(), tutor_id=tutorid).one_or_none()
+    except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
+
+    if result:
+        result.mastery += 1
+        db.session.commit()
+    else:
+        entry = EntryMastery(tutorid)
+        entry.user_id = g.user.get_id()
+        db.session.add(entry)
+        db.session.commit()
 
     ret['status'] = True
     return json.dumps(ret, ensure_ascii=False)

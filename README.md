@@ -29,3 +29,9 @@
 3. 视频定点
 4. 标准答案匹配，用于推导。 特别是手写公式输入很有用。
 5. skulpt 或 filbert 这种 js实现的python解析器
+
+# openshift 常用命令
+
+    rhc tail -f app-root/logs/app.log -a map # 查看用户验证文本答案的日志
+    
+    rhc show-app map --gears quota  # 查看空间大小

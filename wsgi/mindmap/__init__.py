@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import sys
 
 reload(sys)
@@ -6,14 +8,28 @@ if sys.getdefaultencoding() != 'utf8':
     sys.setdefaultencoding('utf8')
 
 import os
-
+import logging
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask.ext.login import LoginManager
+from flask_login import LoginManager
 
 app = Flask(__name__, static_folder= os.path.join(os.path.dirname(__file__), "..", "static"))
 app.config.from_pyfile('flaskapp.cfg')
+
+log_file_name = os.path.join(
+    os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
+    'app.log')
+
+handler = logging.FileHandler(log_file_name)
+handler.setLevel(logging.DEBUG)
+fmt = "%(asctime)s\t%(message)s"
+# 实例化formatter
+formatter = logging.Formatter(fmt)
+# 为handler添加formatter
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()

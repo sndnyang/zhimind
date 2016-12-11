@@ -248,6 +248,15 @@ def checkAnswer():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
+    if g.user is None or not g.user.is_authenticated:
+        user = request.remote_addr
+    else:
+        user = g.user.get_name()
+    temp = '@'.join(answers)
+    if not temp:
+        temp = "empty"
+    app.logger.info("text\t%s\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(expression), temp))
+
     if not answers or len(answers) != len(expression):
         response['info'] = u'有些空没有填?'
         return json.dumps(response)
@@ -286,20 +295,26 @@ def cmp_math():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
+    if g.user is None or not g.user.is_authenticated:
+        user = request.remote_addr
+    else:
+        user = g.user.get_name()
+    app.logger.info("math\t%s\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(expression), '@'.join(answers)))
+
     if not answers or len(answers) != len(expression):
         return json.dumps(response)
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])
-
         if info is not True:
             response['info'] = info
             if 'comment' not in response:
                 response['comment'] = comments[1]
             break
-    response['status'] = True
-    if '你答对了' in comments[0]:
-        response['comment'] = comments[0]['你答对了']
+    else:
+        response['status'] = True
+        if '你答对了' in comments[0]:
+            response['comment'] = comments[0]['你答对了']
     return json.dumps(response, ensure_ascii=False)
 
 
@@ -316,6 +331,12 @@ def checkProcess():
     else:
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
+
+    if g.user is None or not g.user.is_authenticated:
+        user = request.remote_addr
+    else:
+        user = g.user.get_name()
+    app.logger.info("proc\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(l)))
 
     result = check_process(l, answers, comments)
     response['status'] = result[0]

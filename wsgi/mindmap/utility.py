@@ -91,11 +91,11 @@ def validate_check_para(data, Tutorial):
     if not expression or not tid:
         return None, response, None
 
-    tid = get_real_tid(Tutorial, tid)
+    tid, name = get_real_tid(Tutorial, tid)
     if not tid:
         response['info'] = u'url不正确？'
         return None, response, None
-    return no, tid, expression
+    return no, tid, expression, name
 
 
 def get_real_tid(Tutorial, tid):
@@ -106,8 +106,8 @@ def get_real_tid(Tutorial, tid):
             if tutorial:
                 tid = tutorial.get_id()
             else:
-                return None
+                return None, None
     except NoResultFound:
-        return None
-    return tid
+        return None, None
+    return tid, tutorial.get_title()
 

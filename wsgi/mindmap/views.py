@@ -146,7 +146,7 @@ def get_tutorial(link):
 @app.route('/convert/<link>')
 def convert(link):
     response = {'status': False}
-    link = get_real_tid(Tutorial, link)
+    link, name = get_real_tid(Tutorial, link)
     if not link:
         response['info'] = u'没有找到'
         return json.dumps(response, ensure_ascii=False)
@@ -184,7 +184,7 @@ def convert(link):
 @app.route('/checkChoice', methods=["POST"])
 def checkChoice():
     response = {'status': False}
-    no, tid, expression = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json, Tutorial)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -237,7 +237,7 @@ def checkChoice():
 @app.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
     response = {'status': False}
-    no, tid, expression = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json, Tutorial)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -255,7 +255,8 @@ def checkAnswer():
     temp = '@'.join(answers)
     if not temp:
         temp = "empty"
-    app.logger.info("text\t%s\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(expression), temp))
+    app.logger.info("text\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
+                                            '@'.join(expression), temp))
 
     if not answers or len(answers) != len(expression):
         response['info'] = u'有些空没有填?'
@@ -284,7 +285,7 @@ def checkAnswer():
 @app.route('/cmp_math', methods=["POST"])
 def cmp_math():
     response = {'status': False}
-    no, tid, expression = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json, Tutorial)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -299,7 +300,8 @@ def cmp_math():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("math\t%s\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(expression), '@'.join(answers)))
+    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
+                                    '@'.join(expression), '@'.join(answers)))
 
     if not answers or len(answers) != len(expression):
         return json.dumps(response)
@@ -321,7 +323,7 @@ def cmp_math():
 @app.route('/checkProcess', methods=["POST"])
 def checkProcess():
     response = {'status': False}
-    no, tid, l = validate_check_para(request.json, Tutorial)
+    no, tid, l, name = validate_check_para(request.json, Tutorial)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 

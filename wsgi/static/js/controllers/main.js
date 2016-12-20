@@ -420,8 +420,41 @@ module.directive('mindMap', function ($compile) {
             root.x0 = h / 2;
             root.y0 = 0;
             update(root);
+            $("#mainMap").html('');
+            var treeData = constructParent(root);
+            $('#mainMap').treeview({
+                color: "#428bca",
+                expandIcon: 'glyphicon glyphicon-chevron-right',
+                collapseIcon: 'glyphicon glyphicon-chevron-down',
+                nodeIcon: 'glyphicon glyphicon-bookmark',
+                levels: 3,
+                enableLinks: true,
+                showTags: true,
+                data: [treeData]
+            });
             scope.root = root;
         });
+
+        function constructParent(node) {
+            var temp = {'text': node.name};
+            if (node.children && node.children.length) {
+                temp.nodes = [];
+                temp.tags = [node.children.length];
+                temp.href = "";
+                if (node.link && node.link.length) {
+                    temp.tags.push(node.link.length);
+                    for (var i in node.link) {
+                        var url = {text: node.link[i].name, href: node.link[i].url,
+                            color: "yellow", backColor: "purple"}
+                        temp.nodes.push(url);
+                    }
+                }
+                for (var i in node.children) {
+                    temp.nodes.push(constructParent(node.children[i]));
+                }
+            }
+            return temp;
+        }
 
         function to_backend_create(d, type, json, name) {
             $.ajax({

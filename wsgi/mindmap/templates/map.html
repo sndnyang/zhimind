@@ -2,11 +2,15 @@
 {% block body %}
    
 <link rel="stylesheet" href="/static/css/main.css">
+<link href="/static/css/ListTabMenu.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css" rel="stylesheet">
 
 <!-- endbuild -->
 <!-- build:js scripts/modules.js -->  
 <script src="//cdn.bootcss.com/angular.js/1.2.19/angular.min.js"></script>
 <script src="//cdn.bootcss.com/d3/3.5.14/d3.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 <!--<script src="/static/js/jquery-2.0.3.min.js"></script>
 <script src="/static/js/angular.min.js"></script>
 <script src="/static/js/d3.min.js"></script>-->
@@ -14,38 +18,51 @@
 <script src="/static/js/app.js"></script>
 <script src="/static/js/controllers/main.js"></script>  
 
+<input id="tab1" type="radio" name="tabs" checked="">
+<label for="tab1">思维导图</label>
 
+<input id="tab2" type="radio" name="tabs">
+<label for="tab2">目录</label>
+
+<section id="content1">
 <div id="content-sans-footer">
-    
-    <div ng-init='init("{{ mapid }}")' ng-controller="MainCtrl" class="minMapWrap">
-        <div class="menu">
 
-            <div class="btn btn-default" ng-click="create()">新导图</div>
+<div ng-init='init("{{ mapid }}")' ng-controller="MainCtrl" class="minMapWrap">
+    <div class="menu">
 
-            <div class="downloadWrap">
-                <div class="btn btn-default" ng-click="update()">保存导图</div>
-                <div id="updateWrap"></div>
-            </div>
+        <div class="btn btn-default" ng-click="create()">新导图</div>
 
-            <div class="downloadWrap">
-                <div class="btn btn-default loadFile">
-                    <span>读取json文件</span>
-                    <input id="uploadFile" name="uploadFile" type="file" change-file="load">
-                </div>
-                <div class="btn btn-default" ng-click="save()">保存json文件</div>
-                <div id="downloadLinkWrap"></div>
-            </div>
-
+        <div class="downloadWrap">
+            <div class="btn btn-default" ng-click="update()">保存导图</div>
+            <div id="updateWrap"></div>
         </div>
-        <div class="mindMap" mind-map="root" ng-keyup="keyup($event.keyCode)" tabindex="1"></div>      
-    </div>
 
+        <div class="downloadWrap">
+            <div class="btn btn-default loadFile">
+                <span>读取json文件</span>
+                <input id="uploadFile" name="uploadFile" type="file" change-file="load">
+            </div>
+            <div class="btn btn-default" ng-click="save()">保存json文件</div>
+            <div id="downloadLinkWrap"></div>
+        </div>
 
-    <div id="top" data-toggle="tooltip" data-placement="left" title="" data-original-title="回到顶部" style="display: block;">
-        <a href="javascript:;">
-            <div class="arrow"></div>
-            <div class="stick"></div>
-        </a>
     </div>
+    <div class="mindMap" mind-map="root" ng-keyup="keyup($event.keyCode)" tabindex="1"></div>
 </div>
+
+
+<div id="top" data-toggle="tooltip" data-placement="left" title="" data-original-title="回到顶部" style="display: block;">
+    <a href="javascript:;">
+        <div class="arrow"></div>
+        <div class="stick"></div>
+    </a>
+</div>
+</div>
+</section>
+<section id="content2">
+
+    <div id="mainMap">
+    </div>
+
+</section>
 {% endblock %}

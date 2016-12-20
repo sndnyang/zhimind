@@ -196,6 +196,13 @@ def checkChoice():
         answers = eval(app.redis.get(tid))['answer'][no]
         comments = eval(app.redis.get(tid))['comment'][no]
 
+    if g.user is None or not g.user.is_authenticated:
+        user = request.remote_addr
+    else:
+        user = g.user.get_name()
+    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
+                                    '@'.join(expression), '@'.join(answers)))
+
     if len(answers) == 1 and not answers[0]:
         response['status'] = True
         response['comment'] = '有自己的判断就好了，不是吗？'

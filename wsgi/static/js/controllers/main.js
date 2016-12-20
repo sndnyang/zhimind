@@ -436,21 +436,20 @@ module.directive('mindMap', function ($compile) {
         });
 
         function constructParent(node) {
-            var temp = {'text': node.name};
+            var temp = {text: node.name, nodes: [], tags: []};
             if (node.children && node.children.length) {
-                temp.nodes = [];
-                temp.tags = [node.children.length];
-                temp.href = "";
-                if (node.link && node.link.length) {
-                    temp.tags.push(node.link.length);
-                    for (var i in node.link) {
-                        var url = {text: node.link[i].name, href: node.link[i].url,
-                            color: "yellow", backColor: "purple"}
-                        temp.nodes.push(url);
-                    }
-                }
+                temp.tags.push(node.children.length);
                 for (var i in node.children) {
                     temp.nodes.push(constructParent(node.children[i]));
+                }
+            }
+            if (node.link && node.link.length) {
+                temp.href = "";
+                temp.tags.push(node.link.length);
+                for (var i in node.link) {
+                    var url = {text: node.link[i].name, href: node.link[i].url,
+                        color: "yellow", backColor: "purple"}
+                    temp.nodes.push(url);
                 }
             }
             return temp;

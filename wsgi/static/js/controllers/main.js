@@ -437,6 +437,12 @@ module.directive('mindMap', function ($compile) {
 
         function constructParent(node) {
             var temp = {text: node.name, nodes: [], tags: []};
+            if (node.level) {
+                var white = d3.rgb(255, 255, 255);
+                var red   = d3.rgb(255, 0,   0);
+                var compute = d3.interpolate(white, red);
+                temp.backColor = compute(node.level / 8.0);
+            }
             if (node.link && node.link.length) {
                 temp.href = "";
                 temp.tags.push(node.link.length);

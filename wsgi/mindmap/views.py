@@ -11,8 +11,6 @@ from flask import request, flash, url_for, redirect, render_template, g, \
 
 from flask_login import current_user, logout_user, login_user, login_required
 
-from sqlalchemy_searchable import search
-
 from mindmap import app, db, login_manager
 
 from models import *

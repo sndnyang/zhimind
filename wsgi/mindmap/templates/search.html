@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<link rel="stylesheet" type="text/css" href="/static/tipuesearch/tipuesearch.css" media="screen">
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="col-xs-12">
+            <article>
+                <div class="col-xs-8 col-xs-offset-2">
+                <div id="tipue_search_content"><div id="tipue_search_loading"></div></div>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/tutorial.js"></script>
+<script type="text/javascript" src="/static/tipuesearch/tipuesearch_set.js"></script>
+<script type="text/javascript" src="/static/tipuesearch/tipuesearch.js"></script>
+<script>
+$(document).ready(function() {
+    $('#tipue_search_input').tipuesearch({
+        'mode' : 'json',
+        'show': 10,
+        'newWindow': false,
+        'contentLocation': '/tipuesearch_content.json'
+    });
+});
+</script>
+{% endblock body %}

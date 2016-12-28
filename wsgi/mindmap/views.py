@@ -11,6 +11,8 @@ from flask import request, flash, url_for, redirect, render_template, g, \
 
 from flask_login import current_user, logout_user, login_user, login_required
 
+from sqlalchemy_searchable import search
+
 from mindmap import app, db, login_manager
 
 from models import *
@@ -200,8 +202,8 @@ def checkChoice():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
-                                    '@'.join(expression), '@'.join(answers)))
+    app.logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
+                                    expression, '@'.join(answers)))
 
     if len(answers) == 1 and not answers[0]:
         response['status'] = True
@@ -927,3 +929,19 @@ def gewu():
             'keywords': u'格物致知, 费曼技巧, 思维导图, 启发式学习, 智能学习, 在线教育'}
     return render_template('gewu.html', link=link, name=name,
                            meta=meta)
+
+
+@app.route('/search')
+@app.route('/search.html')
+def search_page():
+    meta = {'title': u'知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('search.html', meta=meta)
+
+
+@app.route('/tipuesearch_content.json')
+def search_q():
+    query = [{'title': e.title, 'url': '/tutorial/'+e.id, 'text': qa_parse(e.content)[0]['response'], 'tags': ''}
+             for e in db.session.query(Tutorial) if e.content]
+    return json.dumps({'pages': query})

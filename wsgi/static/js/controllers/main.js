@@ -488,7 +488,8 @@ module.directive('mindMap', function ($compile) {
                 var flag = false;
                 for (var i in practice_map) {
                     if (practice_map[i] == urlparts[3]) {
-                        var p = d.parent.name || null;
+                        var p = null;
+                        if (d.parent) p = d.parent.name;
                         $.ajax({
                             method: "post",
                             url : "/linkquiz",

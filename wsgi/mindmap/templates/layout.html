@@ -54,7 +54,7 @@
                         {% if g %}
                         {% if g.user.is_authenticated %}
                         <li>
-                            <a href="{{ url_for('logout') }}">退出登录</a>
+                            <a href="{{ url_for('logout') }}">注销</a>
                         </li>
                         {% endif %}
                         {% if not g.user.is_authenticated %}
@@ -71,19 +71,15 @@
                         </li>
                         <li>
                             <a
-                                href="/introMap.html">导图示例</a>
+                                href="/reciteWord.html">脑洞单词</a>
                         </li>
                         <li>
                             <a
-                                href="/reciteWord.html">脑洞记单词</a>
+                                href="/gewu.html">格物君</a>
                         </li>
                         <li>
                             <a
-                                href="/gewu.html">格物学习</a>
-                        </li>
-                        <li>
-                            <a
-                                href="http://blog.zhimind.com/tags.html#zhimind-ref">开发者博客</a>
+                                href="http://blog.zhimind.com/tags.html#zhimind-ref">博客</a>
                         </li>
                         <li>
                             <form class="navbar-form" action="/search" onsubmit="return validateForm(this.elements['q'].value);">

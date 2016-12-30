@@ -16,7 +16,7 @@ http://www.tipue.com/search
                'show'                   : 7,
                'newWindow'              : false,
                'showURL'                : true,
-               'minimumLength'          : 3,
+               'minimumLength'          : 2,
                'descriptiveWords'       : 25,
                'highlightTerms'         : true,
                'highlightEveryTerm'     : false,

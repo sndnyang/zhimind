@@ -269,9 +269,10 @@ module.directive('mindMap', function ($compile) {
 
             scope.toTutorial = function (i) {
                 var d = scope.current_node,
-                    p = d.parent.name || null,
+                    p = null,
                     curparts = document.URL.split('/'),
                     url = d.link[i]['url'].split('?')[0];
+                if (d.parent) p = d.parent.name;
                 url += '?id='+curparts[4]+'&name='+d.name+'&parent='+p;
                 window.open(url);
             }
@@ -497,7 +498,7 @@ module.directive('mindMap', function ($compile) {
                             dataType: "json",
                             data: JSON.stringify({
                                 'mapid': curparts[4], 
-                                'tutorid': urlparts[4], 
+                                'tutorid': urlparts[4].split('?')[0],
                                 'name': d.name, 
                                 'parent':p}
                                 ),

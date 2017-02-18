@@ -44,3 +44,4 @@ app.redis = redis.StrictRedis(connection_pool = pool)
 
 from models import *
 from views import *
+from word import *

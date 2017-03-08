@@ -69,10 +69,15 @@ $(document).ready(function(){
     $("#ok").click(ok);
 
     function fuzzy() {
-        $("#next_right").css("display", "inline-block");
-        $("#next_wrong").css("display", "none");
-        $("#recall").attr("class", "tab-pane fade");
-        $("#remember").attr("class", "tab-pane fade in active");
+        if ($(".word").html() != currentWord.word) {
+            word_quiz();
+        }
+        else {
+            $("#next_right").css("display", "inline-block");
+            $("#next_wrong").css("display", "none");
+            $("#recall").attr("class", "tab-pane fade");
+            $("#remember").attr("class", "tab-pane fade in active");
+        }
     }
 
     $("#fuzzy").click(fuzzy);
@@ -124,6 +129,7 @@ $(document).ready(function(){
         else { reciteMainView(); }
         animate();
     }
+
     function right() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
@@ -225,6 +231,20 @@ $(document).ready(function(){
 
         $("#myBooks2").append(newBook);
     }
+
+    function word_quiz() {
+        var word1 = currentWord.word, word2 = $("#word_quiz").val();
+        if (word1.trim() === word2.trim()) {
+            $("#fuzzy").text("模糊(left)");
+            $("#ok").show();
+            $("#sorry").show();
+            $(".learning-speaker").show();
+            $(".word_quiz").hide();
+            right();
+        } else {
+            $(".word_quiz").append($("<p>wrong</p>"));
+        }
+    }
 });
 
 // In the following line, you should include the prefixes of implementations you want to test.
@@ -271,6 +291,7 @@ function getWords() {
             function getNext() {
                 if (i < keys.length) {
                     var word = keys[i];
+                    console.log(word);
                     itemStore.get(word).onsuccess = function (e) {
                         var item = e.target.result;
                         for (var ele in serverData[word]) {
@@ -567,14 +588,31 @@ function renderLenovo(text) {
     return result;
 }
 
-function reciteMainView() {
-    var new_index = Math.round(Math.random() * (unit.length - 1));
+function isStem(w1, w2) {
+    var i = 0;
+    for (i = 0; i < w1.length; i++) {
+        if (i >= w2.length || w1[i] != w2[i]) {
+            break;
+        }
+    }
+    return 3 * i > w1.length * 2.0;
+}
 
-    if (unit.length > 1 && index === new_index)
-        new_index = unit.length - index - 1;
-    index = new_index;
-    currentWord = unit[index];
+function genBlank(sentence, word) {
+    var words = sentence.split(" "),
+        input = '<input type="text" class="form-control" id="word_quiz"/>';
 
+    for (var i in words) {
+        if (isStem(word, words[i])) {
+            sentence = sentence.replace(words[i], input);
+            break;
+        }
+    }
+    var span = $("<p>" + sentence + "</p>");
+    return span;
+}
+
+function learnPage() {
     $(".word").html(currentWord.word);
     $(".uk").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
     $(".us").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
@@ -594,6 +632,38 @@ function reciteMainView() {
     }
     else {
         $("#lenovo").html("参考记忆法:"+renderLenovo(currentWord.lenovo));
+    }
+}
+
+function reciteMainView() {
+    var new_index = Math.round(Math.random() * (unit.length - 1));
+
+    if (unit.length > 1 && index === new_index)
+        new_index = unit.length - index - 1;
+    index = new_index;
+    currentWord = unit[index];
+
+    if (currentWord.level > 2 && Math.random() > 0.5 && currentWord.example.length > 3) {
+        var word = currentWord.word;
+        $(".uk").attr('data-rel', '');
+        $(".us").attr('data-rel', '');
+
+        var examples = currentWord.example.trim().split(/[\r\n]/g),
+            s = examples.length,
+            example = examples[Math.floor(Math.random() * s)],
+            sentence = example.split(":")[1],
+            meaning = example.split(":")[0],
+            blank_div = genBlank(sentence, currentWord.word);
+        $(".word").html(meaning);
+        $("#fuzzy").text("验证");
+        $("#ok").hide();
+        $("#sorry").hide();
+        $(".learning-speaker").hide();
+        $(".word_quiz").html(blank_div);
+        $(".word_quiz").show();
+    }
+    else {
+        learnPage();
     }
     $('#node').hide();
     $("#remember").attr("class", "tab-pane fade");

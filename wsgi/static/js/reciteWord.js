@@ -6,6 +6,7 @@ var reciteTimes = {};
 var updateWords = {};
 var currentWord, index;
 var completeNumber = 0;
+var mode = localStorage.getItem("mode") || "en-zh";
 var limit = localStorage.getItem("limit") || 20;
 var currentBook = localStorage.getItem("book");
 var myBooks = JSON.parse(localStorage.getItem("myBooks")) || {};
@@ -227,7 +228,9 @@ $(document).ready(function(){
 
     function updateSetting() {
         limit = $("#unitNum").val() || 20;
+        mode = $("#unitMode").val() || "en-zh";
         localStorage.setItem("limit", limit);
+        localStorage.setItem("mode", mode);
         unit = [];
         $("#recite").attr("class", "tab-pane fade in active");
         $("#setting").attr("class", "tab-pane fade");
@@ -654,8 +657,9 @@ function reciteMainView() {
         new_index = unit.length - index - 1;
     index = new_index;
     currentWord = unit[index];
-
-    if (currentWord.level > 2 && Math.random() > 0.5 && currentWord.example.length > 3) {
+    console.log(mode);
+    if (mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&
+        Math.random() > 0.5 && currentWord.example.length > 3)) {
         var word = currentWord.word;
         $(".uk").attr('data-rel', '');
         $(".us").attr('data-rel', '');
@@ -686,7 +690,6 @@ function reciteMainView() {
         $(".word_quiz").hide();
     }
     learnPage();
-
 }
 
 function addLenovo(obj) {

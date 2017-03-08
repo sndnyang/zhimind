@@ -99,7 +99,7 @@ $(document).ready(function(){
         }
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
-        currentWord.level = Math.max(currentWord.level/2, 10);
+        currentWord.level = Math.max(currentWord.level/2, 1);
         if (!(currentWord.word in updateWords)) {
             updateWords[currentWord.word] = {};
         }
@@ -178,7 +178,7 @@ $(document).ready(function(){
     function wrong() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
-        currentWord.level =  Math.max(currentWord.level/2, 10);
+        currentWord.level =  Math.max(currentWord.level/2, 1);
         if (!(currentWord.word in updateWords)) {
             updateWords[currentWord.word] = {};
         }
@@ -656,7 +656,6 @@ function reciteMainView() {
     currentWord = unit[index];
 
     if (currentWord.level > 2 && Math.random() > 0.5 && currentWord.example.length > 3) {
-        console.log("quiz");
         var word = currentWord.word;
         $(".uk").attr('data-rel', '');
         $(".us").attr('data-rel', '');
@@ -676,7 +675,6 @@ function reciteMainView() {
     }
     else {
         $(".word").html(currentWord.word);
-        console.log("learn");
         var media = document.getElementsByTagName('audio')[0];
         audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));

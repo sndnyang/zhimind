@@ -21,12 +21,19 @@ $(document).ready(function(){
     }
 
     $(document).keydown(function (event) {
-        if ($("textarea").is(":focus") || $("textarea").is(":focus")) {
+        if ($("textarea").is(":focus")) {
             return true;
         }
-        var section = $("div.active").attr("id"),
+
+        if (event.keyCode == 13 && $("input").is(":focus")) {
+            word_quiz();
+            return true;
+        }
+
+            var section = $("div.active").attr("id"),
             forget = $("#next_right").css("display");
-        if(event.keyCode == 37) {
+
+        if (event.keyCode == 37) {
             //判断当event.keyCode 为37时（即左方面键）
             if (section == "recall") { fuzzy(); } //recall页面对应 模糊
             else if (section == "remember") { // remember页面对应 记对了
@@ -83,6 +90,13 @@ $(document).ready(function(){
     $("#fuzzy").click(fuzzy);
 
     function sorry() {
+        if ($(".word").html().trim() != currentWord.word.trim()) {
+            $(".word").html(currentWord.word.trim());
+            $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
+            $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
+            var media = document.getElementsByTagName('audio')[0];
+            audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+        }
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
         currentWord.level = Math.max(currentWord.level/2, 10);
@@ -233,10 +247,9 @@ $(document).ready(function(){
     }
 
     function word_quiz() {
-        var word1 = currentWord.word, word2 = $("#word_quiz").val();
+        var word1 = currentWord.temp, word2 = $("#word_quiz").val();
         if (word1.trim() === word2.trim()) {
             $("#fuzzy").text("模糊(left)");
-            $("#ok").show();
             $("#sorry").show();
             $(".learning-speaker").show();
             $(".word_quiz").hide();
@@ -291,7 +304,6 @@ function getWords() {
             function getNext() {
                 if (i < keys.length) {
                     var word = keys[i];
-                    console.log(word);
                     itemStore.get(word).onsuccess = function (e) {
                         var item = e.target.result;
                         for (var ele in serverData[word]) {
@@ -604,6 +616,7 @@ function genBlank(sentence, word) {
 
     for (var i in words) {
         if (isStem(word, words[i])) {
+            currentWord.temp = words[i];
             sentence = sentence.replace(words[i], input);
             break;
         }
@@ -613,18 +626,13 @@ function genBlank(sentence, word) {
 }
 
 function learnPage() {
-    $(".word").html(currentWord.word);
+
     $(".uk").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
     $(".us").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
     $("#etyma").html(currentWord.etyma.replace(/[\r\n]/g, '<br>'));
     $("#example").html(currentWord.example.replace(/[\r\n]/g, '<br>'));
-    $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
-    $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
     $("#youdao").attr("href", "http://dict.youdao.com/search?q=" + currentWord.word);
     $("#youdao").attr("target", "_blank");
-
-    var media = document.getElementsByTagName('audio')[0];
-    audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
 
     if (currentWord.selfLenovo !== "") {
         $("#lenovo").html("自创记忆法:"+renderLenovo(currentWord.selfLenovo)+
@@ -633,6 +641,10 @@ function learnPage() {
     else {
         $("#lenovo").html("参考记忆法:"+renderLenovo(currentWord.lenovo));
     }
+    $('#node').hide();
+    $("#remember").attr("class", "tab-pane fade");
+    $("#recite").attr("class", "tab-pane fade");
+    $("#recall").attr("class", "tab-pane fade in active");
 }
 
 function reciteMainView() {
@@ -644,6 +656,7 @@ function reciteMainView() {
     currentWord = unit[index];
 
     if (currentWord.level > 2 && Math.random() > 0.5 && currentWord.example.length > 3) {
+        console.log("quiz");
         var word = currentWord.word;
         $(".uk").attr('data-rel', '');
         $(".us").attr('data-rel', '');
@@ -657,18 +670,25 @@ function reciteMainView() {
         $(".word").html(meaning);
         $("#fuzzy").text("验证");
         $("#ok").hide();
-        $("#sorry").hide();
         $(".learning-speaker").hide();
         $(".word_quiz").html(blank_div);
         $(".word_quiz").show();
     }
     else {
-        learnPage();
+        $(".word").html(currentWord.word);
+        console.log("learn");
+        var media = document.getElementsByTagName('audio')[0];
+        audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+        $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
+        $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
+        $("#fuzzy").text("模糊(left)");
+        $("#ok").show();
+        $(".learning-speaker").show();
+        $(".word_quiz").html();
+        $(".word_quiz").hide();
     }
-    $('#node').hide();
-    $("#remember").attr("class", "tab-pane fade");
-    $("#recite").attr("class", "tab-pane fade");
-    $("#recall").attr("class", "tab-pane fade in active");
+    learnPage();
+
 }
 
 function addLenovo(obj) {

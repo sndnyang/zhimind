@@ -614,14 +614,18 @@ function isStem(w1, w2) {
 }
 
 function genBlank(sentence, word) {
-    var words = sentence.split(" "),
+    var c = true, words = sentence.split(" "),
         input = '<input type="text" class="form-control" id="word_quiz"/>';
 
     for (var i in words) {
         if (isStem(word, words[i])) {
-            currentWord.temp = words[i];
-            sentence = sentence.replace(words[i], input);
-            break;
+            if (c) {
+                currentWord.temp = words[i];
+                sentence = sentence.replace(words[i], input);
+                c = false;
+            } else {
+                sentence = sentence.replace(words[i], "___");
+            }
         }
     }
     var span = $("<p>" + sentence + "</p>");

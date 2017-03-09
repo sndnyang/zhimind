@@ -100,7 +100,7 @@ $(document).ready(function(){
         }
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
-        currentWord.level = Math.max(currentWord.level/2, 1);
+        currentWord.level = Math.max(Math.floor(currentWord.level/2), 1);
         if (!(currentWord.word in updateWords)) {
             updateWords[currentWord.word] = {};
         }
@@ -158,10 +158,10 @@ $(document).ready(function(){
         itemStore.put(currentWord);
         reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
 
-        if (currentWord.level === 10 || reciteTimes[currentWord.word] === 3) {
+        if (currentWord.level > 9 || reciteTimes[currentWord.word] >= 3) {
             unit.splice(index, 1);
             completeNumber++;
-            if (currentWord.level === 10) {
+            if (currentWord.level > 9) {
                 myBooks[currentBook].finish += 1;
                 $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
                 localStorage.setItem('myBooks', JSON.stringify(myBooks));
@@ -179,7 +179,7 @@ $(document).ready(function(){
     function wrong() {
         var transaction = db.transaction(["word"], "readwrite");
         var itemStore = transaction.objectStore("word");
-        currentWord.level =  Math.max(currentWord.level/2, 1);
+        currentWord.level =  Math.max(Math.floor(currentWord.level/2), 1);
         if (!(currentWord.word in updateWords)) {
             updateWords[currentWord.word] = {};
         }
@@ -311,7 +311,7 @@ function getWords() {
                         var item = e.target.result;
                         for (var ele in serverData[word]) {
                             if ('level' in serverData[word] && item['level']
-                             !== 10 && serverData[word]['level'] === 10) {
+                             !== 10 && serverData[word]['level'] > 9) {
                                 myBooks[currentBook].finish++;
                             }
                             if (serverData[word][ele] && serverData[word][ele] !== "") {

@@ -4,6 +4,7 @@ from flask import render_template
 
 from mindmap import app
 
+
 @app.route('/reciteWord.html')
 def reciteWord():
     import random

@@ -633,7 +633,7 @@ function genBlank(sentence, word) {
 }
 
 function learnPage() {
-
+    $(".phonetic").html(currentWord.phonetic);
     $(".uk").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
     $(".us").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
     $("#etyma").html(currentWord.etyma.replace(/[\r\n]/g, '<br>'));
@@ -661,7 +661,6 @@ function reciteMainView() {
         new_index = unit.length - index - 1;
     index = new_index;
     currentWord = unit[index];
-    console.log(mode);
     if (mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&
         Math.random() > 0.5 && currentWord.example.length > 3)) {
         var word = currentWord.word;

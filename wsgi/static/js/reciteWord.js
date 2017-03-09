@@ -568,18 +568,22 @@ function start() {
     store = transaction.objectStore("word");
     cursorRequest = store.index('level').openCursor(null, 'next');
 
+    unit = [];
+
     cursorRequest.onsuccess = function (event) {
         var cursor = event.target.result;
         if (cursor) {
-            if (unit.length < limit) {
-                unit.push(cursor.value);
-            } else {
-                var prob = 1.0 * limit / myBooks[currentBook].num;
-                if (Math.random() < prob) {
-                    unit[i%limit] = cursor.value;
+            if (cursor.value.level < 10) {
+                if (unit.length < limit) {
+                    unit.push(cursor.value);
+                } else {
+                    var prob = 1.0 * limit / myBooks[currentBook].num;
+                    if (Math.random() < prob) {
+                        unit[i%limit] = cursor.value;
+                    }
                 }
+                i++;
             }
-            i++;
             cursor.continue();
         }
         else {

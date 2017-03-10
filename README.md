@@ -1,37 +1,58 @@
-# 知识导图
+# zhimind
 
-## 目标：
+solution description [zhimind](http://blog.zhimind.com/zhimind-entire-solution-english.html)
 
-一个更好的学习平台， 对思维导图进行提升。
+[chinese version](https://github.com/sndnyang/zhimind/blob/master/README_zh.md)
 
-加入进度控制（知识点掌握进度）、笔记、答疑、练习等功能， 让思维导图互联网化！
+# Goal:
 
-## 后台：
+A better MOOC platform, heuristic, interactive, student-centred, personalized.
 
-基于 openshift(免费) + python + flask.
+Achieve this by reorganized teaching materials and heuristic guide questions based on Artificial Intelligence and Natural Language Processing Technologies.
 
-数据库定为 PostgreSQL 9.2 + redis
+# Parts:
 
-## 前端
+1. Mindmaps for Courses or Books
+2. Articles as interactive Videos or Contents or Quizzes or Tutorials
+3. Education Management/Report System for Teachers and Students
 
-1. 开源的JS思维导图项目
-2. tryregex
-3. elevator saga
-4. d3.js 做的思维导图
-5. markdown-it 进行markdown解析
+## MindMap
 
-一个全面、多方位的学习平台
+## Article
 
-## 未来
+## Data System
 
-1. 也许还会考虑 ipython notebook 的加入， 但这个一般是VPS等空间才有的功能， 要钱不太想。
-2. 支持中国主流的C语言
-3. 视频定点
-4. 标准答案匹配，用于推导。 特别是手写公式输入很有用。
-5. skulpt 或 filbert 这种 js实现的python解析器
 
-# openshift 常用命令
+# Framework
 
-    rhc tail -f app-root/logs/app.log -a map # 查看用户验证文本答案的日志
-    
-    rhc show-app map --gears quota  # 查看空间大小
+## Backend
+
+based on Openshift(免费) + Python + Flask
+
+Database: PostgreSQL 9.2 + Redis
+
+TODO:
+
+1. Natural Language Processing to compare two sentences
+2. Data Analysis and Visualization to create students learning reports for teachers
+3. Knowledge Graph or Chatbot?
+
+## Frontend
+
+1. a Mindmap using d3.js and Angular.js(but only this page use Angular.js)
+2. Tryregex for Programming Exercises
+3. markdown-it for rendering markdown in browser
+4. Jquery
+5. Bootstrap
+6. Runestone for the style of questions' hints
+
+# Future
+
+some ideas may never to be implemented:
+
+1. Education Management/Report system for Teachers and Students
+-  Natural Language Processing for Chatbot
+-  Chatbot for interaction
+-  Virtual Reality for more fascinating interaction
+-  Knowledge Graph to represent/store the teaching materials
+

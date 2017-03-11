@@ -271,9 +271,17 @@ def checkAnswer():
 
     for i in range(len(answers)):
         user = expression[i].strip()
-        f, r = checkText(user, answers[i])
-        if r in comments[0]:
-            response['comment'] = comments[0][r]
+        if len(answers[i]) < 5 or answers[i] == "empty" or\
+                '&' in answers[i] or '|' in answers[i]:
+            f, r = checkText(user, answers[i])
+            if r in comments[0]:
+                response['comment'] = comments[0][r]
+        else:
+            t = app.aipNlp.simnet(user, answers[i])['output']['score']
+            app.logger.info("similar score\t%s\t%s\t%s" %
+                            (user, '@'.join(expression), str(t)))
+            f = t > 0.6
+
         if not f:
             for e in comments[0]:
                 if e in user:

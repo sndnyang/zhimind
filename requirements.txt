@@ -19,3 +19,4 @@ wheel==0.29.0
 WTForms==2.1
 sympy
 redis==2.10.5
+baidu-aip

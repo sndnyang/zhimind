@@ -618,7 +618,7 @@ function isStem(w1, w2) {
 }
 
 function genBlank(sentence, word) {
-    var c = true, words = sentence.split(" "),
+    var c = true, words = sentence.split(/[ ,.!?;]/),
         input = '<input type="text" class="form-control" id="word_quiz"/>';
 
     for (var i in words) {

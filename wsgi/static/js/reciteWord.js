@@ -135,8 +135,8 @@ $(document).ready(function(){
         unit.splice(index, 1);
 
         completeNumber++;
-        myBooks[currentBook].finish += 1;
-        $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+        myBooks[currentBook].finish++;
+        $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
 
         localStorage.setItem('myBooks', JSON.stringify(myBooks));
 
@@ -163,7 +163,7 @@ $(document).ready(function(){
             completeNumber++;
             if (currentWord.level > 9) {
                 myBooks[currentBook].finish += 1;
-                $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+                $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
                 localStorage.setItem('myBooks', JSON.stringify(myBooks));
             }
         }
@@ -202,7 +202,7 @@ $(document).ready(function(){
         completeNumber++;
         myBooks[currentBook].finish += 1;
         localStorage.setItem('myBooks', JSON.stringify(myBooks));
-        $("#currentBookFinish").html(" 记忆个数:" + myBooks[currentBook].finish);
+        $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
 
         if (completeNumber >= limit) { sessionEnd(); }
         else { reciteMainView(); }
@@ -241,10 +241,11 @@ $(document).ready(function(){
     $(".unitNum").click(updateSetting);
 
     for (var book in myBooks) {
-        var num = myBooks[book].num, finish = myBooks[book].finish,
+        var num = myBooks[book].num, view = myBooks[book].view,
+            finish = myBooks[book].finish,
             newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
                 " onclick='chooseBooks(this)'>" + book + "</a> 总单词数:" + num +
-                ", 已完成:" + finish + "</div>";
+                ", 已浏览:" + view + ", 已完成:" + finish + "</div>";
 
         $("#myBooks2").append(newBook);
     }
@@ -288,7 +289,8 @@ function putWords() {
 
 function getWords() {
     var i = 0, num = myBooks[currentBook].num,
-        finish = myBooks[currentBook].finish;
+        finish = myBooks[currentBook].finish,
+        view = myBooks[currentBook].view;
     $.ajax({
         method: "get",
         url : "/getWords/"+currentBook,
@@ -311,7 +313,7 @@ function getWords() {
                         var item = e.target.result;
                         for (var ele in serverData[word]) {
                             if ('level' in serverData[word] && item['level']
-                             !== 10 && serverData[word]['level'] > 9) {
+                             < 10 && serverData[word]['level'] > 9) {
                                 myBooks[currentBook].finish++;
                             }
                             if (serverData[word][ele] && serverData[word][ele] !== "") {
@@ -323,12 +325,12 @@ function getWords() {
                     }
                 } else {
                     localStorage.setItem('myBooks', JSON.stringify(myBooks));
-                    updateProgress(num, myBooks[currentBook].finish);
+                    updateProgress(num, myBooks[currentBook].view, myBooks[currentBook].finish);
                 }
             }
         },
         error: function(e) {
-            updateProgress(num, finish);
+            updateProgress(num, view, finish);
         }
     });
 }
@@ -481,7 +483,7 @@ function updateBook(content, name) {
             if (i !== myBooks[currentBook].num) {
                 myBooks[currentBook].num = i;
                 localStorage.setItem('myBooks', JSON.stringify(myBooks));
-                updateProgress(i, myBooks[currentBook].finish);
+                updateProgress(i, myBooks[currentBook].view, myBooks[currentBook].finish);
             }
             $("#myTab").children('li.active').removeClass('active');
             $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
@@ -509,14 +511,14 @@ function createNewBook(content, name) {
         } else {   // complete
             console.log('populate complete  ' + i + ' 添加 单词书 ' + currentBook);
 
-            myBooks[currentBook] = {'num': i, 'finish': 0};
+            myBooks[currentBook] = {'num': i, 'finish': 0, 'view': 0};
             localStorage.setItem('myBooks', JSON.stringify(myBooks));
 
-            updateProgress(i, 0);
+            updateProgress(i, 0, 0);
 
             var newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
                 " onclick='chooseBooks(this)'>" + currentBook + "</a> 总单词数:"
-                 + i +  ", 已完成:" + 0 + "</div>";
+                 + i + ", 已浏览:" + 0 + ", 已完成:" + 0 + "</div>";
 
             $("#myBooks2").append(newBook);
 
@@ -529,10 +531,11 @@ function createNewBook(content, name) {
     }
 }
 
-function updateProgress(total, finish) {
+function updateProgress(total, view, finish) {
     $("#currentBook").html("单词书:" + currentBook);
     $("#currentBookNum").html(" 总单词数:" + total);
-    $("#currentBookFinish").html(" 记忆个数:" + finish);
+    $("#currentBookView").html(" 浏览个数:" + view);
+    $("#currentBookFinish").html(" 掌握个数:" + finish);
 }
 
 function downloadbook(obj, name) {
@@ -584,6 +587,7 @@ function start() {
                 }
                 i++;
             }
+
             cursor.continue();
         }
         else {
@@ -665,6 +669,12 @@ function reciteMainView() {
         new_index = unit.length - index - 1;
     index = new_index;
     currentWord = unit[index];
+
+    if (!currentWord.level) {
+        myBooks[currentBook].view++;
+        $("#currentBookView").html(" 浏览个数:" + myBooks[currentBook].view);
+    }
+
     if (mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&
         Math.random() > 0.5 && currentWord.example.length > 3)) {
         var word = currentWord.word;

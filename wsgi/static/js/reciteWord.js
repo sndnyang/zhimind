@@ -251,7 +251,7 @@ $(document).ready(function(){
 
     function word_quiz() {
         var word1 = currentWord.temp, word2 = $("#word_quiz").val();
-        if (word1.trim() === word2.trim()) {
+        if (word1.toLowerCase().trim() === word2.toLowerCase().trim()) {
             $("#fuzzy").text("模糊(left)");
             $("#sorry").show();
             $(".learning-speaker").show();
@@ -622,7 +622,7 @@ function genBlank(sentence, word) {
         input = '<input type="text" class="form-control" id="word_quiz"/>';
 
     for (var i in words) {
-        if (isStem(word, words[i])) {
+        if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
             if (c) {
                 currentWord.temp = words[i];
                 sentence = sentence.replace(words[i], input);

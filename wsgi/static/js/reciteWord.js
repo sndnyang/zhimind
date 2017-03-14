@@ -310,18 +310,25 @@ function getWords() {
                 if (i < keys.length) {
                     var word = keys[i];
                     itemStore.get(word).onsuccess = function (e) {
-                        var item = e.target.result;
+                        var f = false, item = e.target.result;
+                        if ('level' in serverData[word] && item['level']
+                            < 10 && serverData[word]['level'] > 9) {
+                            myBooks[currentBook].finish++;
+                            item['level'] = serverData[word]['level'];
+                            f = true;
+                        }
                         for (var ele in serverData[word]) {
-                            if ('level' in serverData[word] && item['level']
-                             < 10 && serverData[word]['level'] > 9) {
-                                myBooks[currentBook].finish++;
-                            }
+                            if (ele === "level") continue;
                             if (serverData[word][ele] && serverData[word][ele] !== "") {
                                 item[ele] = serverData[word][ele];
+                                f = true;
                             }
                         }
                         ++i;
-                        itemStore.put(item).onsuccess = getNext;
+                        if (f)
+                            itemStore.put(item).onsuccess = getNext;
+                        else
+                            getNext();
                     }
                 } else {
                     localStorage.setItem('myBooks', JSON.stringify(myBooks));
@@ -465,7 +472,7 @@ function updateBook(content, name) {
     function putNext() {
         if (i < items.length) {
             itemStore.get(items[i][1]).onsuccess = function (e) {
-                var item;
+                var item = e.target.result;
                 if (item) item = updateItemJson(e.target.result, items[i]);
                 else item = toItemJson(items[i]);
 

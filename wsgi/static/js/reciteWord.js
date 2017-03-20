@@ -636,14 +636,12 @@ function genBlank(sentence, word) {
         if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
             if (c) {
                 currentWord.temp = words[i];
-                sentence = sentence.replace(words[i], input);
                 c = false;
-            } else {
-                sentence = sentence.replace(words[i], "___");
             }
+            sentence = sentence.replace(words[i], "___");
         }
     }
-    var span = $("<p>" + sentence + "</p>");
+    var span = $("<p>" + sentence + '<br><br>'+ input + "</p>");
     return span;
 }
 
@@ -700,6 +698,7 @@ function reciteMainView() {
         $(".learning-speaker").hide();
         $(".word_quiz").html(blank_div);
         $(".word_quiz").show();
+        $("#word_quiz").focus();
     }
     else {
         $(".word").html(currentWord.word);

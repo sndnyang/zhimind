@@ -257,10 +257,26 @@ $(document).ready(function(){
             $("#sorry").show();
             $(".learning-speaker").show();
             $(".word_quiz").hide();
-            right();
+            show_after_quiz();
         } else {
             $(".word_quiz").append($("<p>wrong</p>"));
         }
+    }
+
+    function show_after_quiz() {
+        $(".word").html(currentWord.word);
+        var media = document.getElementsByTagName('audio')[0];
+        audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+        $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
+        $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
+
+        currentWord.level = Math.min(currentWord.level+1, 10);
+        if (!(currentWord.word in updateWords)) {
+            updateWords[currentWord.word] = {};
+        }
+        updateWords[currentWord.word]['level'] = currentWord.level;
+        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
+        ok();
     }
 });
 
@@ -630,7 +646,7 @@ function isStem(w1, w2) {
 
 function genBlank(sentence, word) {
     var c = true, words = sentence.split(/[ ,.!?;]/),
-        input = '<input type="text" class="form-control" id="word_quiz"/>';
+        input = $('<input type="text" class="form-control" id="word_quiz"/>');
 
     for (var i in words) {
         if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
@@ -641,7 +657,9 @@ function genBlank(sentence, word) {
             sentence = sentence.replace(words[i], "___");
         }
     }
-    var span = $("<p>" + sentence + '<br><br>'+ input + "</p>");
+    input.focus();
+    var span = $("<p>" + sentence + "<br><br></p>");
+    span.append(input);
     return span;
 }
 
@@ -680,8 +698,8 @@ function reciteMainView() {
         $("#currentBookView").html(" 浏览个数:" + myBooks[currentBook].view);
     }
 
-    if (mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&
-        Math.random() > 0.5 && currentWord.example.length > 3)) {
+    if ((mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&
+        Math.random() > 0.5)) && currentWord.example.trim().length > 3) {
         var word = currentWord.word;
         $(".uk").attr('data-rel', '');
         $(".us").attr('data-rel', '');
@@ -691,16 +709,20 @@ function reciteMainView() {
             example = examples[Math.floor(Math.random() * s)],
             sentence = example.split(":")[1],
             meaning = example.split(":")[0],
-            blank_div = genBlank(sentence, currentWord.word);
+            blank_div;
+        if (!sentence) console.log(example + ' -----' + currentWord.example)
+        blank_div = genBlank(sentence, currentWord.word);
+        if (!meaning.trim()) meaning = currentWord.meanZh;
         $(".word").html(meaning);
         $("#fuzzy").text("验证");
         $("#ok").hide();
         $(".learning-speaker").hide();
         $(".word_quiz").html(blank_div);
         $(".word_quiz").show();
-        $("#word_quiz").focus();
-    }
-    else {
+        setTimeout(function(){
+            $("#word_quiz").focus();
+        }, 0);
+    } else {
         $(".word").html(currentWord.word);
         var media = document.getElementsByTagName('audio')[0];
         audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);

@@ -57,3 +57,4 @@ else:
 from models import *
 from views import *
 from word import *
+from college import *

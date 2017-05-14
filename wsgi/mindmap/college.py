@@ -131,17 +131,20 @@ def submitted_college():
         else:
             college = result
 
-        college.gpa = request.form['gpa']
+        college.gpa = request.form['gpa'] if request.form['gpa'] else 6.6
         college.gpa_url = request.form['gpa_url']
-        college.tuition = request.form['tuition']
+        college.tuition = request.form['tuition'] if request.form['gpa'] else 6.6
+
         college.tuition_url = request.form['tuition_url']
         college.deadline_url = request.form['deadline_url']
         college.fall = request.form['fall']
         college.spring = request.form['spring']
         college.gre = request.form['gre']
         college.gre_url = request.form['gre_url']
-        college.toefl = request.form['toefl']
-        college.ielts = request.form['ielts']
+        college.toefl = request.form['toefl'] if request.form['toefl'] else 6.6
+
+        college.ielts = request.form['ielts'] if request.form['ielts'] else 6.6
+
         college.eng_url = request.form['eng_url']
         college.rl = request.form['rl']
         college.evalue = request.form['evalue']

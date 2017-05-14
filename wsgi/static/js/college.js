@@ -1,4 +1,5 @@
 var collegeList = null;
+var filterList = null;
 
 function fillInformation(item, i, n) {
     var name, degree, major, gpa, tuition, deadline, other,
@@ -151,7 +152,16 @@ function getCollegeList(n) {
             result.sort(sortDeadline);
             var data = result;
             collegeList = result;
+            filterList = result;
             for (var i in data) {
+                if (!('degree' in data[i])) continue;
+                var item = fillInformation(data[i], i, n);
+                var toggle = fillExtraInfo(data[i], i);
+                $("#collegeList").append(item);
+                $("#collegeList").append(toggle);
+            }
+            for (var i in data) {
+                if ('degree' in data[i]) continue;
                 var item = fillInformation(data[i], i, n);
                 var toggle = fillExtraInfo(data[i], i);
                 $("#collegeList").append(item);
@@ -229,7 +239,7 @@ function filterCollege(l, col, t) {
 }
 function sortCollege(col) {
     $("#collegeList").html("");
-    var data = filterCollege(collegeList, col, 0);
+    var data = filterCollege(filterList, col, 0);
     console.log(data.length);
     if (col === "gpa") {
         data.sort(sortGPA);
@@ -250,11 +260,10 @@ function filter() {
     $("#collegeList").html("");
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val());
-    console.log(degree + ' ' + major);
-    var data = filterCollege(filterCollege(collegeList, 'degree',degree), 'major',major);
-    for (var i in data) {
-        var item = fillInformation(data[i], i, 0);
-        var toggle = fillExtraInfo(data[i], i);
+    filterList = filterCollege(filterCollege(collegeList, 'degree',degree), 'major',major);
+    for (var i in filterList) {
+        var item = fillInformation(filterList[i], i, 0);
+        var toggle = fillExtraInfo(filterList[i], i);
         $("#collegeList").append(item);
         $("#collegeList").append(toggle);
     }
@@ -266,6 +275,8 @@ $(document).ready(function () {
         success: function (data) {
             if (data.error) {
                 alert(data.error);
+                document.getElementById("vericode")
+                    .setAttribute('src','/verifycode?random='+Math.random());
                 return;
             }
             alert('请等待审核，准备跳转...');

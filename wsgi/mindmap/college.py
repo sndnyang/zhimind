@@ -133,7 +133,7 @@ def submitted_college():
 
         college.gpa = request.form['gpa'] if request.form['gpa'] else 6.6
         college.gpa_url = request.form['gpa_url']
-        college.tuition = request.form['tuition'] if request.form['gpa'] else 6.6
+        college.tuition = request.form['tuition'] if request.form['tuition'] else 66666
 
         college.tuition_url = request.form['tuition_url']
         college.deadline_url = request.form['deadline_url']

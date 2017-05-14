@@ -144,7 +144,7 @@ def submitted_college():
         college.ielts = request.form['ielts']
         college.eng_url = request.form['eng_url']
         college.rl = request.form['rl']
-        college.evaluate = request.form['eval']
+        college.evalue = request.form['evalue']
         college.finance = request.form['finance']
         college.docum_url = request.form['docum_url']
 

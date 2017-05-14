@@ -5,33 +5,44 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
-            <div class="col-sm-4">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <h4>Filter by degree</h4>
+                    <select id="degreeName" name="degree" class="form-control">
+                        <option value="0">不限</option>
+                        <option value="1">本科</option>
+                        <option value="2">硕士</option>
+                        <option value="3">博士</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-3">
                 <div class="form-group">
                     <h4>Filter by major</h4>
                     {{ render_major() }}
                 </div>
+            </div>
+            <div class="col-sm-1">
+                <div class="form-group">
+                    <h4><br></h4>
+                    <button onclick="filter()" class="btn btn-primary">FILTER</button>
                 </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <h4><br></h4>
-                        <button class="btn btn-primary">FILTER</button>
-                    </div>
+            </div>
+            <div class="col-sm-1">
+                <div class="form-group">
+                    <h4><br></h4>
+                    <a href="/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
                 </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <h4><br></h4>
-                        <a href="/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
-                    </div>
-                </div>
+            </div>
             <table class="table table-striped">
 <thead>
 <tr>
 <th>校名</th>
 <th>学位</th>
 <th>专业</th>
-<th><a href="javascript:void(0)">GPA</a></th>
-<th><a href="javascript:void(0)">学费</a></th>
-<th><a href="javascript:void(0)">截止日期</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('gpa')">GPA</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('tuition')">学费</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('deadline')">截止日期</a></th>
 <th></th>
 </tr>
 </thead>

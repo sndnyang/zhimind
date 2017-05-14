@@ -15,6 +15,7 @@ function fillInformation(item, i, n) {
         temp = item.name;
     }
     name = $('<td>{0}</td>'.format(temp || ''));
+
     var degree_map = {'1': '本科', '2': '硕士', '3': '博士'},
         major_map = {"1": "计算机/信息技术/软件", "2": "航空航天",
                       "3": "Chemical/Petroleum",
@@ -54,7 +55,14 @@ function fillInformation(item, i, n) {
     major = $('<td>{0}</td>'.format(major_map[item.major] || ''));
     gpa = $('<td>{0}</td>'.format(item.gpa || ''));
     tuition = $('<td>{0}</td>'.format(item.tuition || ''));
-    deadline = $('<td>{0}</td>'.format(item.deadline || ''));
+
+    var md = getmd(), tmp_dl = item.fall || '';
+    if ('fall' in item && item.fall > md)
+        tmp_dl = item.fall;
+    else if ('spring' in item && item.spring > md)
+        tmp_dl = item.spring;
+
+    deadline = $('<td>{0}</td>'.format(tmp_dl));
     expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
     tr.append(name);
     tr.append(degree);
@@ -140,7 +148,9 @@ function getCollegeList(n) {
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
+            result.sort(sortDeadline);
             var data = result;
+            collegeList = result;
             for (var i in data) {
                 var item = fillInformation(data[i], i, n);
                 var toggle = fillExtraInfo(data[i], i);
@@ -149,6 +159,105 @@ function getCollegeList(n) {
             }
         }
     });   
+}
+
+function validate_deadline(obj) {
+    var s = $(obj).val(), ext,
+        date = s.substr(0, 5);
+    if (!/(0[1-9]|1[0-2]).(0[1-9]|3[01]|[12][0-9])/.test(date)) {
+        alert('截止日期格式不对 ' + s);
+    }
+    if (s.length > 5 && (s.length < 12 || s[5] != '(' || 
+         !/(0[1-9]|1[0-2]).(0[1-9]|3[01]|[12][0-9])/.test(s.substr(5, 7)))) {
+        alert('申奖截止日期格式不对 ' + s.substring(5, s.length));
+    }
+    $(obj).focus();
+}
+
+function sortGPA(a, b) {
+    if (!a.gpa) a.gpa = 100;
+    if (!b.gpa) b.gpa = 100;
+    return a.gpa - b.gpa;
+}
+
+function sortTuition(a, b) {
+    if (!a.tuition) a.tuition = 10000000;
+    if (!b.tuition) b.tuition = 10000000;
+    return a.tuition - b.tuition;
+}
+
+function getmd() {
+    var date = new Date(), month = date.getMonth, day = date.getDate(),
+        md = '{0}.{1}';
+    if (month < 10) month = '0'+month;
+    if (day < 10) day = '0'+day;
+    md = md.format(month, day);
+    return md
+}
+
+function sortDeadline(a, b) {
+    var md = getmd(), da = a.fall, db = b.fall;
+    if (a.fall <= md && !a.spring) {
+        da = 12 + a.fall; 
+    } else if (a.spring) {
+        da = a.spring;
+    }
+    if (b.fall <= md && !b.spring) {
+        db = 12 + b.fall; 
+    } else if (b.spring) {
+        db = b.spring;
+    }
+    return da < db;
+}
+
+function filterCollege(l, col, t) {
+    var data = [];
+    for (var i in l) {
+        if (col in l[i]) {
+            if (t) {
+                if (l[i][col] == t)
+                   data.push(l[i]);
+            }
+            else {
+                data.push(l[i]);
+            }
+        }
+        if (col == 'deadline' && 'fall' in l[i])
+            data.push(l[i]);
+    }
+    return data;
+}
+function sortCollege(col) {
+    $("#collegeList").html("");
+    var data = filterCollege(collegeList, col, 0);
+    console.log(data.length);
+    if (col === "gpa") {
+        data.sort(sortGPA);
+    } else if (col === "tuition") {
+        data.sort(sortTuition);
+    } else if (col === "dealine") {
+        data.sort(sortDeadline);
+    }
+    for (var i in data) {
+        var item = fillInformation(data[i], i, 0);
+        var toggle = fillExtraInfo(data[i], i);
+        $("#collegeList").append(item);
+        $("#collegeList").append(toggle);
+    }
+}
+
+function filter() {
+    $("#collegeList").html("");
+    var degree = parseInt($("#degreeName").val()), 
+        major = parseInt($("#majorName").val());
+    console.log(degree + ' ' + major);
+    var data = filterCollege(filterCollege(collegeList, 'degree',degree), 'major',major);
+    for (var i in data) {
+        var item = fillInformation(data[i], i, 0);
+        var toggle = fillExtraInfo(data[i], i);
+        $("#collegeList").append(item);
+        $("#collegeList").append(toggle);
+    }
 }
 
 $(document).ready(function () {

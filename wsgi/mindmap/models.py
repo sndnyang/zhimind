@@ -144,7 +144,7 @@ class College(db.Model):
     id = db.Column('college_id', db.String, primary_key=True, default=uuid_gen)
     name = db.Column(db.String(70))
     degree = db.Column(db.Integer)
-    major = db.Column(db.Integer)
+    major = db.Column(db.String(10))
     site_url = db.Column(db.String(250))
     gpa = db.Column(db.Float)
     gpa_url = db.Column(db.String(250))
@@ -162,6 +162,7 @@ class College(db.Model):
     evalue = db.Column(db.String(10))
     finance = db.Column(db.String(10))
     docum_url = db.Column(db.String(250))
+    int_docum_url = db.Column(db.String(250))
     __table_args__ = (UniqueConstraint('name', 'degree', 'major', 
         name='_degree_major'),)
     
@@ -188,6 +189,7 @@ class College(db.Model):
         self.evalue = college.evalue
         self.finance = college.finance
         self.docum_url = college.docum_url
+        self.int_docum_url = college.int_docum_url
 
 
 class TempCollege(db.Model):
@@ -195,7 +197,7 @@ class TempCollege(db.Model):
     id = db.Column('college_id', db.String, primary_key=True, default=uuid_gen)
     name = db.Column(db.String(70))
     degree = db.Column(db.Integer)
-    major = db.Column(db.Integer)
+    major = db.Column(db.String(10))
     site_url = db.Column(db.String(250))
     gpa = db.Column(db.Float)
     gpa_url = db.Column(db.String(250))
@@ -213,6 +215,7 @@ class TempCollege(db.Model):
     evalue = db.Column(db.String(10))
     finance = db.Column(db.String(10))
     docum_url = db.Column(db.String(250))
+    int_docum_url = db.Column(db.String(250))
     
     def __init__(self, name, degree, major, site_url):
         self.name = name

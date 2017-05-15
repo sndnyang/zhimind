@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-{% from "major.html" import render_major %}
+{% from "detail_major.html" import render_major %}
 <script src="https://cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <script src="/static/js/college.js"></script>
 <div class="container-fluid">
@@ -80,6 +80,8 @@
             </select><br />
             <label for="docum_url">申请材料页面:</label>
             <input type="url" name="docum_url"><hr />
+            <label for="int_docum_url">申请材料页面:</label>
+            <input type="url" name="int_docum_url"><hr />
             <div class="form-group">
                 <label for="verification_code">验证码
                     <a href="javascript:void(0)">
@@ -141,6 +143,7 @@ $(document).ready(function(){
                 $("input[name='evalue']").val(result.evalue);
                 $("input[name='finance']").val(result.finance);
                 $("input[name='docum_url']").val(result.docum_url);
+                $("input[name='int_docum_url']").val(result.int_docum_url);
             }
         });
         

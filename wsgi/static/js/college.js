@@ -18,7 +18,11 @@ function fillInformation(item, i, n) {
     name = $('<td>{0}</td>'.format(temp || ''));
 
     var degree_map = {'1': '本科', '2': '硕士', '3': '博士'},
-        major_map = {"1": "计算机/信息技术/软件", "2": "航空航天",
+        major_map = {"1-1": "计算机科学(CS)",
+                      "1-2": "计算机工程(CE)", 
+                      "1-3": "软件工程(SE)", 
+                      "1-4": "信息技术(IT)",
+                      "2": "航空航天",
                       "3": "Chemical/Petroleum",
                       "4": "Civil/Construction/Structural",
                       "5": "Electrical/Electronics/Telecomm",
@@ -52,16 +56,30 @@ function fillInformation(item, i, n) {
                       "33": "General Law",
                       "34": "International Law",
                       "35": "Architecture"}
-    degree = $('<td>{0}</td>'.format(degree_map[item.degree] || ''));
-    major = $('<td>{0}</td>'.format(major_map[item.major] || ''));
+
+    temp = degree_map[item.degree] || '';
+    if (screen.width < 767) {
+        temp = temp.substr(0,1);
+    }
+    degree = $('<td>{0}</td>'.format(temp));
+
+    temp = major_map[item.major] || '';
+    if (screen.width < 767) {
+        var index = temp.indexOf('(');
+        if (index >= 0) {
+            temp = temp.substring(temp.indexOf('(')+1, temp.indexOf(')'));
+        }
+    }
+    major = $('<td>{0}</td>'.format(temp));
     gpa = $('<td>{0}</td>'.format(item.gpa || ''));
     tuition = $('<td>{0}</td>'.format(item.tuition || ''));
 
     var md = getmd(), tmp_dl = item.fall || '';
+    if (tmp_dl) tmp_dl += '(秋)';
     if ('fall' in item && item.fall > md)
-        tmp_dl = item.fall;
+        tmp_dl = item.fall + '(秋)';
     else if ('spring' in item && item.spring > md)
-        tmp_dl = item.spring;
+        tmp_dl = item.spring + '(春)';
 
     deadline = $('<td>{0}</td>'.format(tmp_dl));
     expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
@@ -120,12 +138,12 @@ function fillExtraInfo(item, i) {
     evalue = item.evalue || '';
     rl = item.rl || '';
     finance = item.finance || '';
-    gpa_p = item.gpa_p || '';
-    gre_p = item.gre_p || '';
-    eng_p = item.eng_p || '';
-    deadline_p = item.deadline_p || '';
-    docum_p = item.docum_p || '';
-    int_docum_p = item.int_docum_p || '';
+    gpa_p = item.gpa_url || '';
+    gre_p = item.gre_url || '';
+    eng_p = item.eng_url || '';
+    deadline_p = item.deadline_url || '';
+    docum_p = item.docum_url || '';
+    int_docum_p = item.int_docum_url || '';
 
     var p = '<p></p>', other = $(p), page = $(p);
     other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
@@ -176,12 +194,13 @@ function validate_deadline(obj) {
         date = s.substr(0, 5);
     if (!/(0[1-9]|1[0-2]).(0[1-9]|3[01]|[12][0-9])/.test(date)) {
         alert('截止日期格式不对 ' + s);
+        $(obj).focus();
     }
     if (s.length > 5 && (s.length < 12 || s[5] != '(' || 
          !/(0[1-9]|1[0-2]).(0[1-9]|3[01]|[12][0-9])/.test(s.substr(5, 7)))) {
         alert('申奖截止日期格式不对 ' + s.substring(5, s.length));
+        $(obj).focus();
     }
-    $(obj).focus();
 }
 
 function sortGPA(a, b) {
@@ -197,46 +216,49 @@ function sortTuition(a, b) {
 }
 
 function getmd() {
-    var date = new Date(), month = date.getMonth, day = date.getDate(),
-        md = '{0}.{1}';
+    var date = new Date(), month = date.getMonth(), day = date.getDate(),
+        md;
     if (month < 10) month = '0'+month;
     if (day < 10) day = '0'+day;
-    md = md.format(month, day);
+    md = '{0}.{1}'.format(month, day);
     return md
 }
 
 function sortDeadline(a, b) {
     var md = getmd(), da = a.fall, db = b.fall;
-    if (a.fall <= md && !a.spring) {
-        da = 12 + a.fall; 
-    } else if (a.spring) {
+    if (a.fall <= md && !('spring' in a && a.spring)) {
+        da = 14 + a.fall; 
+    } else if ('spring' in a && a.spring) {
         da = a.spring;
     }
-    if (b.fall <= md && !b.spring) {
-        db = 12 + b.fall; 
-    } else if (b.spring) {
+    if (b.fall <= md && !('spring' in b && b.spring)) {
+        db = 14 + b.fall; 
+    } else if ('spring' in b && b.spring) {
         db = b.spring;
     }
-    return da < db;
+    return da+'' > db+'';
 }
 
 function filterCollege(l, col, t) {
-    var data = [];
+    var data = [], prefix = t+'-';
     for (var i in l) {
-        if (col in l[i]) {
+        if (col !== 'deadline' && col in l[i]) {
             if (t) {
-                if (l[i][col] == t)
+                if (l[i][col] == t || 
+                        l[i][col].substr(0, prefix.length) == prefix)
                    data.push(l[i]);
             }
             else {
                 data.push(l[i]);
             }
         }
-        if (col == 'deadline' && 'fall' in l[i])
+        if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
+                || ('spring' in l[i] && l[i].spring)))
             data.push(l[i]);
     }
     return data;
 }
+
 function sortCollege(col) {
     $("#collegeList").html("");
     var data = filterCollege(filterList, col, 0);
@@ -245,7 +267,7 @@ function sortCollege(col) {
         data.sort(sortGPA);
     } else if (col === "tuition") {
         data.sort(sortTuition);
-    } else if (col === "dealine") {
+    } else if (col === "deadline") {
         data.sort(sortDeadline);
     }
     for (var i in data) {

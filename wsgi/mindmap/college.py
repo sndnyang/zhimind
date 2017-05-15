@@ -52,7 +52,8 @@ def convert_dict(e):
             'rl': e.rl,
             'evalue': e.evalue,
             'finance': e.finance,
-            'docum_url': e.docum_url
+            'docum_url': e.docum_url,
+            'int_docum_url': e.int_docum_url
             }
     return item
 

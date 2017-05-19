@@ -167,8 +167,7 @@ function getCollegeList(n) {
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
-            result.sort(sortDeadline);
-            var data = result;
+            var data = result.sort(sortName);
             collegeList = result;
             filterList = result;
             for (var i in data) {
@@ -203,6 +202,10 @@ function validate_deadline(obj) {
     }
 }
 
+function sortName(a, b) {
+    return a.name > b.name? 1:-1;
+}
+
 function sortGPA(a, b) {
     if (!a.gpa) a.gpa = 100;
     if (!b.gpa) b.gpa = 100;
@@ -218,25 +221,29 @@ function sortTuition(a, b) {
 function getmd() {
     var date = new Date(), month = date.getMonth(), day = date.getDate(),
         md;
-    if (month < 10) month = '0'+month;
+    if (month < 10) month = '0'+(month+1);
     if (day < 10) day = '0'+day;
     md = '{0}.{1}'.format(month, day);
     return md
 }
 
 function sortDeadline(a, b) {
-    var md = getmd(), da = a.fall, db = b.fall;
-    if (a.fall <= md && !('spring' in a && a.spring)) {
-        da = 14 + a.fall; 
-    } else if ('spring' in a && a.spring) {
-        da = a.spring;
+    var md = getmd(), da = a.fall || '13.01', db = b.fall || '13.02';
+    if (a.fall > md) {
+        da = a.fall
+    } else if (a.fall <= md && a.spring > md) {
+        da = a.spring
+    } else if (a.fall <= md && a.spring < md) {
+        da = 14 + ' ' + a.fall;
     }
-    if (b.fall <= md && !('spring' in b && b.spring)) {
-        db = 14 + b.fall; 
-    } else if ('spring' in b && b.spring) {
-        db = b.spring;
+    if (b.fall > md) {
+        db = b.fall
+    } else if (b.fall <= md && b.spring > md) {
+        db = b.spring
+    } else if (b.fall <= md && b.spring <= md) {
+        db = 14 + ' ' + b.fall;
     }
-    return da+'' > db+'';
+    return da+'' > db+'' ? 1:-1;;
 }
 
 function filterCollege(l, col, t) {

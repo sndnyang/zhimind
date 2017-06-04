@@ -1,6 +1,56 @@
 var collegeList = null;
 var filterList = null;
 
+function appendButton(item, tr, n, url) {
+    if (n) {
+        var pass = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',0)" class="btn-success">通过</a></td>'.format(url, item.id));
+        var rej = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',1)" class="btn-danger">删除</a></td>'.format(url, item.id));
+        tr.append(pass);
+        tr.append(rej);
+    } else {
+        var edit_url = "/" + url + "Form/";
+           
+        if (item.id) {
+            edit_url += item.id;
+        } else {
+            edit_url += item.name;
+        }
+        edit = $('<td><a href="{0}" target="_blank" class="btn-success">编辑</a></td>'.format(edit_url));
+        tr.append(edit);
+    }
+}
+
+function fillCollegeInformation(item, i, n) {
+    var name, degree, major, gpa, tuition, deadline, other,
+        expand, edit, tr = $('<tr></tr>');
+    if (screen.width < 767) {
+        var index = item.name.indexOf('(');
+        if (index < 0) {
+            temp = item.name;
+        } else {
+            temp = item.name;
+            temp = temp.substring(temp.indexOf('(')+1, temp.indexOf(')'));
+        }
+    } else {
+        temp = item.name;
+    }
+    name = $('<td>{0}</td>'.format(temp || ''));
+
+
+    temp = '';
+    if (item.info && item.info.nation)
+        temp = item.info.nation;
+    nation = $('<td>{0}</td>'.format(temp));
+
+    expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
+    tr.append(name);
+    tr.append(nation);
+    tr.append(expand);
+
+    appendButton(item, tr, n, 'college');
+
+    return tr;
+}
 function fillInformation(item, i, n) {
     var name, degree, major, gpa, tuition, deadline, other,
         expand, edit, tr = $('<tr></tr>');
@@ -91,29 +141,31 @@ function fillInformation(item, i, n) {
     tr.append(deadline);
     tr.append(expand);
 
-    if (n) {
-        var pass = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\',0)" class="btn-success">通过</a></td>'.format(item.id));
-        var rej = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\',1)" class="btn-danger">删除</a></td>'.format(item.id));
-        tr.append(pass);
-        tr.append(rej);
-    } else {
-        var edit_url = "/collegeForm/";
-           
-        if (item.id) {
-            edit_url += item.id;
-        } else {
-            edit_url += item.name;
-        }
-        edit = $('<td><a href="{0}" target="_blank" class="btn-success">编辑</a></td>'.format(edit_url));
-        tr.append(edit);
-    }
+    appendButton(item, tr, n, 'major');
     return tr;
 }
 
-function approve(id, n) {
+function addOneInfo(key, item, i) {
+    if (i === -1) {
+        i = $(".info-item").length + 1;
+    }
+    var div = $('<div class="info-item"></div>');
+    var label = $('<label for="label{0}">信息名称:</label>'.format(i));
+    var input = $('<input type="text" name="label{0}" value="{1}">'.format(i, key));
+    var label2 = $('<label for="input{0}">内容:</label>'.format(i));
+    var input2 = $('<input type="text" name="input{0}" value="{1}">'.format(i, item));
+            
+    div.append(label);
+    div.append(input);
+    div.append(label2);
+    div.append(input2);
+    $(".info").append(div);
+}
+
+function approve(type, id, n) {
     $.ajax({
         method: "post",
-        url : '/collegeData/approve',
+        url : '/' + type + 'Data/approve',
         contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify({'id': id, 'type': n}),
@@ -146,8 +198,16 @@ function fillExtraInfo(item, i) {
     docum_p = item.docum_url || '';
     int_docum_p = item.int_docum_url || '';
 
+    var info = item.info;
     var p = '<p></p>', other = $(p), page = $(p);
     other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
+    if (info) {
+        var l = Math.floor(Object.keys(info).length / 2);
+        for (var j = 0; j < l; j++) {
+            page.append($('<p>{0} : {1}</p>'.format(info['label' + (j+1)], 
+                            info['input' + (j+1)])));
+        }
+    }
     page.append($('<p><a href="{0}" target="_blank">GPA网页</a></p>'.format(gpa_p)));
     page.append($('<p><a href="{0}" target="_blank">GRE网页</a></p>'.format(gre_p)));
     page.append($('<p><a href="{0}" target="_blank">英文要求网页</a></p>'.format(eng_p)));
@@ -161,11 +221,46 @@ function fillExtraInfo(item, i) {
     return toggle;
 }
 
+function fillCollegeExtraInfo(item, i) {
+    if (!item) return '';
+
+    var toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
+
+    toggle.append($('<p>{0} : {1}</p>'.format('国家', item.nation || '')));
+    var l = Math.floor(Object.keys(item).length / 2);
+    for (var j = 0; j < l; j++) {
+        toggle.append($('<p>{0} : {1}</p>'.format(item['label' + (j+2)], 
+                        item['input' + (j+2)])));
+    }
+    return toggle;
+}
+
 function getCollegeList(n) {
     if (n == 0) n = ''; 
     $.ajax({
         method: "get",
         url : '/collegeList' + n,
+        contentType: 'application/json',
+        dataType: "json",
+        success : function (result){
+            var data = result.sort(sortName);
+            collegeList = result;
+            filterList = result;
+            for (var i in data) {
+                var item = fillCollegeInformation(data[i], i, n);
+                var toggle = fillCollegeExtraInfo(data[i].info, i);
+                $("#collegeList").append(item);
+                $("#collegeList").append(toggle);
+            }
+        }
+    });   
+}
+
+function getMajorList(n) {
+    if (n == 0) n = ''; 
+    $.ajax({
+        method: "get",
+        url : '/majorList' + n,
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
@@ -301,20 +396,42 @@ function filter() {
 }
 
 $(document).ready(function () {
-    var options = {
-        dataType: 'json',
-        success: function (data) {
-            if (data.error) {
-                alert(data.error);
-                document.getElementById("vericode")
-                    .setAttribute('src','/verifycode?random='+Math.random());
-                return;
+    $("#majors").submit(function (){
+        var options = {
+            dataType: 'json',
+            success: function (data) {
+                if (data.error) {
+                    alert(data.error);
+                    document.getElementById("vericode")
+                        .setAttribute('src','/verifycode?random='+Math.random());
+                    return;
+                }
+                alert('请等待审核，准备跳转...');
+                window.location.href = "/major.html";
             }
-            alert('请等待审核，准备跳转...');
-            window.location.href = "/college.html";
-        }
-    };
+        };
+        $(this).ajaxSubmit(options);
+        return false;
+    });
+
+    $("#addInfo").click(function () {
+        return false;
+    });
+
     $("#college").submit(function (){
+        var options = {
+            dataType: 'json',
+            success: function (data) {
+                if (data.error) {
+                    alert(data.error);
+                    document.getElementById("vericode")
+                        .setAttribute('src','/verifycode?random='+Math.random());
+                    return;
+                }
+                alert('请等待审核，准备跳转...');
+                window.location.href = "/college.html";
+            }
+        };
         $(this).ajaxSubmit(options);
         return false;
     });

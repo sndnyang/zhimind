@@ -1,19 +1,25 @@
 {% extends "layout.html" %}
 {% block body %}
+{% from "major.html" import render_major %}
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
             <div class="col-sm-3">
                 <div class="form-group">
-                    <h4>Filter by nation</h4>
+                    <h4>Filter by degree</h4>
                     <select id="degreeName" name="degree" class="form-control">
                         <option value="0">不限</option>
-                        <option value="1">美国</option>
-                        <option value="2">英国</option>
-                        <option value="3">加拿大</option>
-                        <option value="4">澳大利亚</option>
+                        <option value="1">本科</option>
+                        <option value="2">硕士</option>
+                        <option value="3">博士</option>
                     </select>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <h4>Filter by major</h4>
+                    {{ render_major() }}
                 </div>
             </div>
             <div class="col-sm-1">
@@ -25,14 +31,18 @@
             <div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
-                    <a href="/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
+                    <a href="/majorForm/new" target="_blank" class="btn btn-primary">添加</a>
                 </div>
             </div>
             <table class="table table-striped">
 <thead>
 <tr>
 <th>校名</th>
-<th>国家</th>
+<th>学位</th>
+<th>专业</th>
+<th><a href="javascript:void(0)" onclick="sortCollege('gpa')">GPA</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('tuition')">学费</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('deadline')">截止日期</a></th>
 <th></th>
 <th></th>
 </tr>
@@ -46,7 +56,7 @@
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
 <script type="text/javascript" src="/static/js/college.js"></script>
 <script>
-getCollegeList({{ temp }});
+getMajorList({{ temp }});
 </script>
 
 {% endblock %}

@@ -163,6 +163,7 @@ class College(db.Model):
     finance = db.Column(db.String(10))
     docum_url = db.Column(db.String(250))
     int_docum_url = db.Column(db.String(250))
+    info = db.Column(JSON)
     __table_args__ = (UniqueConstraint('name', 'degree', 'major', 
         name='_degree_major'),)
     
@@ -190,6 +191,7 @@ class College(db.Model):
         self.finance = college.finance
         self.docum_url = college.docum_url
         self.int_docum_url = college.int_docum_url
+        self.info = college.info
 
 
 class TempCollege(db.Model):
@@ -216,6 +218,7 @@ class TempCollege(db.Model):
     finance = db.Column(db.String(10))
     docum_url = db.Column(db.String(250))
     int_docum_url = db.Column(db.String(250))
+    info = db.Column(JSON)
     
     def __init__(self, name, degree, major, site_url):
         self.name = name
@@ -223,3 +226,24 @@ class TempCollege(db.Model):
         self.major = major
         self.site_url = site_url
 
+
+class University(db.Model):
+    __tablename__ = 'university'
+    id = db.Column('university_id', db.String, primary_key=True, default=uuid_gen)
+    name = db.Column(db.String(70), unique=True)
+    info = db.Column(JSON)
+
+    def __init__(self, name, info):
+        self.name =name
+        self.info = info
+
+
+class TempUniversity(db.Model):
+    __tablename__ = 'temp_university'
+    id = db.Column('university_id', db.String, primary_key=True, default=uuid_gen)
+    name = db.Column(db.String(70), unique=True)
+    info = db.Column(JSON)
+
+    def __init__(self, name, info):
+        self.name =name
+        self.info = info

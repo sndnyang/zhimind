@@ -48,8 +48,6 @@ def temp_college_page():
     return render_template('majors.html', meta=meta, temp=1)
 
 def convert_dict(e):
-    if e.info:
-        app.logger.info(e.name)
     item = {'id': e.id,
             'name': e.name,
             'degree': e.degree,
@@ -250,8 +248,6 @@ def submitted_major():
         college.docum_url = request.form['docum_url']
 
         info = {}
-        app.logger.info(request.form.keys())
-        app.logger.info(len(request.form.keys()))
         l = (len(request.form.keys()) - 21) / 2
         for i in range(l):
             info['label%d' % (i+1)] = request.form['label%d' % (i+1)]

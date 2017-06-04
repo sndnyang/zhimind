@@ -141,18 +141,20 @@ function fillExtraInfo(item, i) {
     gpa_p = item.gpa_url || '';
     gre_p = item.gre_url || '';
     eng_p = item.eng_url || '';
+    tuition_p = item.tuition_url || '';
     deadline_p = item.deadline_url || '';
     docum_p = item.docum_url || '';
     int_docum_p = item.int_docum_url || '';
 
     var p = '<p></p>', other = $(p), page = $(p);
     other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
-    page.append($('<p><a href="{0}">GPA网页</a></p>'.format(gpa_p)));
-    page.append($('<p><a href="{0}">GRE网页</a></p>'.format(gre_p)));
-    page.append($('<p><a href="{0}">英文要求网页</a></p>'.format(eng_p)));
-    page.append($('<p><a href="{0}">截止日期网页</a></p>'.format(deadline_p)));
-    page.append($('<p><a href="{0}">标准材料网页</a></p>'.format(docum_p)));
-    page.append($('<p><a href="{0}">国际学生材料网页</a></p>'.format(int_docum_p)));
+    page.append($('<p><a href="{0}" target="_blank">GPA网页</a></p>'.format(gpa_p)));
+    page.append($('<p><a href="{0}" target="_blank">GRE网页</a></p>'.format(gre_p)));
+    page.append($('<p><a href="{0}" target="_blank">英文要求网页</a></p>'.format(eng_p)));
+    page.append($('<p><a href="{0}" target="_blank">学费网页</a></p>'.format(tuition_p)));
+    page.append($('<p><a href="{0}" target="_blank">截止日期网页</a></p>'.format(deadline_p)));
+    page.append($('<p><a href="{0}" target="_blank">标准材料网页</a></p>'.format(docum_p)));
+    page.append($('<p><a href="{0}" target="_blank">国际学生材料网页</a></p>'.format(int_docum_p)));
     toggle.html('托福： {0}  雅思： {1}  GRE: {2}'.format(toefl, ielts, gre));
     toggle.append(other);
     toggle.append(page);

@@ -647,16 +647,21 @@ function isStem(w1, w2) {
 function genBlank(sentence, word) {
     var c = true, words = sentence.split(/[ ,.!?;]/),
         input = $('<input type="text" class="form-control" id="word_quiz"/>');
-
-    for (var i in words) {
-        if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
-            if (c) {
-                currentWord.temp = words[i];
-                c = false;
+    if (word.indexOf(' ') > -1) {
+        sentence = sentence.replace(word, "___");
+    }
+    else {
+        for (var i in words) {
+            if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
+                if (c) {
+                    currentWord.temp = words[i];
+                    c = false;
+                }
+                sentence = sentence.replace(words[i], "___");
             }
-            sentence = sentence.replace(words[i], "___");
         }
     }
+
     input.focus();
     var span = $("<p>" + sentence + "<br><br></p>");
     span.append(input);

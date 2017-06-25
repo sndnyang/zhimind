@@ -208,13 +208,20 @@ function fillExtraInfo(item, i) {
                             info['input' + (j+1)])));
         }
     }
-    page.append($('<p><a href="{0}" target="_blank">GPA网页</a></p>'.format(gpa_p)));
-    page.append($('<p><a href="{0}" target="_blank">GRE网页</a></p>'.format(gre_p)));
-    page.append($('<p><a href="{0}" target="_blank">英文要求网页</a></p>'.format(eng_p)));
-    page.append($('<p><a href="{0}" target="_blank">学费网页</a></p>'.format(tuition_p)));
-    page.append($('<p><a href="{0}" target="_blank">截止日期网页</a></p>'.format(deadline_p)));
-    page.append($('<p><a href="{0}" target="_blank">标准材料网页</a></p>'.format(docum_p)));
-    page.append($('<p><a href="{0}" target="_blank">国际学生材料网页</a></p>'.format(int_docum_p)));
+    if (gpa_p)
+        page.append($('<p><a href="{0}" target="_blank">GPA网页</a></p>'.format(gpa_p)));
+    if (gre_p)
+        page.append($('<p><a href="{0}" target="_blank">GRE网页</a></p>'.format(gre_p)));
+    if (eng_p)
+        page.append($('<p><a href="{0}" target="_blank">英文要求网页</a></p>'.format(eng_p)));
+    if (tuition_p)
+        page.append($('<p><a href="{0}" target="_blank">学费网页</a></p>'.format(tuition_p)));
+    if (deadline_p)
+        page.append($('<p><a href="{0}" target="_blank">截止日期网页</a></p>'.format(deadline_p)));
+    if (docum_p)
+        page.append($('<p><a href="{0}" target="_blank">标准材料网页</a></p>'.format(docum_p)));
+    if (int_docum_p)
+        page.append($('<p><a href="{0}" target="_blank">国际学生材料网页</a></p>'.format(int_docum_p)));
     toggle.html('托福： {0}  雅思： {1}  GRE: {2}'.format(toefl, ielts, gre));
     toggle.append(other);
     toggle.append(page);

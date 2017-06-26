@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 {% from "major.html" import render_major %}
+<script src="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <div class="container-fluid">
     <div class="row-fluid">
@@ -50,13 +52,14 @@
 <tbody id="collegeList">
 </tbody>
 </table>
+        <div id="pagination-container"></div>
         </div>
     </div>
 </div>
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
 <script type="text/javascript" src="/static/js/college.js"></script>
 <script>
-getMajorList({{ temp }});
+getDataList('major', {{ temp }});
 </script>
 
 {% endblock %}

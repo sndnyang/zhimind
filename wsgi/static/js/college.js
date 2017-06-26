@@ -20,52 +20,52 @@ function appendButton(item, tr, n, url) {
     }
 }
 
-function fillCollegeInformation(item, i, n) {
-    var name, degree, major, gpa, tuition, deadline, other,
-        expand, edit, tr = $('<tr></tr>');
+function fillName(name) {
+    var temp;
     if (screen.width < 767) {
-        var index = item.name.indexOf('(');
+        var index = name.indexOf('(');
         if (index < 0) {
-            temp = item.name;
+            temp = name;
         } else {
-            temp = item.name;
+            temp = name;
             temp = temp.substring(temp.indexOf('(')+1, temp.indexOf(')'));
         }
     } else {
-        temp = item.name;
+        temp = name;
     }
-    name = $('<td>{0}</td>'.format(temp || ''));
+    return $('<td>{0}</td>'.format(temp || ''));
+}
 
+function fillCollegeInformation(item, i, n) {
+    var name, temp, expand, tr = $('<tr></tr>');
+
+    name = fillName(item.name);
 
     temp = '';
-    if (item.info && item.info.nation)
-        temp = item.info.nation;
+    if (item.info && item.info['国家'])
+        temp = item.info['国家'];
     nation = $('<td>{0}</td>'.format(temp));
+
+    temp = '';
+    if (item.info && item.info['Q.S.'])
+        temp = item.info['Q.S.'].split('.')[0];
+    qsrank = $('<td>{0}</td>'.format(temp));
 
     expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
     tr.append(name);
     tr.append(nation);
+    tr.append(qsrank);
     tr.append(expand);
 
     appendButton(item, tr, n, 'college');
 
     return tr;
 }
+
 function fillInformation(item, i, n) {
     var name, degree, major, gpa, tuition, deadline, other,
-        expand, edit, tr = $('<tr></tr>');
-    if (screen.width < 767) {
-        var index = item.name.indexOf('(');
-        if (index < 0) {
-            temp = item.name;
-        } else {
-            temp = item.name;
-            temp = temp.substring(temp.indexOf('(')+1, temp.indexOf(')'));
-        }
-    } else {
-        temp = item.name;
-    }
-    name = $('<td>{0}</td>'.format(temp || ''));
+        temp, expand, edit, tr = $('<tr></tr>');
+    name = fillName(item.name);
 
     var degree_map = {'1': '本科', '2': '硕士', '3': '博士'},
         major_map = {"1-1": "计算机科学(CS)",
@@ -180,49 +180,62 @@ function approve(type, id, n) {
     });   
 }
 
-function fillExtraInfo(item, i) {
-    var toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
-    var toefl, ielts, gre, evalue, rl, finance,
-        gpa_p, gre_p, eng_p, deadline_p, docum_p, int_docum_p;
-    toefl = item.toefl || '';
-    ielts = item.ielts || '';
-    gre = item.gre || '';
-    evalue = item.evalue || '';
-    rl = item.rl || '';
-    finance = item.finance || '';
-    gpa_p = item.gpa_url || '';
-    gre_p = item.gre_url || '';
-    eng_p = item.eng_url || '';
-    tuition_p = item.tuition_url || '';
-    deadline_p = item.deadline_url || '';
-    docum_p = item.docum_url || '';
-    int_docum_p = item.int_docum_url || '';
-
-    var info = item.info;
-    var p = '<p></p>', other = $(p), page = $(p);
-    other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
-    if (info) {
-        var l = Math.floor(Object.keys(info).length / 2);
-        for (var j = 0; j < l; j++) {
-            page.append($('<p>{0} : {1}</p>'.format(info['label' + (j+1)], 
-                            info['input' + (j+1)])));
+function fillItemInfo(toggle, item) {
+    for (var e in item) {
+        if (e.substring(0, 5) === 'input') continue;
+        else if (e.substring(0, 5) === 'label') {
+            var j = e.substring(5, e.length);
+            toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
+                        item['input' + j])));
+        }
+        else {
+            var key = e, value = item[e];
+            if (key === 'Q.S.') value = value.split('.')[0];
+            if (key === 'cn') key = '中文名';
+            if (key === 'loc') key = '位置';
+            if (key === 'webpage') {
+                key = '主页';
+                value = '<a href={0} target=_blank>链接</a>'.format(value);
+            }
+            toggle.append($('<p>{0} : {1}</p>'.format(key, value)));
         }
     }
-    if (gpa_p)
-        page.append($('<p><a href="{0}" target="_blank">GPA网页</a></p>'.format(gpa_p)));
-    if (gre_p)
-        page.append($('<p><a href="{0}" target="_blank">GRE网页</a></p>'.format(gre_p)));
-    if (eng_p)
-        page.append($('<p><a href="{0}" target="_blank">英文要求网页</a></p>'.format(eng_p)));
-    if (tuition_p)
-        page.append($('<p><a href="{0}" target="_blank">学费网页</a></p>'.format(tuition_p)));
-    if (deadline_p)
-        page.append($('<p><a href="{0}" target="_blank">截止日期网页</a></p>'.format(deadline_p)));
-    if (docum_p)
-        page.append($('<p><a href="{0}" target="_blank">标准材料网页</a></p>'.format(docum_p)));
-    if (int_docum_p)
-        page.append($('<p><a href="{0}" target="_blank">国际学生材料网页</a></p>'.format(int_docum_p)));
-    toggle.html('托福： {0}  雅思： {1}  GRE: {2}'.format(toefl, ielts, gre));
+    return toggle;
+}
+
+function fillExtraInfo(item, i) {
+    var toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
+    var toefl, ielts, gre, evalue, rl, finance, page,
+        gpa_p, gre_p, eng_p, deadline_p, docum_p, int_docum_p;
+
+    rl = item.rl || '';
+    gre = item.gre || '';
+    toefl = item.toefl || '';
+    ielts = item.ielts || '';
+    evalue = item.evalue || '';
+    finance = item.finance || '';
+
+    var other = $('<p></p>'), page = $('<p></p>'),
+        url = '<p><a href="{0}" target="_blank">{1}</a></p>';
+    page = fillItemInfo(page, item.info);
+
+    if (item.gpa_url)
+        page.append($(url.format(item.gpa_url, 'GPA网页')));
+    if (item.gre_url)
+        page.append($(url.format(item.gre_url, 'GRE网页')));
+    if (item.eng_url)
+        page.append($(url.format(item.eng_url, '英文要求网页')));
+    if (item.tuition_url)
+        page.append($(url.format(item.tuition_url, '学费网页')));
+    if (item.deadline_url)
+        page.append($(url.format(item.deadline_url, '截止日期网页')));
+    if (item.docum_url)
+        page.append($(url.format(item.docum_url, '申请材料网页')));
+    if (item.int_docum_url)
+        page.append($(url.format(item.int_docum_url, '国际生材料网页')));
+
+    toggle.html('托福：{0} 雅思：{1} GRE: {2}'.format(toefl, ielts, gre));
+    other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
     toggle.append(other);
     toggle.append(page);
     return toggle;
@@ -232,62 +245,39 @@ function fillCollegeExtraInfo(item, i) {
     if (!item) return '';
 
     var toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
+    toggle = fillItemInfo(toggle, item)
 
-    toggle.append($('<p>{0} : {1}</p>'.format('国家', item.nation || '')));
-    var l = Math.floor(Object.keys(item).length / 2);
-    for (var j = 0; j < l; j++) {
-        toggle.append($('<p>{0} : {1}</p>'.format(item['label' + (j+2)], 
-                        item['input' + (j+2)])));
-    }
     return toggle;
 }
 
-function getCollegeList(n) {
-    if (n == 0) n = ''; 
-    $.ajax({
-        method: "get",
-        url : '/collegeList' + n,
-        contentType: 'application/json',
-        dataType: "json",
-        success : function (result){
-            var data = result.sort(sortName);
-            collegeList = result;
-            filterList = result;
-            for (var i in data) {
-                var item = fillCollegeInformation(data[i], i, n);
-                var toggle = fillCollegeExtraInfo(data[i].info, i);
-                $("#collegeList").append(item);
-                $("#collegeList").append(toggle);
+function pageIt(data, name, n) {
+    $('#pagination-container').pagination({
+        dataSource: data,
+        callback: function(data, pagination) {
+            $("#collegeList").html("");
+            var items = pageTemplate(data, name, n);
+            for (var i in items) {
+                $("#collegeList").append(items[i]);
             }
         }
-    });   
+    });
 }
 
-function getMajorList(n) {
+function getDataList(name, n) {
     if (n == 0) n = ''; 
     $.ajax({
         method: "get",
-        url : '/majorList' + n,
+        url : '/' + name + 'List' + n,
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
-            var data = result.sort(sortName);
+            // var data = result.sort(sortName);
+            var data = result.sort(compare('name', true, false));
+            if (name === "college")
+                data = data.sort(compare('Q.S.', false, true));
             collegeList = result;
             filterList = result;
-            for (var i in data) {
-                if (!('degree' in data[i])) continue;
-                var item = fillInformation(data[i], i, n);
-                var toggle = fillExtraInfo(data[i], i);
-                $("#collegeList").append(item);
-                $("#collegeList").append(toggle);
-            }
-            for (var i in data) {
-                if ('degree' in data[i]) continue;
-                var item = fillInformation(data[i], i, n);
-                var toggle = fillExtraInfo(data[i], i);
-                $("#collegeList").append(item);
-                $("#collegeList").append(toggle);
-            }
+            pageIt(data, name, n);
         }
     });   
 }
@@ -306,20 +296,19 @@ function validate_deadline(obj) {
     }
 }
 
-function sortName(a, b) {
-    return a.name > b.name? 1:-1;
-}
-
-function sortGPA(a, b) {
-    if (!a.gpa) a.gpa = 100;
-    if (!b.gpa) b.gpa = 100;
-    return a.gpa - b.gpa;
-}
-
-function sortTuition(a, b) {
-    if (!a.tuition) a.tuition = 10000000;
-    if (!b.tuition) b.tuition = 10000000;
-    return a.tuition - b.tuition;
+function compare(property, isstring, ininfo) {
+    return function (a, b) {
+        var va = ininfo? a.info[property]:a[property], 
+            vb = ininfo? b.info[property]:b[property];
+        if (property === "deadline") {
+            return sortDeadline(a, b);
+        } else if(isstring){
+            return va > vb ? 1:-1;
+        } else {
+            va = parseInt(va) || 1000000, vb = parseInt(vb) || 1000000;
+            return va > vb ? 1:-1;
+        }
+    }
 }
 
 function getmd() {
@@ -350,18 +339,30 @@ function sortDeadline(a, b) {
     return da+'' > db+'' ? 1:-1;;
 }
 
+function sortCollege(col) {
+    var data = filterCollege(filterList, col, 0);
+    data.sort(compare(col, false, false));
+    pageIt(data, "major", 0);
+}
+
 function filterCollege(l, col, t) {
     var data = [], prefix = t+'-';
+    console.log(l.length);
     for (var i in l) {
-        if (col !== 'deadline' && col in l[i]) {
-            if (t) {
+        if (t) {
+            if (col !== 'deadline' && col in l[i]) {
                 if (l[i][col] == t || 
                         l[i][col].substr(0, prefix.length) == prefix)
                    data.push(l[i]);
             }
-            else {
-                data.push(l[i]);
+            else if (col in l[i].info) {
+                if (l[i].info[col].indexOf(t) > -1) {
+                    data.push(l[i]);
+                }
             }
+        } 
+        else {
+            data.push(l[i]);
         }
         if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
                 || ('spring' in l[i] && l[i].spring)))
@@ -370,23 +371,33 @@ function filterCollege(l, col, t) {
     return data;
 }
 
-function sortCollege(col) {
-    $("#collegeList").html("");
-    var data = filterCollege(filterList, col, 0);
-    console.log(data.length);
-    if (col === "gpa") {
-        data.sort(sortGPA);
-    } else if (col === "tuition") {
-        data.sort(sortTuition);
-    } else if (col === "deadline") {
-        data.sort(sortDeadline);
-    }
-    for (var i in data) {
-        var item = fillInformation(data[i], i, 0);
-        var toggle = fillExtraInfo(data[i], i);
-        $("#collegeList").append(item);
-        $("#collegeList").append(toggle);
-    }
+function pageTemplate(data, name, n) {
+    var list = [];
+    $.each(data, function (i, item) {
+        if (name === 'major' && !('degree' in item)) {
+            return;
+        }
+        var row, toggle;
+        if (name === 'college') {
+            row = fillCollegeInformation(item, i, n);
+            toggle = fillCollegeExtraInfo(item.info, i);
+        }
+        else if (name === 'major') {
+            row = fillInformation(item, i, n);
+            toggle = fillExtraInfo(item, i);
+        }
+        list.push(row);
+        if (toggle) {
+            list.push(toggle);
+        }
+    });
+    return list;
+}
+
+function filterBy(v, t, col) {
+    filterList = filterCollege(collegeList, col, v);
+    console.log(filterList.length);
+    pageIt(filterList, "college", 0);
 }
 
 function filter() {
@@ -394,12 +405,13 @@ function filter() {
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val());
     filterList = filterCollege(filterCollege(collegeList, 'degree',degree), 'major',major);
-    for (var i in filterList) {
-        var item = fillInformation(filterList[i], i, 0);
-        var toggle = fillExtraInfo(filterList[i], i);
-        $("#collegeList").append(item);
-        $("#collegeList").append(toggle);
-    }
+    pageIt(filterList, "major", 0);
+  //for (var i in filterList) {
+  //    var item = fillInformation(filterList[i], i, 0);
+  //    var toggle = fillExtraInfo(filterList[i], i);
+  //    $("#collegeList").append(item);
+  //    $("#collegeList").append(toggle);
+  //}
 }
 
 $(document).ready(function () {

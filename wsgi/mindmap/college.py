@@ -83,12 +83,15 @@ def collegeListPage(pageno = 1):
     name_list = []
     try:
         data = json.load(open(fname))
-        college_list = University.query.paginate(int(pageno), 25).items
+        # college_list = University.query.paginate(int(pageno), 25).items
+        college_list = University.query.all()
         for e in college_list:
             college_set.append({'id': e.id, 'name': e.name, 'info': e.info})
             name_list.append(e.name)
         for e in data:
             if e['name'] in name_list:
+                i = name_list.index(e['name'])
+                college_set[i].update(e)
                 continue
             college_set.append(e)
     except Exception, e:
@@ -104,11 +107,11 @@ def majorListPage(pageno = 1):
     college_set = []
     try:
         data = json.load(open(fname))
-        college_list = College.query.paginate(int(pageno), 25).items
+        college_list = College.query.all()
         for e in college_list:
             college_set.append(convert_dict(e))
-        for e in data:
-            college_set.append(e)
+    #   for e in data:
+    #       college_set.append(e)
     except Exception, e:
         app.logger.debug(traceback.print_exc())
 

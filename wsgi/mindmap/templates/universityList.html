@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
+<script src="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <div class="container-fluid">
     <div class="row-fluid">
@@ -7,21 +9,22 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>Filter by nation</h4>
-                    <select id="degreeName" name="degree" class="form-control">
-                        <option value="0">不限</option>
-                        <option value="1">美国</option>
-                        <option value="2">英国</option>
-                        <option value="3">加拿大</option>
-                        <option value="4">澳大利亚</option>
+                    <select id="degreeName" name="degree" onchange="filterBy(this.options[this.options.selectedIndex].value, true, '国家')" class="form-control">
+                        <option value="">不限</option>
+                        <option value="美国">美国</option>
+                        <option value="英国">英国</option>
+                        <option value="中国">中国</option>
+                        <option value="加拿大">加拿大</option>
+                        <option value="澳大利亚">澳大利亚</option>
                     </select>
                 </div>
             </div>
-            <div class="col-sm-1">
+         <!--<div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
                     <button onclick="filter()" class="btn btn-primary">FILTER</button>
                 </div>
-            </div>
+            </div>-->
             <div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
@@ -33,6 +36,7 @@
 <tr>
 <th>校名</th>
 <th>国家</th>
+<th>QS排名</th>
 <th></th>
 <th></th>
 </tr>
@@ -40,13 +44,14 @@
 <tbody id="collegeList">
 </tbody>
 </table>
+        <div id="pagination-container"></div>
         </div>
     </div>
 </div>
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
 <script type="text/javascript" src="/static/js/college.js"></script>
 <script>
-getCollegeList({{ temp }});
+getDataList('college', {{ temp }});
 </script>
 
 {% endblock %}

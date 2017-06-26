@@ -1,6 +1,7 @@
 #!/usr/bin/env python 
 # coding=utf-8
  
+from hashlib import md5
 from datetime import datetime
 
 import uuid

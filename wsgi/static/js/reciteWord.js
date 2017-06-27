@@ -23,96 +23,68 @@ $(document).ready(function(){
 
     $(document).keydown(function (event) {
         if ($("textarea").is(":focus")) {
+            // 在文本框中输入联想记忆法时
+            // 键盘按键是默认结果，所以 return true
             return true;
         }
-
         if (event.keyCode == 13 && $("input").is(":focus")) {
+            // 在输入框中输入单词后回车，进行测试
             word_quiz();
             return true;
         }
-
-            var section = $("div.active").attr("id"),
+        var section = $("div.active").attr("id"),
             forget = $("#next_right").css("display");
 
         if (event.keyCode == 37) {
-            //判断当event.keyCode 为37时（即左方面键）
-            if (section == "recall") { fuzzy(); } //recall页面对应 模糊
+            // 判断当event.keyCode 为37时（即左方向键）
+            if (section == "recall") { fuzzy(); } // recall页面对应 模糊
             else if (section == "remember") { // remember页面对应 记对了
                 if (forget !== "none") right();
             }
             return false;
         } else if (event.keyCode == 38) {
-            //判断当event.keyCode 为38时（即上方面键）
-            if (section == "recall") { ok(); } //recall页面对应 知道
+            // 判断当event.keyCode 为38时（即上方向键）
+            if (section == "recall") { checkMemory("#next_right"); } // recall页面对应 知道
             else if (section == "remember") { // remember页面对应 掌握
                 if (forget !== "none") master();
             }
             return false;
         } else if (event.keyCode == 39) {
-            //判断当event.keyCode 为39时（即右方面键）
-            if (section == "recall") { sorry(); } //recall页面对应 不知道
+            // 判断当event.keyCode 为39时（即右方向键）
+            if (section == "recall") { sorry(); } // recall页面对应 不知道
             else if (section == "remember") { // remember页面对应 记错了
                 if (forget !== "none") wrong();
                 else reciteMainView();
             }
             return false;
         } else if (event.keyCode == 40) {
-            //判断当event.keyCode 为40时（即下方面键）
-            /*if (section == "recall") { } //recall页面不存在
-            else if (section == "remember") { // remember页面对应 不重要单词
-                trivial();
-            }*/
+            // 判断当event.keyCode 为40时（即下方向键）
             audio($('audio')[0], $('a.us').attr("data-rel"));
             return false;
         }
     });
 
-    function ok() {
-        $("#next_right").css("display", "inline-block");
-        $("#next_wrong").css("display", "none");
-        $("#recall").attr("class", "tab-pane fade");
-        $("#remember").attr("class", "tab-pane fade in active");
-    }
-
-    $("#ok").click(ok);
-
     function fuzzy() {
-        if ($(".word").html() != currentWord.word) {
+        if ($(".word").html().trim() != currentWord.word.trim()) {
+            // 单词测试（中 -> 英） <--> .word 显示的不是当前单词
             word_quiz();
         }
-        else {
-            $("#next_right").css("display", "inline-block");
-            $("#next_wrong").css("display", "none");
-            $("#recall").attr("class", "tab-pane fade");
-            $("#remember").attr("class", "tab-pane fade in active");
-        }
+        else { checkMemory("#next_right"); }
     }
 
-    $("#fuzzy").click(fuzzy);
-
     function sorry() {
-        if ($(".word").html().trim() != currentWord.word.trim()) {
-            $(".word").html(currentWord.word.trim());
+        if ($(".word").html().trim() != 
+                currentWord.word.trim()) {
+            $(".word").html(currentWord.word.trim()); // 显示正确答案
             $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
             $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
             var media = document.getElementsByTagName('audio')[0];
             audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         }
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        currentWord.level = Math.max(Math.floor(currentWord.level/2), 1);
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
-        itemStore.put(currentWord);
-        $("#next_right").css("display", "none");
-        $("#next_wrong").css("display", "inline-block");
-        $("#recall").attr("class", "tab-pane fade");
-        $("#remember").attr("class", "tab-pane fade in active");
+        updateWord('level', Math.max(Math.floor(currentWord.level/2), 1));
+        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
+        checkMemory("#next_wrong")
     }
-
-    $("#sorry").click(sorry);
 
     function animate() {
         progress.animate({
@@ -123,93 +95,62 @@ $(document).ready(function(){
         });
     }
 
-    function master() {
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        currentWord.level = 10;
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
-        itemStore.put(currentWord);
-        unit.splice(index, 1);
-
-        completeNumber++;
-        myBooks[currentBook].finish++;
-        $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
-
-        localStorage.setItem('myBooks', JSON.stringify(myBooks));
-
-        if (completeNumber >= limit) { sessionEnd(); }
-        else { reciteMainView(); }
-        animate();
-    }
-
-    function right() {
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        currentWord.level = Math.min(currentWord.level+1, 10);
-
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
-
-        itemStore.put(currentWord);
-        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
-
+    function updateMaster() {
         if (currentWord.level > 9 || reciteTimes[currentWord.word] >= 3) {
             unit.splice(index, 1);
             completeNumber++;
-            if (currentWord.level > 9) {
-                myBooks[currentBook].finish += 1;
-                $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
-                localStorage.setItem('myBooks', JSON.stringify(myBooks));
-            }
+        }
+        if (currentWord.level > 9) {
+            myBooks[currentBook].finish++;
+            $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
+            localStorage.setItem('myBooks', JSON.stringify(myBooks));
         }
 
         if (completeNumber >= limit) { sessionEnd(); }
         else { reciteMainView(); }
         animate();
     }
-    $("#master").click(master);
 
-    $("#right").click(right);
+    function master() {
+        updateWord('level', 10);
+        updateMaster();
+    }
+
+    function right() {
+        updateWord('level', Math.min(currentWord.level+1, 10));
+        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
+        updateMaster();
+    }
 
     function wrong() {
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        currentWord.level =  Math.max(Math.floor(currentWord.level/2), 1);
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
-        itemStore.put(currentWord);
+        updateWord('level', Math.max(Math.floor(currentWord.level/2), 1));
+        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
         reciteMainView();
     }
-    $("#wrong").click(wrong);
-
+    
     function trivial() {
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        currentWord.level = 11;
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
-        itemStore.put(currentWord);
-        unit.splice(index, 1);
-        completeNumber++;
-        myBooks[currentBook].finish += 1;
-        localStorage.setItem('myBooks', JSON.stringify(myBooks));
-        $("#currentBookFinish").html(" 掌握个数:" + myBooks[currentBook].finish);
+        updateWord('level', 11);
+        updateMaster()
+    }
 
-        if (completeNumber >= limit) { sessionEnd(); }
-        else { reciteMainView(); }
+    function updateSetting() {
+        limit = $("#unitNum").val() || 20;
+        mode = $("#unitMode").val() || "en-zh";
+        localStorage.setItem("limit", limit);
+        localStorage.setItem("mode", mode);
+        unit = [];
+        switchTab("#recite");
         animate();
     }
-    $("#trivial").click(trivial);
 
+    $(".unitNum").click(updateSetting);
+    $("#ok").click(function() { checkMemory("#next_right"); });
+    $("#fuzzy").click(fuzzy);
+    $("#sorry").click(sorry);
+    $("#master").click(master);
+    $("#right").click(right);
+    $("#wrong").click(wrong);
+    $("#trivial").click(trivial);
     $("#next").click(reciteMainView);
 
     $(".audio").click(function () {
@@ -220,25 +161,8 @@ $(document).ready(function(){
     progress = $('.progress-bar');
     percent = $('.percentage');
     total = $('.total');
-    //stripes = $('.progress-stripes');
-    //stripes.text('//////////');
-
     setSkin(demoColorArray[colorIndex]);
     animate();
-
-    function updateSetting() {
-        limit = $("#unitNum").val() || 20;
-        mode = $("#unitMode").val() || "en-zh";
-        localStorage.setItem("limit", limit);
-        localStorage.setItem("mode", mode);
-        unit = [];
-        $("#recite").attr("class", "tab-pane fade in active");
-        $("#setting").attr("class", "tab-pane fade");
-        $("#myTab").children('li.active').removeClass('active');
-        $("#myTab").children('li').children('a[href="#recite"]').parent().addClass('active');
-        animate();
-    }
-    $(".unitNum").click(updateSetting);
 
     for (var book in myBooks) {
         var num = myBooks[book].num, view = myBooks[book].view,
@@ -270,13 +194,9 @@ $(document).ready(function(){
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
         $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
 
-        currentWord.level = Math.min(currentWord.level+1, 10);
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['level'] = currentWord.level;
+        updateWord('level', Math.min(currentWord.level+1, 10));
         reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
-        ok();
+        checkMemory("#next_right");
     }
 });
 
@@ -287,6 +207,32 @@ window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.ms
 
 if (currentBook) {
     initIndexDB("init", null, null);
+}
+
+function checkMemory(next) {
+    $(next).parent().children('div').hide();
+    $(next).show();
+    switchTab("#remember");
+}
+
+function switchTab(next) {
+    $("#myTab").children('li.active').removeClass('active');
+    var temp = "#remember#recall".indexOf(next) > -1 ? "#recite":next;
+    $("#myTab").children('li').children('a[href='+temp+']').parent().addClass('active');
+    $("#myTabContent").children('div.active').removeClass('active');
+    $(next).attr("class", "tab-pane fade in active");
+}
+
+function updateWord(property, v) {
+    var transaction = db.transaction(["word"], "readwrite");
+    var itemStore = transaction.objectStore("word");
+    currentWord[property] = v;
+    if (!(currentWord.word in updateWords)) {
+        updateWords[currentWord.word] = {};
+    }
+    updateWords[currentWord.word][property] = v;
+    if (property === "level") updateWords[currentWord.word]["time"] = new Date().getTime();
+    itemStore.put(currentWord);
 }
 
 function putWords() {
@@ -389,11 +335,7 @@ function initIndexDB(type, content, name) {
         }
 
         if (type == "newbook") {
-            $("#myTab").children('li.active').removeClass('active');
-            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
-
-            $("#books").attr("class", "tab-pane fade");
-            $("#myBooks").attr("class", "tab-pane fade in active");
+            switchTab("#myBooks");
         }
     };
     openRequest.onupgradeneeded = function(event) {
@@ -413,22 +355,15 @@ function initIndexDB(type, content, name) {
 }
 
 function chooseBooks(obj) {
-
     if (currentBook !== $(obj).html()) {
-        console.log('更换单词书');
+        console.log('更换单词书, 先同步数据');
         putWords();
         currentBook = $(obj).html().trim();
-
         localStorage.setItem("book", currentBook);
-
         initIndexDB("init", null, null);
     }
 
-    $("#myTab").children('li.active').removeClass('active');
-    $("#myTab").children('li').children('a[href="#recite"]').parent().addClass('active');
-
-    $("#recite").attr("class", "tab-pane fade in active");
-    $("#myBooks").attr("class", "tab-pane fade");
+    switchTab("#recite");
 }
 
 function audio(media, url) {
@@ -508,11 +443,8 @@ function updateBook(content, name) {
                 localStorage.setItem('myBooks', JSON.stringify(myBooks));
                 updateProgress(i, myBooks[currentBook].view, myBooks[currentBook].finish);
             }
-            $("#myTab").children('li.active').removeClass('active');
-            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
 
-            $("#books").attr("class", "tab-pane fade");
-            $("#myBooks").attr("class", "tab-pane fade in active");
+            switchTab("#myBooks");
         }
     }
 }
@@ -545,11 +477,7 @@ function createNewBook(content, name) {
 
             $("#myBooks2").append(newBook);
 
-            $("#myTab").children('li.active').removeClass('active');
-            $("#myTab").children('li').children('a[href="#myBooks"]').parent().addClass('active');
-
-            $("#books").attr("class", "tab-pane fade");
-            $("#myBooks").attr("class", "tab-pane fade in active");
+            switchTab("#myBooks");
         }
     }
 }
@@ -574,7 +502,7 @@ function downloadbook(obj, name) {
         var db = new SQL.Database(uInt8Array);
         var contents = db.exec("SELECT * FROM word");
         initIndexDB('newbook', contents[0], name);
-      // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
+        // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
     };
     xhr.send();
 }
@@ -582,19 +510,25 @@ function downloadbook(obj, name) {
 function sessionEnd() {
     //alert("恭喜您完成本次 " + limit + "个单词的背诵");
     putWords();
-    $("#recite").attr("class", "tab-pane fade in active");
-    $("#recall").attr("class", "tab-pane fade");
-    $("#remember").attr("class", "tab-pane fade");
+    switchTab("#recite");
     completeNumber = 0;
 }
 
 function start() {
-    var i = 0, store, transaction, cursorRequest
+    var i = 0, store, transaction, cursorRequest, now = new Date().getTime(),
+        interval = [10, 30, 120, 300, 1800, 43200, 86400, 172800, 345600, 604800];
+
     transaction = db.transaction(["word"], "readwrite");
     store = transaction.objectStore("word");
     cursorRequest = store.index('level').openCursor(null, 'next');
 
     unit = [];
+
+    function memorySort(a, b) {
+        var va = (a.time||now)+interval[a.level] * 1000,
+            vb = (b.time||now)+interval[a.level] * 1000;
+        return va - vb;
+    }
 
     cursorRequest.onsuccess = function (event) {
         var cursor = event.target.result;
@@ -603,53 +537,54 @@ function start() {
                 if (unit.length < limit) {
                     unit.push(cursor.value);
                 } else {
-                    var prob = 1.0 * limit / myBooks[currentBook].num;
-                    if (Math.random() < prob) {
-                        unit[i%limit] = cursor.value;
+                    var e = cursor.value, last = unit[unit.length - 1];
+                    var v = (e.time || now)+interval[e.level] * 1000;
+                    var vlast =(last.time || now)+interval[last.level] * 1000;
+                    if (v == vlast) {
+                        var prob = 1.0 * limit / myBooks[currentBook].num;
+                        if (Math.random() < prob) {
+                            unit[i%limit] = cursor.value;
+                        }
+                    } else if(v < vlast) {
+                        unit.push(cursor.value);
+                        unit = unit.sort(memorySort);
+                        unit.pop();
                     }
                 }
                 i++;
             }
-
             cursor.continue();
         }
-        else {
-            reciteMainView();
-        }
+        else { reciteMainView(); }
     };
 }
 
 function renderLenovo(text) {
+    var temple = '<p style="color:{0}; display:inline-block">';
     var result = "<h3>" +
-    text.replace(/<r>/g, '<p style="color:red;display:inline-block">')
-        .replace(/<b>/g, '<p style="color:blue;display:inline-block">')
-        .replace(/<g>/g, '<p style="color:green;display:inline-block">')
-    //.replace(/<\/g>/g,'</p>').replace(/<\/r>/g,'</p>').replace(/<\/b>/g,'</p>')
+    text.replace(/<r>/g, temple.format("red"))
+        .replace(/<b>/g, temple.format("blue"))
+        .replace(/<g>/g, temple.format("green"))
         .replace(/<\/[grb]>/g,'</p>')
-        .replace(/[\(（]/g, '<p style="color:red;display:inline-block">')
+        .replace(/[\(（]/g, temple.format("red"))
         .replace(/[\)）]/g, '</p>')
         .replace(/[\r\n]/g, '<br>')
         + "</h3>";
-    //console.log(result);
     return result;
 }
 
 function isStem(w1, w2) {
     var i = 0;
-    for (i = 0; i < w1.length; i++) {
-        if (i >= w2.length || w1[i] != w2[i]) {
+    for (i = 0; i < w1.length; i++)
+        if (i >= w2.length || w1[i] != w2[i])
             break;
-        }
-    }
     return 3 * i > w1.length * 2.0;
 }
 
 function genBlank(sentence, word) {
     var c = true, words = sentence.split(/[ ,.!?;]/),
         input = $('<input type="text" class="form-control" id="word_quiz"/>');
-    if (word.indexOf(' ') > -1) {
-        sentence = sentence.replace(word, "___");
-    }
+    if (word.indexOf(' ') > -1) { sentence = sentence.replace(word, "___"); }
     else {
         for (var i in words) {
             if (isStem(word.toLowerCase(), words[i].toLowerCase())) {
@@ -748,15 +683,9 @@ function addLenovo(obj) {
     if (text !== "") {
         $("#lenovo").html("自创记忆法:"+renderLenovo(text)+"参考记忆法:"+
             renderLenovo(currentWord.lenovo));
-        currentWord.selfLenovo = text;
-        if (!(currentWord.word in updateWords)) {
-            updateWords[currentWord.word] = {};
-        }
-        updateWords[currentWord.word]['selfLenovo'] = text;
-        var transaction = db.transaction(["word"], "readwrite");
-        var itemStore = transaction.objectStore("word");
-        itemStore.put(currentWord);
+        updateWord('selfLenovo', text);
         textarea.val("");
+        $('#note').hide();
     }
 }
 

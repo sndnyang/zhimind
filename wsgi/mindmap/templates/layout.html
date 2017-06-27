@@ -70,20 +70,21 @@
                             <a href="{{ url_for('recommendlist') }}">推荐</a>
                         </li>
                         <li>
-                            <a href="/reciteWord.html">脑洞单词</a>
-                        </li>
-                        <li>
                             <a href="/gewu.html">格物君</a>
                         </li>
                         <li>
-                            <a
-                                href="http://blog.zhimind.com/tags.html#zhimind-ref">博客</a>
+                            <a href="http://blog.zhimind.com/tags.html#zhimind-ref">博客</a>
                         </li>
-                        <li>
-                            <a href="/college.html">大学库</a>
-                        </li>
-                        <li>
-                            <a href="/major.html">留学专业库</a>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">留学<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/college.html">大学库</a></li>
+                                <li><a href="/major.html">专业库</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">工具</li>
+                                <li><a href="http://sndnyang.github.io/gpa_calculator.html">GPA计算器</a></li>
+                                <li><a href="/reciteWord.html">脑洞背单词</a></li>
+                            </ul>
                         </li>
                         <li>
                             <form class="navbar-form" action="/search" onsubmit="return validateForm(this.elements['q'].value);">

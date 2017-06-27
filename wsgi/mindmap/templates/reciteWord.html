@@ -113,7 +113,7 @@
                         <a class="btn btn-danger" type="button" id="wrong">错误(right)</a>
                     </div>
                 </div>
-                <div style="display: none" id="next_wrong">
+                <div style="display:none" id="next_wrong">
                     <a class="btn btn-info" type="button" id="next">下一个(right)</a>
                 </div>
             </div>
@@ -128,30 +128,37 @@
             <input id="tab3" type="radio" name="tabs">
             <label for="tab3">例句</label>
 
-            <section id="content1">
+            <section id="content1" class="container">
                 <div id="lenovo">
                 </div>
                 <div>
-                    <button type="button" class="btn btn-primary"
-                            style="min-width:20px; min-height:20px;" onclick="createNote()">
+                    <button type="button" class="btn btn-primary" onclick="createNote()">
                         自创记忆法
                     </button>
-                    <div id="note" style="display: none">
-                        <textarea placeholder="括号内文字会显示红色,中英文括号皆可"></textarea>
-                        <button type="button" class="btn btn-success" id="addNote"
-                                style="min-width:20px; min-height:20px;" onclick="addLenovo(this)">
+                    <br>
+                    <div id="note" class="form-group" style="display: none">
+                        <div class="col-xs-4 col-sm-4 col-xs-offset-4 col-sm-offset-4">
+                        <textarea class="form-control" rows="4" 
+                            placeholder="括号内文字会显示红色,例
+(红色)
+（也是红色）
+<r>还是红色</r>
+<g>绿色</g>
+<b>蓝色</b>"></textarea>
+                        <button class="btn btn-success" id="addNote" onclick="addLenovo(this)">
                             更新
                         </button>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section id="content2">
+            <section id="content2" class="container">
                 <div id="etyma">
                 </div>
             </section>
 
-            <section id="content3">
+            <section id="content3" class="container">
                 <div style="overflow:hidden; display:inline-block;">
                     <a id="youdao" style="float:left;">
                         有道查询

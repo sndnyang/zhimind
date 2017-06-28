@@ -27,9 +27,10 @@ $(document).ready(function(){
             // 键盘按键是默认结果，所以 return true
             return true;
         }
-        if (event.keyCode == 13 && $("input").is(":focus")) {
-            // 在输入框中输入单词后回车，进行测试
-            word_quiz();
+
+        if ($("input").is(":focus")) {
+            if (event.keyCode == 13) // 在输入框中输入单词后回车，进行测试
+                word_quiz();
             return true;
         }
         var section = $("div.active").attr("id"),
@@ -194,8 +195,7 @@ $(document).ready(function(){
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
         $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
 
-        updateWord('level', Math.min(currentWord.level+1, 10));
-        reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
+        // updateWord('level', Math.min(currentWord.level+1, 10));
         checkMemory("#next_right");
     }
 });

@@ -15,7 +15,7 @@
 
 <ul id="myTab" class="nav nav-tabs">
     <li class="active">
-        <a href="#recite" data-toggle="tab">背单词 </a>
+        <a href="#recite" data-toggle="tab">背单词</a>
     </li>
     <li><a href="#books" data-toggle="tab">词库</a></li>
     <li><a href="#myBooks" data-toggle="tab">我的词库</a></li>
@@ -56,19 +56,19 @@
                 </a></span>
                 <span>US<a href="#" class="fa fa-volume-up fa-2x audio us">
                     <audio class="media"></audio>
-                </a>按向下键发美音</span>
+                </a>按向上键或h发美音</span>
             </div>
             <br>
             <div style="text-align:center;">
                 <div style="overflow:hidden; display:inline-block;">
                     <div style="float:left;">
-                        <a class="btn btn-info" type="button" id="fuzzy">模糊(left)</a>
+                        <a class="btn btn-info" type="button" id="fuzzy">模糊(左或j)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-success" type="button" id="ok">知道(up)</a>
+                        <a class="btn btn-danger" type="button" id="sorry">不知道(下或k)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-danger" type="button" id="sorry">不知道(right)</a>
+                        <a class="btn btn-success" type="button" id="ok">知道(右或l)</a>
                     </div>
                 </div>
             </div>
@@ -108,17 +108,17 @@
             <div style="text-align:center;">
                 <div style="overflow:hidden; display:inline-block;" id="next_right">
                     <div style="float:left;">
-                        <a class="btn btn-info" type="button" id="right">记对了(left)</a>
+                        <a class="btn btn-info" type="button" id="right">记对了(左或j)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-success" type="button" id="master">完全掌握(up)</a>
+                        <a class="btn btn-danger" type="button" id="wrong">错误(下或k)</a>
                     </div>
                     <div style="float:left;">
-                        <a class="btn btn-danger" type="button" id="wrong">错误(right)</a>
+                        <a class="btn btn-success" type="button" id="master">完全掌握(右或l)</a>
                     </div>
                 </div>
                 <div style="display:none" id="next_wrong">
-                    <a class="btn btn-info" type="button" id="next">下一个(right)</a>
+                    <a class="btn btn-info" type="button" id="next">下一个(下或k)</a>
                 </div>
             </div>
             <hr>

@@ -31,35 +31,37 @@ $(document).ready(function(){
         if ($("input").is(":focus")) {
             if (event.keyCode == 13) // 在输入框中输入单词后回车，进行测试
                 word_quiz();
-            return true;
+            if (event.keyCode != 40 && event.keyCode != 18) // 下方向键功能
+                return true;
         }
         var section = $("div.active").attr("id"),
             forget = $("#next_right").css("display");
 
-        if (event.keyCode == 37) {
-            // 判断当event.keyCode 为37时（即左方向键）
+        if (event.keyCode == 37 || event.keyCode == 74) {
+            // 判断当event.keyCode 为37时（即左方向键） or j
             if (section == "recall") { fuzzy(); } // recall页面对应 模糊
             else if (section == "remember") { // remember页面对应 记对了
                 if (forget !== "none") right();
             }
             return false;
-        } else if (event.keyCode == 38) {
-            // 判断当event.keyCode 为38时（即上方向键）
+        } else if (event.keyCode == 39 || event.keyCode == 76) {
+            // 判断当event.keyCode 为39时（即右方向键） or l
             if (section == "recall") { checkMemory("#next_right"); } // recall页面对应 知道
             else if (section == "remember") { // remember页面对应 掌握
                 if (forget !== "none") master();
             }
             return false;
-        } else if (event.keyCode == 39) {
-            // 判断当event.keyCode 为39时（即右方向键）
+        } else if (event.keyCode == 40 || event.keyCode == 75
+                || event.keyCode == 18) {
+            // 判断当event.keyCode 为40时（即下方向键） or k or alt
             if (section == "recall") { sorry(); } // recall页面对应 不知道
             else if (section == "remember") { // remember页面对应 记错了
                 if (forget !== "none") wrong();
                 else reciteMainView();
             }
             return false;
-        } else if (event.keyCode == 40) {
-            // 判断当event.keyCode 为40时（即下方向键）
+        } else if (event.keyCode == 38 || event.keyCode == 72) {
+            // 上方向键 or h
             audio($('audio')[0], $('a.us').attr("data-rel"));
             return false;
         }
@@ -178,7 +180,7 @@ $(document).ready(function(){
     function word_quiz() {
         var word1 = currentWord.temp, word2 = $("#word_quiz").val();
         if (word1.toLowerCase().trim() === word2.toLowerCase().trim()) {
-            $("#fuzzy").text("模糊(left)");
+            $("#fuzzy").text("模糊(左或j)");
             $("#sorry").show();
             $(".learning-speaker").show();
             $(".word_quiz").hide();
@@ -654,7 +656,8 @@ function reciteMainView() {
         blank_div = genBlank(sentence, currentWord.word);
         if (!meaning.trim()) meaning = currentWord.meanZh;
         $(".word").html(meaning);
-        $("#fuzzy").text("验证");
+        $("#fuzzy").text("验证(enter)");
+        $("#sorry").text("不知道(下或alt)");
         $("#ok").hide();
         $(".learning-speaker").hide();
         $(".word_quiz").html(blank_div);
@@ -668,7 +671,8 @@ function reciteMainView() {
         audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
         $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
-        $("#fuzzy").text("模糊(left)");
+        $("#fuzzy").text("模糊(左或j)");
+        $("#sorry").text("不知道(下或k)");
         $("#ok").show();
         $(".learning-speaker").show();
         $(".word_quiz").html();

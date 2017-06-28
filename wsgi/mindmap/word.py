@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import os
+import random
 
 from flask import render_template
 
@@ -29,4 +31,5 @@ def reciteWord():
     meta = {'title': u'脑洞背单词 知维图 -- 互联网学习实验室',
             'description': u'脑洞计划之背单词， 联想记忆，词根词缀， 例句',
             'keywords': u'zhimind 单词 智能学习 词根词缀 联想记忆'}
-    return render_template('reciteWord.html', books=books, meta=meta)
+    return render_template('reciteWord.html', books=books, meta=meta, 
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)

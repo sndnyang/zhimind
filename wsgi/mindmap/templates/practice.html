@@ -182,7 +182,11 @@
         <script type="text/javascript" src="/static/js/objToString.js"> </script>
         <script type="text/javascript" src="/static/js/evaluate.js"> </script>
         <script type="text/javascript" src="/static/js/lessons.js"> </script>
+        {% if cloudjs %}
+        <script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/tutorial.js?{{ cloudjs }}"></script> 
+        {% else %}
         <script type="text/javascript" src="/static/js/tutorial.js"> </script>
+        {% endif %}
         <script type="text/javascript" src="/static/js/console.js"> </script>
         <script type="text/javascript" src="/static/js/index.js"> </script>
         <script>

@@ -2,9 +2,10 @@
 
 import sys
 import os
-import redis
+import random
 import logging
 
+import redis
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -18,6 +19,8 @@ if sys.getdefaultencoding() != 'utf8':
 
 app = Flask(__name__, static_folder= os.path.join(os.path.dirname(__file__), "..", "static"))
 app.config.from_pyfile('flaskapp.cfg')
+
+app.cloud = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0
 
 log_file_name = os.path.join(
     os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),

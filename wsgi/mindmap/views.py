@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import os
+import random
 
 import traceback
 from datetime import datetime
@@ -140,6 +142,7 @@ def get_tutorial(link):
         link = tid
 
     return render_template('tutorial.html', link=link, name=name,
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0,
                            meta=meta)
 
 

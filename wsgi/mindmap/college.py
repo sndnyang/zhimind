@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import os
+import random
 import traceback
 
 from flask import request, flash, url_for, redirect, render_template, g, \
@@ -18,7 +19,8 @@ def college_page():
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
-    return render_template('universityList.html', meta=meta, temp=0)
+    return render_template('universityList.html', meta=meta, temp=0,
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 @app.route('/tempcollege.html')
 @login_required
@@ -28,14 +30,16 @@ def temp_major_page():
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
-    return render_template('universityList.html', meta=meta, temp=1)
+    return render_template('universityList.html', meta=meta, temp=1,
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 @app.route('/major.html')
 def major_page():
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
-    return render_template('majors.html', meta=meta, temp=0)
+    return render_template('majors.html', meta=meta, temp=0,
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 @app.route('/tempmajor.html')
 @login_required
@@ -45,7 +49,8 @@ def temp_college_page():
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
-    return render_template('majors.html', meta=meta, temp=1)
+    return render_template('majors.html', meta=meta, temp=1,
+            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 def convert_dict(e):
     item = {'id': e.id,

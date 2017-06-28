@@ -347,8 +347,13 @@ function sortCollege(col) {
 
 function filterCollege(l, col, t) {
     var data = [], prefix = t+'-';
-    console.log(l.length);
     for (var i in l) {
+        if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
+                    || ('spring' in l[i] && l[i].spring))) {
+            data.push(l[i]); 
+            continue;
+        }
+        
         if (t) {
             if (col !== 'deadline' && col in l[i]) {
                 if (l[i][col] == t || 
@@ -364,9 +369,6 @@ function filterCollege(l, col, t) {
         else {
             data.push(l[i]);
         }
-        if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
-                || ('spring' in l[i] && l[i].spring)))
-            data.push(l[i]);
     }
     return data;
 }
@@ -396,7 +398,6 @@ function pageTemplate(data, name, n) {
 
 function filterBy(v, t, col) {
     filterList = filterCollege(collegeList, col, v);
-    console.log(filterList.length);
     pageIt(filterList, "college", 0);
 }
 

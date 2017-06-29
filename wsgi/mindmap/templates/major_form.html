@@ -61,7 +61,7 @@
 
             <label for="rl">推荐信:</label>
             <select name="rl">
-                <option value="0">可选</option>
+                <option value="-1">可选</option>
                 <option value="1">1封</option>
                 <option value="2">2封</option>
                 <option value="3">3封</option>
@@ -166,7 +166,7 @@ $(document).ready(function(){
             contentType: 'application/json',
             dataType: "json",
             success : function (result){
-                var data = result.sort(compare('name'));
+                var data = result.sort(compare('name', true, false));
                 for (var i in data) {
                     var item = data[i].name, 
                         option = $('<option value="{0}">{1}</option>'.format(item, item));

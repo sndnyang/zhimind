@@ -10,7 +10,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>Filter by degree</h4>
-                    <select id="degreeName" name="degree" class="form-control">
+                    <select id="degreeName" name="degree" onchange="filterByMajor()" class="form-control">
                         <option value="0">不限</option>
                         <option value="1">本科</option>
                         <option value="2">硕士</option>
@@ -24,10 +24,16 @@
                     {{ render_major() }}
                 </div>
             </div>
-            <div class="col-sm-1">
+            <div class="col-sm-3">
                 <div class="form-group">
-                    <h4><br></h4>
-                    <button onclick="filter()" class="btn btn-primary">FILTER</button>
+                    <h4>Filter by 推荐信</h4>
+                    <select id="rlName" name="rl" onchange="filterByMajor()" class="form-control">
+                        <option value="0">不限</option>
+                        <option value="-1">可免</option>
+                        <option value="1">1封</option>
+                        <option value="2">2封</option>
+                        <option value="3">3封</option>
+                    </select>
                 </div>
             </div>
             <div class="col-sm-1">
@@ -42,9 +48,9 @@
 <th>校名</th>
 <th>学位</th>
 <th>专业</th>
-<th><a href="javascript:void(0)" onclick="sortCollege('gpa')">GPA</a></th>
-<th><a href="javascript:void(0)" onclick="sortCollege('tuition')">学费</a></th>
-<th><a href="javascript:void(0)" onclick="sortCollege('deadline')">截止日期</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('major', 'gpa', false)">GPA</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('major', 'tuition', false)">学费</a></th>
+<th><a href="javascript:void(0)" onclick="sortCollege('major', 'deadline', false)">截止日期</a></th>
 <th></th>
 <th></th>
 </tr>

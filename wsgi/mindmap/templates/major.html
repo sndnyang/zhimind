@@ -1,5 +1,7 @@
 {% macro render_major() %}
-<select id="majorName" name="major" class="form-control">
+<select id="majorName" name="major" class="form-control"
+    onchange="filterByMajor()">
+    <option value="0">不限</option>
     <option value="1">计算机/信息技术/软件</option>
     <option value="2">航空航天</option>
     <option value="3">Chemical / Petroleum</option>

@@ -1,5 +1,6 @@
-var collegeList = null;
+var rankBy = 'Q.S.';
 var filterList = null;
+var collegeList = null;
 
 function appendButton(item, tr, n, url) {
     if (n) {
@@ -47,8 +48,9 @@ function fillCollegeInformation(item, i, n) {
     nation = $('<td>{0}</td>'.format(temp));
 
     temp = '';
-    if (item.info && item.info['Q.S.'])
-        temp = item.info['Q.S.'].split('.')[0];
+    if (item.info && item.info[rankBy])
+        temp = item.info[rankBy].split('.')[0];
+
     qsrank = $('<td>{0}</td>'.format(temp));
 
     expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
@@ -251,6 +253,7 @@ function fillCollegeExtraInfo(item, i) {
 }
 
 function pageIt(data, name, n) {
+    $("#collegeList").html("");
     $('#pagination-container').pagination({
         dataSource: data,
         callback: function(data, pagination) {
@@ -305,7 +308,7 @@ function compare(property, isstring, ininfo) {
         } else if(isstring){
             return va > vb ? 1:-1;
         } else {
-            va = parseInt(va) || 1000000, vb = parseInt(vb) || 1000000;
+            va = parseFloat(va) || 1000000, vb = parseFloat(vb) || 1000000;
             return va > vb ? 1:-1;
         }
     }
@@ -339,10 +342,21 @@ function sortDeadline(a, b) {
     return da+'' > db+'' ? 1:-1;;
 }
 
-function sortCollege(col) {
-    var data = filterCollege(filterList, col, 0);
-    data.sort(compare(col, false, false));
-    pageIt(data, "major", 0);
+function sortCollege(name, col, ininfo) {
+    var data = [], temp = filterCollege(filterList, col, 0);
+    if (col == "deadline") {
+        col = "fall";
+    }
+    for (var i in temp) {
+        if ((col in temp[i] && temp[i][col]) 
+            || ('info' in temp[i] && temp[i].info && col in temp[i].info)) {
+            data.push(temp[i]);
+        }
+    }
+    rankBy = col;
+    $("#rankName").html(rankBy.replace('.', '') + '排名');
+    data.sort(compare(col, false, ininfo));
+    pageIt(data, name, 0);
 }
 
 function filterCollege(l, col, t) {
@@ -357,8 +371,11 @@ function filterCollege(l, col, t) {
         if (t) {
             if (col !== 'deadline' && col in l[i]) {
                 if (l[i][col] == t || 
-                        l[i][col].substr(0, prefix.length) == prefix)
+                      l[i][col].toString().substr(0, prefix.length) == prefix)
                    data.push(l[i]);
+                if (col === 'rl' && t == -1 && l[i][col] == 0) {
+                    data.push(l[i]);
+                }
             }
             else if (col in l[i].info) {
                 if (l[i].info[col].indexOf(t) > -1) {
@@ -401,18 +418,12 @@ function filterBy(v, t, col) {
     pageIt(filterList, "college", 0);
 }
 
-function filter() {
-    $("#collegeList").html("");
+function filterByMajor() {
     var degree = parseInt($("#degreeName").val()), 
-        major = parseInt($("#majorName").val());
-    filterList = filterCollege(filterCollege(collegeList, 'degree',degree), 'major',major);
+        major = parseInt($("#majorName").val()),
+        rl = parseInt($("#rlName").val());
+    filterList = filterCollege(filterCollege(filterCollege(collegeList, 'degree', degree), 'major',major), 'rl', rl);
     pageIt(filterList, "major", 0);
-  //for (var i in filterList) {
-  //    var item = fillInformation(filterList[i], i, 0);
-  //    var toggle = fillExtraInfo(filterList[i], i);
-  //    $("#collegeList").append(item);
-  //    $("#collegeList").append(toggle);
-  //}
 }
 
 $(document).ready(function () {

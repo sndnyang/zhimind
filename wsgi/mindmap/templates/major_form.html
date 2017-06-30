@@ -146,9 +146,10 @@ $(document).ready(function(){
                 $("input[name='eng_url']").val(result.eng_url);
                 $("input[name='gre']").val(result.gre);
                 $("input[name='gre_url']").val(result.gre_url);
-                $("input[name='rl']").val(result.rl);
-                $("input[name='evalue']").val(result.evalue);
-                $("input[name='finance']").val(result.finance);
+                if (result.rl == 0) result.rl = -1;
+                $("select[name='rl']").val(result.rl);
+                $("select[name='evalue']").val(result.evalue);
+                $("select[name='finance']").val(result.finance);
                 $("input[name='docum_url']").val(result.docum_url);
                 $("input[name='int_docum_url']").val(result.int_docum_url);
                 var item = result.info;

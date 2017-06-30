@@ -11,7 +11,8 @@ function filterCollege(l, col, t) {
             continue;
         }
         if (col == 'name') {
-            if (l[i][col].indexOf(t) > -1) {
+            t = t.toLowerCase();
+            if (l[i][col].toLowerCase().indexOf(t) > -1) {
                 data.push(l[i]);
                 continue;
             }
@@ -22,7 +23,7 @@ function filterCollege(l, col, t) {
                     continue;
                 }
                 if ('abbr' in l[i].info && l[i].info.abbr
-                        && l[i].info.abbr.indexOf(t) > -1) {
+                        && l[i].info.abbr.toLowerCase().indexOf(t) > -1) {
                     data.push(l[i]);
                     continue;
                 }

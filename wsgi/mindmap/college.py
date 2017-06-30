@@ -79,13 +79,13 @@ def convert_dict(e):
             }
     return item
 
-@app.route('/collegeList')
-@app.route('/collegeList/<int:pageno>')
-def collegeListPage(pageno = 1):
+
+def getCollegeRedis():
     base_dir = os.path.dirname(__file__)
     fname = os.path.join(base_dir, '..', 'static', 'data', 'college.json')
     college_set = []
     name_list = []
+
     try:
         data = json.load(open(fname))
         # college_list = University.query.paginate(int(pageno), 25).items
@@ -101,6 +101,19 @@ def collegeListPage(pageno = 1):
             college_set.append(e)
     except Exception, e:
         app.logger.debug(traceback.print_exc())
+    return college_set
+
+
+@app.route('/collegeList')
+@app.route('/collegeList/<int:pageno>')
+def collegeListPage(pageno = 1):
+    entity = app.redis.get('college')
+    if entity:
+        entity = eval(entity)
+        return json.dumps(entity, ensure_ascii=False)
+
+    college_set = getCollegeRedis()
+    app.redis.set('college', college_set)
 
     return json.dumps(college_set, ensure_ascii=False)
 
@@ -111,7 +124,7 @@ def majorListPage(pageno = 1):
     fname = os.path.join(base_dir, '..', 'static', 'data', 'college.json')
     college_set = []
     try:
-        data = json.load(open(fname))
+        # data = json.load(open(fname))
         college_list = College.query.all()
         for e in college_list:
             college_set.append(convert_dict(e))
@@ -123,10 +136,22 @@ def majorListPage(pageno = 1):
     return json.dumps(college_set, ensure_ascii=False)
 
 @app.route('/majorList1')
+def tempmajorList():
+    major_set = []
+    try:
+        major_list = TempCollege.query.all()
+        for e in major_list:
+            major_set.append(convert_dict(e))
+    except Exception, e:
+        app.logger.debug(traceback.print_exc())
+        return json.dumps({'error': 'error'})
+    return json.dumps(major_set, ensure_ascii=False)
+
+@app.route('/collegeList1')
 def tempcollegeList():
     college_set = []
     try:
-        college_list = TempCollege.query.all()
+        college_list = TempUniversity.query.all()
         for e in college_list:
             college_set.append(convert_dict(e))
     except Exception, e:
@@ -203,6 +228,8 @@ def submitted_college():
         if result is None:
             db.session.add(college)
         db.session.commit()
+        college_set = getCollegeRedis()
+        app.redis.set('college', college_set)
     except Exception, e:
         app.logger.debug(traceback.print_exc())
         return json.dumps({'error': u'错误'})

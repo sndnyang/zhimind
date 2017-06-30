@@ -2,6 +2,56 @@ var rankBy = 'Q.S.';
 var filterList = null;
 var collegeList = null;
 
+function filterCollege(l, col, t) {
+    var data = [], prefix = t+'-';
+    for (var i in l) {
+        if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
+                    || ('spring' in l[i] && l[i].spring))) {
+            data.push(l[i]); 
+            continue;
+        }
+        if (col == 'name') {
+            if (l[i][col].indexOf(t) > -1) {
+                data.push(l[i]);
+                continue;
+            }
+            if ('info' in l[i] && l[i].info) {
+                if ('cn' in l[i].info && l[i].info.cn
+                        && l[i].info.cn.indexOf(t) > -1) {
+                    data.push(l[i]);
+                    continue;
+                }
+                if ('abbr' in l[i].info && l[i].info.abbr
+                        && l[i].info.abbr.indexOf(t) > -1) {
+                    data.push(l[i]);
+                    continue;
+                }
+
+            }
+        }
+        
+        if (t) {
+            if (col !== 'deadline' && col in l[i]) {
+                if (l[i][col] == t || 
+                      l[i][col].toString().substr(0, prefix.length) == prefix)
+                   data.push(l[i]);
+                if (col === 'rl' && t == -1 && l[i][col] == 0) {
+                    data.push(l[i]);
+                }
+            }
+            else if (col in l[i].info) {
+                if (l[i].info[col].indexOf(t) > -1) {
+                    data.push(l[i]);
+                }
+            }
+        } 
+        else {
+            data.push(l[i]);
+        }
+    }
+    return data;
+}
+
 function appendButton(item, tr, n, url) {
     if (n) {
         var pass = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',0)" class="btn-success">通过</a></td>'.format(url, item.id));
@@ -359,37 +409,6 @@ function sortCollege(name, col, ininfo) {
     pageIt(data, name, 0);
 }
 
-function filterCollege(l, col, t) {
-    var data = [], prefix = t+'-';
-    for (var i in l) {
-        if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
-                    || ('spring' in l[i] && l[i].spring))) {
-            data.push(l[i]); 
-            continue;
-        }
-        
-        if (t) {
-            if (col !== 'deadline' && col in l[i]) {
-                if (l[i][col] == t || 
-                      l[i][col].toString().substr(0, prefix.length) == prefix)
-                   data.push(l[i]);
-                if (col === 'rl' && t == -1 && l[i][col] == 0) {
-                    data.push(l[i]);
-                }
-            }
-            else if (col in l[i].info) {
-                if (l[i].info[col].indexOf(t) > -1) {
-                    data.push(l[i]);
-                }
-            }
-        } 
-        else {
-            data.push(l[i]);
-        }
-    }
-    return data;
-}
-
 function pageTemplate(data, name, n) {
     var list = [];
     $.each(data, function (i, item) {
@@ -415,6 +434,12 @@ function pageTemplate(data, name, n) {
 
 function filterBy(v, t, col) {
     filterList = filterCollege(collegeList, col, v);
+    pageIt(filterList, "college", 0);
+}
+
+function filterByName(obj) {
+    var name = $(obj).val();
+    filterList = filterCollege(collegeList, 'name', name);
     pageIt(filterList, "college", 0);
 }
 

@@ -11,6 +11,10 @@ function filterCollege(l, col, t) {
             continue;
         }
         if (col == 'name') {
+            if (!t) {
+                data.push(l[i]);
+                continue;
+            }
             t = t.toLowerCase();
             if (l[i][col].toLowerCase().indexOf(t) > -1) {
                 data.push(l[i]);
@@ -248,6 +252,8 @@ function fillItemInfo(toggle, item) {
             if (key === 'loc') key = '位置';
             if (key === 'webpage') {
                 key = '主页';
+                if (value.substring(0, 4) != 'http') 
+                    value = 'http://'+value;
                 value = '<a href={0} target=_blank>链接</a>'.format(value);
             }
             toggle.append($('<p>{0} : {1}</p>'.format(key, value)));
@@ -313,8 +319,23 @@ function pageIt(data, name, n) {
             for (var i in items) {
                 $("#collegeList").append(items[i]);
             }
-        }
+        },
     });
+}
+
+function compare(property, isstring, ininfo) {
+    return function (a, b) {
+        var va = ininfo? a.info[property]:a[property], 
+            vb = ininfo? b.info[property]:b[property];
+        if (property === "deadline") {
+            return sortDeadline(a, b);
+        } else if(isstring || property === 'name'){
+            return va > vb ? 1:-1;
+        } else {
+            va = parseFloat(va) || 1000000, vb = parseFloat(vb) || 1000000;
+            return va > vb ? 1:-1;
+        }
+    }
 }
 
 function getDataList(name, n) {
@@ -350,21 +371,6 @@ function validate_deadline(obj) {
     }
 }
 
-function compare(property, isstring, ininfo) {
-    return function (a, b) {
-        var va = ininfo? a.info[property]:a[property], 
-            vb = ininfo? b.info[property]:b[property];
-        if (property === "deadline") {
-            return sortDeadline(a, b);
-        } else if(isstring){
-            return va > vb ? 1:-1;
-        } else {
-            va = parseFloat(va) || 1000000, vb = parseFloat(vb) || 1000000;
-            return va > vb ? 1:-1;
-        }
-    }
-}
-
 function getmd() {
     var date = new Date(), month = date.getMonth(), day = date.getDate(),
         md;
@@ -390,7 +396,7 @@ function sortDeadline(a, b) {
     } else if (b.fall <= md && b.spring <= md) {
         db = 14 + ' ' + b.fall;
     }
-    return da+'' > db+'' ? 1:-1;;
+    return da+'' > db+'' ? 1:-1;
 }
 
 function sortCollege(name, col, ininfo) {
@@ -404,8 +410,12 @@ function sortCollege(name, col, ininfo) {
             data.push(temp[i]);
         }
     }
-    rankBy = col;
-    $("#rankName").html(rankBy.replace('.', '') + '排名');
+    var ranks = $("#sortName option").map(function() {return this.value;}).get();
+    if (ranks.indexOf(col) > -1) {
+        rankBy = col;
+        $("#rankName").html(rankBy.replace(/\./g, '') + '排名');
+    }
+    if (col == 'fall') col = 'deadline';
     data.sort(compare(col, false, ininfo));
     pageIt(data, name, 0);
 }
@@ -440,8 +450,12 @@ function filterBy(v, t, col) {
 
 function filterByName(obj) {
     var name = $(obj).val();
-    filterList = filterCollege(collegeList, 'name', name);
-    pageIt(filterList, "college", 0);
+    if (!rankBy) rankBy = "Q.S.";
+    var filterList = filterCollege(collegeList, 'name', name); 
+    if (!name)
+        sortCollege('college', rankBy, true);
+    else
+        pageIt(filterList, "college", 0);
 }
 
 function filterByMajor() {

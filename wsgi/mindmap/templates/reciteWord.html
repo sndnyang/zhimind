@@ -28,14 +28,18 @@
             <div class="panel-body">
                 <div class="container-fluid">
                     <div class="row-fluid">
-                        <div class="col-md-10 col-md-offset-1">
-                            <a href="#" onclick="start()" id="start">
-                                开始学习 (当前
-                                <span id="currentBook"></span>
-                                <span id="currentBookNum"></span>
-                                <span id="currentBookView"></span>
-                                <span id="currentBookFinish"></span>
-                                )
+                        <div class="col-md-10 col-md-offset-1" id="start">
+                            <div class="col-xs-6 col-md-3">
+                                <a href="#" onclick="start()" href="javascript:void(0)" class="thumbnail storedBook">
+                                    <img alt="" style="height: 180px; width: 100%">
+                                    <p id="currentBook"></p>
+                                    <p id="currentBookNum"></p>
+                                    <p id="currentBookView"></p>
+                                    <p id="currentBookFinish"></p>
+                                </a>
+                            </div>
+                            <a href="#" onclick="start()" class="btn btn-info">
+                                开始学习 
                             </a>
                         </div>
                     </div>
@@ -188,12 +192,16 @@
                     <div class="row-fluid">
                         <div class="col-md-10 col-md-offset-1" id="books2">
                             {% for book in books %}
-                            <div>
-                                <a href="javascript:void(0)" onclick="
-            downloadbook(this, '{{ book.link }}')">
-                                    {{ book.name }}
+                            <div class="col-xs-6 col-md-3">
+                                <a onclick="downloadbook(this, '{{ book.link }}')" id="{{ book.name }}" href="javascript:void(0)" class="thumbnail storedBook">
+                                    <img alt="{{ book.name }}" style="height: 180px; width: 100%">
+                                    <p>{{ book.name }}</p>
+                                    <p>总单词数: {{ book.num.split('(')[0] }}</p>
+                                    {% if book.num.split("(")|length == 2 %}
+                                    {% set up_time = book.num.split('(')[1] %}
+                                    <p>{{ up_time[:-1] }} </p>
+                                    {% endif %}
                                 </a>
-                                <span>单词数: {{ book.num }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -219,11 +227,13 @@
             <div class="panel-body">
                 <div class="container-fluid">
                     <div class="row-fluid">
-                        <div class="col-md-10 col-md-offset-1">
-                            一组单词个数(默认20个):<input type="text" class="form-control" id="unitNum"/>
+                        <div class="col-md-6 col-md-offset-1 form-group">
+                            <p>一组单词个数(默认20个):</p>
+                            <input type="text" class="form-control" id="unitNum"/>
                         </div>
-                        <div class="col-md-10 col-md-offset-1">
-                            学习模式:<select id="unitMode">
+                        <div class="col-md-6 col-md-offset-1 form-group">
+                            <p>学习模式:</p>
+                            <select id="unitMode" class="form-control">
                                 <option value="en-zh">看英文想中文</option>
                                 <option value="zh-en">看中文、例句填词</option>
                                 <option value="mix">混合</option>

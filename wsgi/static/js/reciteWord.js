@@ -15,6 +15,28 @@ String.prototype.trim=function() {
     return this.replace(/(^\s*)|(\s*$)/g,'');
 };
 
+function showBook(name, book) {
+    var num = book.num, view = book.view, finish = book.finish,
+        newBook = $("<div class='col-xs-6 col-md-3'></div>"),
+        a = $("<a onclick='chooseBooks(this)'></a>"),
+        img = $("<img alt='{0}'>".format(name));
+
+    a.attr("id", name);
+    a.attr("href", 'javascript:void(0)'); 
+    a.attr("class", 'thumbnail storedBook'); 
+    img.attr("style" , "height: 180px; width: 100%");
+
+    a.append(img);
+    a.append($("<p>{0}</p>".format(name)))
+    a.append($("<p>{0}</p>".format("总单词数:" + num)))
+    a.append($("<p>{0}</p>".format("已浏览数:" + view)))
+    a.append($("<p>{0}</p>".format("已掌握数:" + finish)))
+
+    newBook.append(a)
+
+    return newBook;
+}
+
 $(document).ready(function(){
     if (!currentBook || currentBook === "") {
         //$("#start").html("开始学习 (当前未选中单词书，请先到词库选择)");
@@ -102,6 +124,8 @@ $(document).ready(function(){
         if (currentWord.level > 9 || reciteTimes[currentWord.word] >= 3) {
             unit.splice(index, 1);
             completeNumber++;
+            if (reciteTimes[currentWord.word] >= 3)
+                updateWord('level', Math.min(currentWord.level+1, 10));
         }
         if (currentWord.level > 9) {
             myBooks[currentBook].finish++;
@@ -120,7 +144,6 @@ $(document).ready(function(){
     }
 
     function right() {
-        updateWord('level', Math.min(currentWord.level+1, 10));
         reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
         updateMaster();
     }
@@ -168,13 +191,7 @@ $(document).ready(function(){
     animate();
 
     for (var book in myBooks) {
-        var num = myBooks[book].num, view = myBooks[book].view,
-            finish = myBooks[book].finish,
-            newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
-                " onclick='chooseBooks(this)'>" + book + "</a> 总单词数:" + num +
-                ", 已浏览:" + view + ", 已完成:" + finish + "</div>";
-
-        $("#myBooks2").append(newBook);
+        $("#myBooks2").append(showBook(book, myBooks[book]));
     }
 
     function word_quiz() {
@@ -357,10 +374,10 @@ function initIndexDB(type, content, name) {
 }
 
 function chooseBooks(obj) {
-    if (currentBook !== $(obj).html()) {
+    if (currentBook !== $(obj).attr("id")) {
         console.log('更换单词书, 先同步数据');
         putWords();
-        currentBook = $(obj).html().trim();
+        currentBook = $(obj).attr("id").trim();
         localStorage.setItem("book", currentBook);
         initIndexDB("init", null, null);
     }
@@ -467,28 +484,21 @@ function createNewBook(content, name) {
             ++i;
         } else {   // complete
             console.log('populate complete  ' + i + ' 添加 单词书 ' + currentBook);
-
             myBooks[currentBook] = {'num': i, 'finish': 0, 'view': 0};
             localStorage.setItem('myBooks', JSON.stringify(myBooks));
-
             updateProgress(i, 0, 0);
-
-            var newBook = "<div><a href='javascript:void(0)' class='storedBook'" +
-                " onclick='chooseBooks(this)'>" + currentBook + "</a> 总单词数:"
-                 + i + ", 已浏览:" + 0 + ", 已完成:" + 0 + "</div>";
-
-            $("#myBooks2").append(newBook);
-
+            $("#myBooks2").append(showBook(currentBook, myBooks[currentBook]));
             switchTab("#myBooks");
         }
     }
 }
 
 function updateProgress(total, view, finish) {
-    $("#currentBook").html("单词书:" + currentBook);
-    $("#currentBookNum").html(" 总单词数:" + total);
-    $("#currentBookView").html(" 浏览个数:" + view);
-    $("#currentBookFinish").html(" 掌握个数:" + finish);
+    $("#currentBook").html("当前单词书:" + currentBook);
+    $("#currentBookNum").html("总单词数:" + total);
+    $("#currentBookView").html("浏览个数:" + view);
+    $("#currentBookFinish").html("掌握个数:" + finish);
+    $("#currentBook").parent().children('img').attr("alt", currentBook);
 }
 
 function downloadbook(obj, name) {
@@ -496,8 +506,8 @@ function downloadbook(obj, name) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', name+"?v="+Math.round(Math.random()*10000), true);
     xhr.responseType = 'arraybuffer';
-    currentBook = $(obj).html().trim();
-    localStorage.setItem("book", $(obj).html().trim());
+    currentBook = $(obj).attr("id").trim();
+    localStorage.setItem("book", currentBook);
 
     xhr.onload = function(e) {
         var uInt8Array = new Uint8Array(this.response);

@@ -1,0 +1,87 @@
+﻿{% extends "layout.html" %}
+{% block body %}
+        <div class="header">
+            <h1>{{name}}教程</h1>
+        </div>
+
+        <button onclick="reset()">重置</button>
+        <div class="container-fluid">
+            <div class="row-fluid ">
+                <div ></div>
+                <div class="col-xs-12 article-content" id="tutorial" style="overflow: hidden">
+                    <div class="bdsharebuttonbox"><a href="#" class="bds_more" data-cmd="more"></a><a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a><a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"32"},"share":{},"image":{"viewList":["qzone","tsina","tqq","renren","weixin"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["qzone","tsina","tqq","renren","weixin"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+                </div>
+                <div ></div>
+                <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2130941"></script>
+<!-- UY END -->
+                <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+
+var disqus_config = function () {
+this.page.url = document.URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = document.URL.split('/')[4]; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//zhimind.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+            </div>
+        </div>
+        <div id="top" data-toggle="tooltip" data-placement="left" title="回到顶部" style="display: block;">
+        <a href="javascript:;">
+        <div class="arrow"></div>
+        <div class="stick"></div>
+      </a>
+        <div id="push"></div>
+    </div>
+        <div style="margin: auto">
+            <div class="bdsharebuttonbox"><a href="#" class="bds_more" data-cmd="more"></a><a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a><a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"32"},"share":{},"image":{"viewList":["qzone","tsina","tqq","renren","weixin"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["qzone","tsina","tqq","renren","weixin"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+        </div>
+
+        <div class="hint">
+            <ul class="flashes">
+            </ul>
+        </div>
+
+
+        <div id="MathAnswer" hidden></div>
+        <link rel="stylesheet" href="/static/css/reset.css">
+
+        <link rel="stylesheet" href="/static/css/trystyle.css">
+        <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/css/tutorial.css">
+
+        <script src="//cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
+        <script src="//cdn.bootcss.com/twemoji/2.2.1/twemoji.min.js"></script>
+        <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+        <script type="text/javascript" src="/static/js/markdown-it-mathjax.js"> </script>
+        <script type="text/javascript" src="/static/js/markdown-it-emoji.js"> </script>
+        <script type="text/javascript" src="/static/js/jQuery.md5.js"> </script>
+        <script type="text/javascript" src="/static/js/DataStructVis.js"> </script>
+        <script type="text/javascript" src="/static/js/globalFuncs.js"> </script>
+        <script type="text/javascript" src="/static/js/tutorialLesson.js"> </script>
+        <script type="text/javascript" src="/static/js/check_answer.js"> </script>
+        {% if cloudjs %}
+        <script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/tutorial.js?{{ cloudjs }}"></script> 
+        {% else %}
+        <script type="text/javascript" src="/static/js/tutorial.js"> </script>
+        {% endif %}
+        <script type="text/javascript">
+            $(document).ready(loadTutorial("{{link}}"));
+        </script>
+
+{% endblock %}

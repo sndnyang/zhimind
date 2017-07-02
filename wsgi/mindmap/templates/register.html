@@ -15,12 +15,12 @@
     {{ render_field(form.confirm) }}
     <div class="form-group">
 
-        <label for="form-verification_code">验证码
+        <label for="form-code">验证码
         <a href="#"><img onclick="this.setAttribute('src','/verifycode?random='+Math.random())" src="/verifycode" title="点击重新获取" /></a></label>
-        <input id="verification_code" name="verification_code" type="text" value="">
-        {% if form.verification_code.errors %}
+        <input id="code" name="code" type="text" value="">
+        {% if form.code.errors %}
         <ul class=errors>
-            {% for error in form.verification_code.errors %}
+            {% for error in form.code.errors %}
             <li>{{ error }}</li>
             {% endfor %}
         </ul>

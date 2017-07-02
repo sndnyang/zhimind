@@ -7,7 +7,7 @@ from flask_login import login_required
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 from models import ReciteWord
-from mindmap import db
+from mindmap import db, app
 
 recite_word_page = Blueprint('naodong_word', __name__,
                              template_folder=os.path.join(
@@ -18,7 +18,7 @@ recite_word_page = Blueprint('naodong_word', __name__,
 def reciteWord():
     import random
     import requests
-    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v=" \
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/word/books.txt?v="\
                 + str(random.randint(1, 10000))
     # real_link = "http://localhost:4321/books.txt"
     r = requests.get(real_link)
@@ -47,9 +47,13 @@ def reciteWord():
 @login_required
 def getWords(book):
     try:
-        word_dict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
+        word_dict = ReciteWord.query.filter_by(book_name='gloss',
+                user_id=g.user.get_id()).one_or_none()
+        if not word_dict:
+            word_dict = ReciteWord.query.filter_by(book_name=book.strip(),
+                    user_id=g.user.get_id()).one_or_none()
     except MultipleResultsFound:
-        return u'重复数据异常'
+        return json.dumps({'error': u'重复数据异常'})
     data = word_dict.get_data() if word_dict else {}
     return json.dumps(data, ensure_ascii=False)
 
@@ -61,28 +65,25 @@ def putWords():
     data = request.json.get('data', None)
 
     if not book or not data:
-        return json.dumps({})
+        return json.dumps({'error': u'无书名或无数据'})
 
     try:
-        word_dict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
+        word_dict = ReciteWord.query.filter_by(book_name=book.strip(),
+                user_id=g.user.get_id()).one_or_none()
+        gloss_dict = ReciteWord.query.filter_by(book_name='gloss',
+                user_id=g.user.get_id()).one_or_none()
     except MultipleResultsFound:
         return json.dumps({'error': u'重复数据异常'})
 
     if word_dict is None:
         new_word_user = ReciteWord(g.user.get_id(), book.strip(), data)
         db.session.add(new_word_user)
-        db.session.commit()
     else:
-        stored_data = word_dict.data
-        new_data = data
-        for k in stored_data:
-            if k not in new_data:
-                new_data[k] = {}
-            for e in stored_data[k]:
-                if e not in new_data[k]:
-                    new_data[k][e] = stored_data[k][e]
-
-        word_dict.data = new_data
-        db.session.commit()
-
+        word_dict.data.update(data)
+    if gloss_dict is None:
+        new_word_gloss = ReciteWord(g.user.get_id(), 'gloss', data)
+        db.session.add(new_word_gloss)
+    else:
+        gloss_dict.data.update(data)
+    db.session.commit()
     return json.dumps({})

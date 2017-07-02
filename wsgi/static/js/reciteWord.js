@@ -292,12 +292,15 @@ function getWords() {
                     var word = keys[i];
                     itemStore.get(word).onsuccess = function (e) {
                         var f = false, item = e.target.result;
-                        if ('level' in serverData[word] && item['level']
-                            < 10 && serverData[word]['level'] > 9) {
-                            myBooks[currentBook].finish++;
-                            item['level'] = serverData[word]['level'];
+                        if ('level' in serverData[word] && 
+                            serverData[word]['level']) {
+                            if (item['level'] < 10 && serverData[word]['level'] > 9)
+                                myBooks[currentBook].finish++;
+                            if (serverData[word][ele] > item[ele])
+                                item['level'] = serverData[word]['level'];
                             f = true;
                         }
+
                         for (var ele in serverData[word]) {
                             if (ele === "level") continue;
                             if (serverData[word][ele] && serverData[word][ele] !== "") {

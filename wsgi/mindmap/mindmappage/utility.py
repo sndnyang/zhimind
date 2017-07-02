@@ -1,5 +1,6 @@
 ﻿# coding=utf-8
 
+
 def printDeep(item, deep):
     if isinstance(item, (str, bool, int, float)):
         print ' '*deep, item
@@ -18,12 +19,12 @@ def printDeep(item, deep):
                 printDeep(e, deep+4)
 
 
-def add_mastery_in_json(json, entrys):
-    node_map = dict((e.tutor_id, e.mastery) for e in entrys)
+def add_mastery_in_json(json, entries):
+    node_map = dict((e.tutor_id, e.mastery) for e in entries)
     visited = []
 
-    def dfs(node, parent):
-        name = node['name']
+    def dfs(node):
+        # name = node['name']
         if "link" in node and len(node['link']):
             for e in node['link']:
                 if "url" not in e:
@@ -39,7 +40,7 @@ def add_mastery_in_json(json, entrys):
         child_level = 0
         for child in node['children']:
             if child not in visited:
-                child_node = dfs(child, name)
+                child_node = dfs(child)
                 if child_node and 'level' in child_node:
                     child_level += child['level']
 
@@ -49,5 +50,5 @@ def add_mastery_in_json(json, entrys):
             node['level'] += child_level * 1.0 / len(node['children'])
         return node
 
-    node = dfs(json, '')
+    dfs(json)
 

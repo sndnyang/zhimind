@@ -1,17 +1,20 @@
 # -*- coding:utf-8 -*-
 import os
 import json
-import random
 
-from flask import render_template, Blueprint, g, request
+from flask import render_template, g, request, Blueprint
 from flask_login import login_required
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 from models import ReciteWord
-from mindmap import app
-from . import naodong_word
+from mindmap import db
 
-@naodong_word.route('/reciteWord.html')
+recite_word_page = Blueprint('naodong_word', __name__,
+                             template_folder=os.path.join(
+                                 os.path.dirname(__file__), 'templates'))
+
+
+@recite_word_page.route('/reciteWord.html')
 def reciteWord():
     import random
     import requests
@@ -36,21 +39,22 @@ def reciteWord():
             'description': u'脑洞计划之背单词， 联想记忆，词根词缀， 例句',
             'keywords': u'zhimind 单词 智能学习 词根词缀 联想记忆'}
     return render_template('reciteWord.html', books=books, meta=meta, 
-            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
+                           cloudjs=random.random()
+                           if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 
-@naodong_word.route('/getWords/<book>', methods=["GET"])
+@recite_word_page.route('/getWords/<book>', methods=["GET"])
 @login_required
 def getWords(book):
     try:
-        wordDict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
+        word_dict = ReciteWord.query.filter_by(book_name=book.strip(), user_id=g.user.get_id()).one_or_none()
     except MultipleResultsFound:
         return u'重复数据异常'
-    data = wordDict.get_data() if wordDict else {}
+    data = word_dict.get_data() if word_dict else {}
     return json.dumps(data, ensure_ascii=False)
 
 
-@naodong_word.route('/putWords', methods=["POST"])
+@recite_word_page.route('/putWords', methods=["POST"])
 @login_required
 def putWords():
     book = request.json.get('book', None)
@@ -82,5 +86,3 @@ def putWords():
         db.session.commit()
 
     return json.dumps({})
-
-

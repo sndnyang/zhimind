@@ -1,8 +1,7 @@
 # -*- coding:utf-8 -*-
-
-import sys
 import os
-import random
+import sys
+
 import logging
 
 import redis
@@ -19,8 +18,6 @@ if sys.getdefaultencoding() != 'utf8':
 
 app = Flask(__name__, static_folder= os.path.join(os.path.dirname(__file__), "..", "static"))
 app.config.from_pyfile('flaskapp.cfg')
-
-app.cloud = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0
 
 log_file_name = os.path.join(
     os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
@@ -41,8 +38,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 pool = redis.ConnectionPool(host=os.environ.get('OPENSHIFT_REDIS_HOST', 'localhost'),
-        port=int(os.environ.get('OPENSHIFT_REDIS_PORT', '16379')),
-        password=os.environ.get('REDIS_PASSWORD', None))
+                            port=int(os.environ.get('OPENSHIFT_REDIS_PORT', '16379')),
+                            password=os.environ.get('REDIS_PASSWORD', None))
 
 app.redis = redis.StrictRedis(connection_pool = pool)
 
@@ -59,5 +56,12 @@ else:
 
 from models import *
 from views import *
-from word import *
-from college import *
+from college import college_page
+from naodong import recite_word_page
+from course import course_page
+from mindmappage import map_page
+
+app.register_blueprint(recite_word_page)
+app.register_blueprint(college_page)
+app.register_blueprint(course_page)
+app.register_blueprint(map_page)

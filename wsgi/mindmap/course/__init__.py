@@ -1,10 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import os
-from flask import Blueprint
-
-course_page = Blueprint('course', __name__,
-        template_folder = os.path.join(os.path.dirname(__file__), 'templates'))
-
-from . import tutorial, practice, checker
-
+from tutorial import tutorial_page
+from practice import practice_page
+from checker import answer_checker

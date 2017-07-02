@@ -1,5 +1,10 @@
+
+from flask import request, url_for, redirect, session, jsonify
 from flask_oauthlib.client import OAuth
 
+from mindmap import app
+
+oauth = OAuth(app)
 weibo = oauth.remote_app(
     'weibo',
     consumer_key='909122383',
@@ -14,10 +19,11 @@ weibo = oauth.remote_app(
     content_type='application/json',
 )
 
+
 @app.route('/')
 def index():
     if 'oauth_token' in session:
-        access_token = session['oauth_token'][0]
+        # access_token = session['oauth_token'][0]
         resp = weibo.get('statuses/home_timeline.json')
         return jsonify(resp.data)
     return redirect(url_for('login'))
@@ -26,8 +32,9 @@ def index():
 @app.route('/login')
 def login():
     return weibo.authorize(callback=url_for('authorized',
-        next=request.args.get('next') or request.referrer or None,
-        _external=True))
+                           next=request.args.get('next') or request.referrer
+                           or None,
+                           _external=True))
 
 
 @app.route('/logout')

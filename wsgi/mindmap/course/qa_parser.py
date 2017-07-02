@@ -1,7 +1,8 @@
-#coding=utf-8
+# -*- coding=utf-8 -*-
 import re
 import json
 import requests
+
 
 def find_right_next(s, i, n, char):
     if i >= len(s):
@@ -19,7 +20,6 @@ def find_right_next(s, i, n, char):
 
 def finite_status_machine(c, char):
     start = 0
-    end = 0
     lists = []
     if c[-2:] == '%}':
         c = c[:-2]
@@ -51,9 +51,9 @@ def parse_answer(line, p, quiz_type):
         lt = len(t)
         answer_map = {}
         if lt == 0:
-            answer_map  = {'': ([], '')}
+            answer_map = {'': ([], '')}
         if lt == 1:
-            answer_map  = {t[0]: ([], '')}
+            answer_map = {t[0]: ([], '')}
         if lt == 2:
             if t[1][0] == '$' or t[1][0] == '!' or t[1][0] == '`':
                 answer_map = {t[0]: ([], t[1])}
@@ -61,7 +61,7 @@ def parse_answer(line, p, quiz_type):
             else:
                 answer_map = {t[0]: (t[1].split(','), '')}
         if lt == 3:
-            answer_map  = {t[0]: (t[1].split(','), t[2])}
+            answer_map = {t[0]: (t[1].split(','), t[2])}
             options.append(t[2])
 
         if not result:
@@ -83,7 +83,7 @@ def parse_comment(c):
     如果存在两个 : 需要在js里判断中间存在 ',' 而不是 '，'
     """
     lists = finite_status_machine(c, '#')
-    result = [{},[]]
+    result = [{}, []]
     for l in lists:
         if ':' not in l:
             result[1].append(l)
@@ -91,7 +91,9 @@ def parse_comment(c):
 
         t = []
         for s in finite_status_machine(l, '#'):
-            t.append(':'.join(['"%s"' % e.replace('\n', '').replace('\r', '') for e in s.split(':',1)]))
+            t.append(':'.join(
+                ['"%s"' % e.replace('\n', '').replace('\r', '')
+                 for e in s.split(':', 1)]))
 
         l = json.loads('{%s}' % ','.join(t))
 
@@ -140,7 +142,7 @@ def qa_parse(content):
 
     start = content.find("{%")
     lists = []
-    while start >= 0 and start < len(content):
+    while 0 <= start < len(content):
         end = find_right_next(content, start, 0, '\n')
         s = content[start:end]
         lists.append(s)
@@ -154,8 +156,8 @@ def qa_parse(content):
         content = content.replace(s, s[:s.find('@')].strip() + '%}\n')
 
     response = content
-    #block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
-    #response = re.sub(block_pattern, extract, content)
+    # block_pattern = re.compile('{%(\w*|[^%{}@]*@[^%]*)%}', re.M)
+    # response = re.sub(block_pattern, extract, content)
 
     qa_parts['response'] = response
     qa_parts['answer'] = answers
@@ -175,7 +177,7 @@ def md_qa_parse(real_link):
         return {'response': False, 'info': real_link + u'不存在'}, "", None
 
     if 'content-length' in r.headers and \
-                    int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
+       int(r.headers['content-length']) > 8 * 5000 * 1024 * 3:
         return {'response': False, 'info': real_link + u' 太长'}, "", None
 
     content = r.content

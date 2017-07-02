@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from mindmap import db
 from ..models import uuid_gen
 
+
 class ReciteWord(db.Model):
     __tablename__ = 'ReciteWord'
     id = db.Column('recite_id', db.String, primary_key=True, default=uuid_gen)
@@ -20,4 +21,3 @@ class ReciteWord(db.Model):
 
     def get_data(self):
         return self.data
-

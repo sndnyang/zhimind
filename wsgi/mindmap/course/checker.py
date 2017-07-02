@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
+import os
 
-from flask import request, g, session, json
+from flask import request, g, session, json, Blueprint
 
 from mindmap import app
 from utility import *
@@ -9,10 +10,12 @@ from qa_parser import *
 from AnswerChecker import *
 from models import *
 
-from . import course_page
+answer_checker = Blueprint('answer_checker', __name__,
+                           template_folder=os.path.join(
+                               os.path.dirname(__file__), 'templates'))
 
 
-@course_page.route('/checkChoice', methods=["POST"])
+@answer_checker.route('/checkChoice', methods=["POST"])
 def checkChoice():
     response = {'status': False}
     no, tid, expression, name = validate_check_para(request.json, Tutorial)
@@ -72,7 +75,7 @@ def checkChoice():
     return json.dumps(response, ensure_ascii=False)
 
 
-@course_page.route('/checkTextAnswer', methods=["POST"])
+@answer_checker.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
     response = {'status': False}
     no, tid, expression, name = validate_check_para(request.json, Tutorial)
@@ -128,7 +131,7 @@ def checkAnswer():
     return json.dumps(response)
 
 
-@course_page.route('/cmp_math', methods=["POST"])
+@answer_checker.route('/cmp_math', methods=["POST"])
 def cmp_math():
     response = {'status': False}
     no, tid, expression, name = validate_check_para(request.json, Tutorial)
@@ -166,7 +169,7 @@ def cmp_math():
     return json.dumps(response, ensure_ascii=False)
 
 
-@course_page.route('/checkProcess', methods=["POST"])
+@answer_checker.route('/checkProcess', methods=["POST"])
 def checkProcess():
     response = {'status': False}
     no, tid, l, name = validate_check_para(request.json, Tutorial)

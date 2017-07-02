@@ -1,7 +1,9 @@
 ﻿# coding=utf-8
 
-from qa_parser import *
 from sqlalchemy.orm.exc import NoResultFound
+
+from qa_parser import *
+from models import Tutorial
 
 
 def printDeep(item, deep):
@@ -42,7 +44,7 @@ def gen_meta_for_tp(name, entity):
     return meta
 
 
-def validate_check_para(data, Tutorial):
+def validate_check_para(data):
     response = {'status': False}
 
     no = data.get('id', None)
@@ -58,14 +60,14 @@ def validate_check_para(data, Tutorial):
     if not expression or not tid:
         return None, response, None
 
-    tid, name = get_real_tid(Tutorial, tid)
+    tid, name = get_real_tid(tid)
     if not tid:
         response['info'] = u'url不正确？'
         return None, response, None
     return no, tid, expression, name
 
 
-def get_real_tid(Tutorial, tid):
+def get_real_tid(tid):
     try:
         tutorial = Tutorial.query.get(tid)
         if not tutorial:
@@ -77,4 +79,3 @@ def get_real_tid(Tutorial, tid):
     except NoResultFound:
         return None, None
     return tid, tutorial.get_title()
-

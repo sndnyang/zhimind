@@ -1,21 +1,20 @@
 # -*- coding:utf-8 -*-
+import os
 import traceback
 
-from sqlalchemy.orm.exc import NoResultFound
-
-from flask import request, render_template
+from flask import render_template, Blueprint
 
 from mindmap import app
 
-from models import *
-from qa_parser import *
-from AnswerChecker import *
+from models import Tutorial
 from utility import *
 
-from . import course_page
+practice_page = Blueprint('practice_page', __name__,
+                          template_folder=os.path.join(
+                              os.path.dirname(__file__), 'templates'))
 
 
-@course_page.route('/practice/<link>')
+@practice_page.route('/practice/<link>')
 def program_practice(link):
     base_link = '/'
     name = ''
@@ -33,5 +32,5 @@ def program_practice(link):
         app.logger.debug(traceback.print_exc())
 
     meta = gen_meta_for_tp(name, app.redis.get(link))
-    return render_template('practice.html', link=link, base=base_link, name=name, meta=meta)
-
+    return render_template('practice.html', link=link, base=base_link,
+                           name=name, meta=meta)

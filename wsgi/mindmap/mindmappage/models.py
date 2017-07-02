@@ -8,10 +8,11 @@ from sqlalchemy.dialects.postgresql import JSON
 
 from mindmap import db
 
+
 class MindMap(db.Model):
     __tablename__ = 'mindmap'
     id = db.Column('mindmap_id', db.String, primary_key=True, 
-            default=str(uuid.uuid4()))
+                   default=str(uuid.uuid4()))
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     title = db.Column(db.String(60))
     map = db.Column(JSON)
@@ -32,7 +33,7 @@ class MindMap(db.Model):
 class EntryMastery(db.Model):
     __tablename__ = 'entry_mastery'
     id = db.Column('entry_id', db.String, primary_key=True,
-            default=str(uuid.uuid4()))
+                   default=str(uuid.uuid4()))
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     tutor_id = db.Column(db.String, db.ForeignKey('tutorial.tutor_id'))
     name = db.Column(db.String(60))
@@ -41,4 +42,3 @@ class EntryMastery(db.Model):
     def __init__(self, tutor_id):
         self.tutor_id = tutor_id
         self.mastery = 0
-

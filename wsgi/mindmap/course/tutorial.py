@@ -1,25 +1,28 @@
 # -*- coding:utf-8 -*-
 import os
-import random
 
 from datetime import datetime
 import traceback
 
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import MultipleResultsFound
 
-from flask import request, render_template, g, session, json, abort
+from flask import request, render_template, g, session, json, abort, Blueprint
 
 from flask_login import login_required
 
-from mindmap import app, db
+from mindmap import app
 from utility import *
 from models import *
+from ..mindmappage.models import MindMap
 from qa_parser import *
 from AnswerChecker import *
 
-from . import course_page
+tutorial_page = Blueprint('tutorial_page', __name__,
+                          template_folder=os.path.join(
+                              os.path.dirname(__file__), 'templates'))
 
-@course_page.route('/editor.html')
+
+@tutorial_page.route('/editor.html')
 def editor():
     meta = {'title': u'知维图在线编辑 -- 互联网学习实验室',
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
@@ -29,13 +32,13 @@ def editor():
     return render_template('zhimindEditor.html', source=source, meta=meta)
 
 
-@course_page.route('/editor/<link>')
+@tutorial_page.route('/editor/<link>')
 @login_required
 def edit_online(link):
     content = ""
     try:
         tutorial = Tutorial.query.get(link)
-        name = tutorial.get_title()
+        # name = tutorial.get_title()
 
         if tutorial and tutorial.user_id == g.user.get_id():
             content = tutorial.content
@@ -54,7 +57,7 @@ def edit_online(link):
     return render_template('zhimindEditor.html', source=content, meta=meta)
 
 
-@course_page.route('/tutorial/<link>')
+@tutorial_page.route('/tutorial/<link>')
 def get_tutorial(link):
     try:
         tutorial = Tutorial.query.get(link)
@@ -73,14 +76,15 @@ def get_tutorial(link):
         link = tid
 
     return render_template('tutorial.html', link=link, name=name,
-            cloudjs = random.random() if os.environ.get("LOAD_JS_CLOUD", 0) else 0,
+                           cloudjs=random.random() if os.environ.get(
+                               "LOAD_JS_CLOUD", 0) else 0,
                            meta=meta)
 
 
-@course_page.route('/convert/<link>')
+@tutorial_page.route('/convert/<link>')
 def convert(link):
     response = {'status': False}
-    link, name = get_real_tid(Tutorial, link)
+    link, name = get_real_tid(link)
     if not link:
         response['info'] = u'没有找到'
         return json.dumps(response, ensure_ascii=False)
@@ -115,8 +119,8 @@ def convert(link):
     return json.dumps(response, ensure_ascii=False)
 
 
-@course_page.route('/newtutorial', methods=['POST'])
-@course_page.route('/newpractice', methods=['POST'])
+@tutorial_page.route('/newtutorial', methods=['POST'])
+@tutorial_page.route('/newpractice', methods=['POST'])
 @login_required
 def create_tutorial():
     now = datetime.now()
@@ -154,7 +158,7 @@ def create_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@course_page.route('/save_tutorial', methods=['POST'])
+@tutorial_page.route('/save_tutorial', methods=['POST'])
 @login_required
 def save_tutorial():
     now = datetime.now()
@@ -196,7 +200,7 @@ def save_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@course_page.route('/editTutorial', methods=['POST'])
+@tutorial_page.route('/editTutorial', methods=['POST'])
 @login_required
 def edit_tutorial():
     tutorial_id = request.json.get('id')
@@ -229,7 +233,7 @@ def edit_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@course_page.route('/syncTutorial', methods=['POST'])
+@tutorial_page.route('/syncTutorial', methods=['POST'])
 @login_required
 def sync_tutorial():
     now = datetime.now()
@@ -266,7 +270,7 @@ def sync_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@course_page.route('/deleteTutorial', methods=['POST'])
+@tutorial_page.route('/deleteTutorial', methods=['POST'])
 @login_required
 def delete_tutorial():
     tutorial_id = request.json.get('id')
@@ -291,7 +295,7 @@ def delete_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@course_page.route('/save', methods=['POST'])
+@tutorial_page.route('/save', methods=['POST'])
 @login_required
 def save_map():
     if request.method == 'GET':
@@ -313,10 +317,10 @@ def save_map():
         return u'重复数据异常'
 
     if mindmap is None:
-        newmap = MindMap(title, data)
-        newmap.user_id = g.user.get_id()
-        newmap.last_edit = now
-        db.session.add(newmap)
+        new_map = MindMap(title, data)
+        new_map.user_id = g.user.get_id()
+        new_map.last_edit = now
+        db.session.add(new_map)
         g.user.last_edit = now
         db.session.commit()
         return u'成功添加新的导图'
@@ -343,7 +347,7 @@ def update_content(tutorial, content, slug):
         app.logger.debug("slug %s repeat" % slug)
 
 
-@course_page.route('/gewu.html')
+@tutorial_page.route('/gewu.html')
 def gewu():
     link = "gewu-learning-methods-template"
     name = "格物学习法"

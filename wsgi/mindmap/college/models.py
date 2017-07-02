@@ -7,6 +7,7 @@ from sqlalchemy import UniqueConstraint
 from mindmap import db
 from ..models import uuid_gen
 
+
 class College(db.Model):
     __tablename__ = 'college'
     id = db.Column('college_id', db.String, primary_key=True, default=uuid_gen)
@@ -33,7 +34,7 @@ class College(db.Model):
     int_docum_url = db.Column(db.String(250))
     info = db.Column(JSON)
     __table_args__ = (UniqueConstraint('name', 'degree', 'major', 
-        name='_degree_major'),)
+                      name='_degree_major'),)
     
     def __init__(self, name, degree, major, site_url):
         self.name = name
@@ -102,7 +103,7 @@ class University(db.Model):
     info = db.Column(JSON)
 
     def __init__(self, name, info):
-        self.name =name
+        self.name = name
         self.info = info
 
 
@@ -113,5 +114,5 @@ class TempUniversity(db.Model):
     info = db.Column(JSON)
 
     def __init__(self, name, info):
-        self.name =name
+        self.name = name
         self.info = info

@@ -4,6 +4,7 @@
 from mindmap import db
 from ..models import uuid_gen
 
+
 class Tutorial(db.Model):
     __tablename__ = 'tutorial'
     id = db.Column('tutor_id', db.String, primary_key=True, default=uuid_gen)
@@ -16,10 +17,10 @@ class Tutorial(db.Model):
     slug = db.Column(db.String(50), unique=True, index=True)
     content = db.Column(db.Text())
     
-    def __init__(self, title, url, type="tutorial"):
+    def __init__(self, title, url, name="tutorial"):
         self.title = title
         self.url = url
-        self.type = type
+        self.type = name
 
     def get_id(self):
         return self.id
@@ -29,4 +30,3 @@ class Tutorial(db.Model):
 
     def get_title(self):
         return self.title
-

@@ -1,17 +1,16 @@
 #!/usr/bin/env python 
 # coding=utf-8 
- 
-import os
+
 import sys
-import random 
-import StringIO
+import random
 from PIL import Image, ImageDraw, ImageFont, ImageFilter 
 
-#map:将str函数作用于后面序列的每一个元素
+# map:将str函数作用于后面序列的每一个元素
 numbers = ''.join(map(str, range(10)))
-chars = ''.join((numbers)) 
+chars = ''.join(numbers)
  
 sys.path.append('/usr/share')
+
 
 def create_validate_code(size=(120, 30), 
                          chars=chars, 
@@ -23,29 +22,31 @@ def create_validate_code(size=(120, 30),
                          length=4, 
                          draw_points=True, 
                          point_chance = 2): 
-    '''''
-    size: 图片的大小，格式（宽，高），默认为(120, 30)
-    chars: 允许的字符集合，格式字符串
-    mode: 图片模式，默认为RGB
-    bg_color: 背景颜色，默认为白色
-    fg_color: 前景色，验证码字符颜色
-    font_size: 验证码字体大小
-    font_type: 验证码字体，默认为 Monaco.ttf
-    length: 验证码字符个数
-    draw_points: 是否画干扰点
-    point_chance: 干扰点出现的概率，大小范围[0, 50]
-    ''' 
+    """
+
+    :param size: 图片的大小，格式（宽，高），默认为(120, 30)
+    :param chars: 允许的字符集合，格式字符串
+    :param mode: 图片模式，默认为RGB
+    :param bg_color: 背景颜色，默认为白色
+    :param fg_color: 前景色，验证码字符颜色
+    :param font_size: 验证码字体大小
+    :param font_type: 验证码字体，默认为 Monaco.ttf
+    :param length: 验证码字符个数
+    :param draw_points: 是否画干扰点
+    :param point_chance: 干扰点出现的概率，大小范围[0, 50]
+    :return:
+    """
  
     width, height = size 
     img = Image.new(mode, size, bg_color) # 创建图形 
     draw = ImageDraw.Draw(img) # 创建画笔 
  
     def get_chars(): 
-        '''''生成给定长度的字符串，返回列表格式''' 
+        """生成给定长度的字符串，返回列表格式"""
         return random.sample(chars, length) 
  
     def create_points(): 
-        '''''绘制干扰点''' 
+        """绘制干扰点"""
         chance = min(50, max(0, int(point_chance))) # 大小限制在[0, 50] 
  
         for w in xrange(width): 
@@ -55,7 +56,7 @@ def create_validate_code(size=(120, 30),
                     draw.point((w, h), fill=(0, 0, 0)) 
  
     def create_strs(): 
-        '''''绘制验证码字符''' 
+        """''绘制验证码字符"""
         c_chars = get_chars() 
         strs = '%s' % ''.join(c_chars) 
  

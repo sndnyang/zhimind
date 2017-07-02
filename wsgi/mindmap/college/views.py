@@ -227,7 +227,7 @@ def submitted_college():
     session['code_text'] = code_string
     try:
         name = request.form['name']
-        info = {'nation': request.form['nationinput']}
+        info = {u'国家': request.form['nationinput']}
         l = len(request.form.keys()) / 2 - 1
         for i in range(1, l):
             info['label%d' % (i+1)] = request.form['label%d' % (i+1)]

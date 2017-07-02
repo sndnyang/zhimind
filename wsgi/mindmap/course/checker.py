@@ -8,7 +8,6 @@ from utility import *
 
 from qa_parser import *
 from AnswerChecker import *
-from models import *
 
 answer_checker = Blueprint('answer_checker', __name__,
                            template_folder=os.path.join(
@@ -18,7 +17,7 @@ answer_checker = Blueprint('answer_checker', __name__,
 @answer_checker.route('/checkChoice', methods=["POST"])
 def checkChoice():
     response = {'status': False}
-    no, tid, expression, name = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -34,8 +33,8 @@ def checkChoice():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
-                                    expression, '@'.join(answers)))
+    app.logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" %
+                    (user, tid, name, no, expression, '@'.join(answers)))
 
     if len(answers) == 1 and not answers[0]:
         response['status'] = True
@@ -78,7 +77,7 @@ def checkChoice():
 @answer_checker.route('/checkTextAnswer', methods=["POST"])
 def checkAnswer():
     response = {'status': False}
-    no, tid, expression, name = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -96,8 +95,8 @@ def checkAnswer():
     temp = '@'.join(answers)
     if not temp:
         temp = "empty"
-    app.logger.info("text\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
-                                            '@'.join(expression), temp))
+    app.logger.info("text\t%s\t%s:%s\t%s\t%s\t%s" %
+                    (user, tid, name, no, '@'.join(expression), temp))
 
     if not answers or len(answers) != len(expression):
         response['info'] = u'有些空没有填?'
@@ -134,7 +133,7 @@ def checkAnswer():
 @answer_checker.route('/cmp_math', methods=["POST"])
 def cmp_math():
     response = {'status': False}
-    no, tid, expression, name = validate_check_para(request.json, Tutorial)
+    no, tid, expression, name = validate_check_para(request.json)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -149,8 +148,8 @@ def cmp_math():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" % (user, tid, name, no,
-                                    '@'.join(expression), '@'.join(answers)))
+    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" %
+                    (user, tid, name, no, '@'.join(expression), '@'.join(answers)))
 
     if not answers or len(answers) != len(expression):
         return json.dumps(response)
@@ -172,7 +171,7 @@ def cmp_math():
 @answer_checker.route('/checkProcess', methods=["POST"])
 def checkProcess():
     response = {'status': False}
-    no, tid, l, name = validate_check_para(request.json, Tutorial)
+    no, tid, l, name = validate_check_para(request.json)
     if no is None:
         return json.dumps(tid, ensure_ascii=False)
 
@@ -196,5 +195,3 @@ def checkProcess():
     if result[0] and (l[0] == 'Q.E.D.' or l[0] == '证毕'):
         response['finish'] = True
     return json.dumps(response, ensure_ascii=False)
-
-

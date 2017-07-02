@@ -98,8 +98,8 @@ function fillCollegeInformation(item, i, n) {
     name = fillName(item.name);
 
     temp = '';
-    if (item.info && item.info['国家'])
-        temp = item.info['国家'];
+    if (item.info && (item.info['国家'] || item.info['nation']))
+        temp = item.info['国家'] || item.info['nation'];
     nation = $('<td>{0}</td>'.format(temp));
 
     temp = '';

@@ -41,7 +41,7 @@ pool = redis.ConnectionPool(host=os.environ.get('OPENSHIFT_REDIS_HOST', 'localho
                             port=int(os.environ.get('OPENSHIFT_REDIS_PORT', '16379')),
                             password=os.environ.get('REDIS_PASSWORD', None))
 
-app.redis = redis.StrictRedis(connection_pool = pool)
+app.redis = redis.StrictRedis(connection_pool=pool)
 
 # 定义常量
 APP_ID = os.environ.get('BAIB_ID', None)
@@ -58,10 +58,12 @@ from models import *
 from views import *
 from college import college_page
 from naodong import recite_word_page
-from course import course_page
+from course import tutorial_page, practice_page, answer_checker
 from mindmappage import map_page
 
-app.register_blueprint(recite_word_page)
-app.register_blueprint(college_page)
-app.register_blueprint(course_page)
 app.register_blueprint(map_page)
+app.register_blueprint(college_page)
+app.register_blueprint(tutorial_page)
+app.register_blueprint(practice_page)
+app.register_blueprint(answer_checker)
+app.register_blueprint(recite_word_page)

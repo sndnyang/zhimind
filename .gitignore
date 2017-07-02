@@ -76,3 +76,5 @@ tags
 *.db
 
 *test*
+
+backup/

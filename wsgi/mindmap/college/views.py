@@ -44,12 +44,13 @@ def temp_major_page():
 @college_page.route('/major.html')
 @college_page.route('/major.html/<int:temp>')
 def major_page(temp = 0):
+    if temp == 1 and (g.user is None or not g.user.is_authenticated)\
+            and g.user.get_name() != 'sndnyang'::
+        return u"用户不支持访问"
+
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
-    if temp == 1 and (g.user is None or not g.user.is_authenticated):
-        return u"用户未登录"
-
     if temp != 1:
         temp = 0
     return render_template('majorList.html', meta=meta, temp=temp,

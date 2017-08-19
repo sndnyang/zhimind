@@ -37,6 +37,18 @@ function showBook(name, book) {
     return newBook;
 }
 
+function updateWord(property, v) {
+    var transaction = db.transaction(["word"], "readwrite");
+    var itemStore = transaction.objectStore("word");
+    currentWord[property] = v;
+    if (!(currentWord.word in updateWords)) {
+        updateWords[currentWord.word] = {};
+    }
+    updateWords[currentWord.word][property] = v;
+    if (property === "level") updateWords[currentWord.word]["time"] = new Date().getTime();
+    itemStore.put(currentWord);
+}
+
 $(document).ready(function(){
     if (!currentBook || currentBook === "") {
         //$("#start").html("开始学习 (当前未选中单词书，请先到词库选择)");
@@ -74,7 +86,7 @@ $(document).ready(function(){
             }
             return false;
         } else if (event.keyCode == 40 || event.keyCode == 75
-                || event.keyCode == 18) {
+                || (event.keyCode == 18 && mode == "zh-en")) {
             // 判断当event.keyCode 为40时（即下方向键） or k or alt
             if (section == "recall") { sorry(); } // recall页面对应 不知道
             else if (section == "remember") { // remember页面对应 记错了
@@ -242,18 +254,6 @@ function switchTab(next) {
     $(next).attr("class", "tab-pane fade in active");
 }
 
-function updateWord(property, v) {
-    var transaction = db.transaction(["word"], "readwrite");
-    var itemStore = transaction.objectStore("word");
-    currentWord[property] = v;
-    if (!(currentWord.word in updateWords)) {
-        updateWords[currentWord.word] = {};
-    }
-    updateWords[currentWord.word][property] = v;
-    if (property === "level") updateWords[currentWord.word]["time"] = new Date().getTime();
-    itemStore.put(currentWord);
-}
-
 function putWords() {
 
     $.ajax({
@@ -292,27 +292,34 @@ function getWords() {
                     var word = keys[i];
                     itemStore.get(word).onsuccess = function (e) {
                         var f = false, item = e.target.result;
-                        if ('level' in serverData[word] && 
-                            serverData[word]['level']) {
-                            if (item['level'] < 10 && serverData[word]['level'] > 9)
-                                myBooks[currentBook].finish++;
-                            if (serverData[word][ele] > item[ele])
-                                item['level'] = serverData[word]['level'];
-                            f = true;
-                        }
-
-                        for (var ele in serverData[word]) {
-                            if (ele === "level") continue;
-                            if (serverData[word][ele] && serverData[word][ele] !== "") {
-                                item[ele] = serverData[word][ele];
+                        ++i;
+                        if (typeof(item) == "undefined") {
+                            console.log("next")
+                            getNext();
+                        } else {
+                            console.log(word);
+                            if ('level' in serverData[word] && 
+                                serverData[word]['level']) {
+                                if (item['level'] < 10 && serverData[word]['level'] > 9)
+                                    myBooks[currentBook].finish++;
+                                if (serverData[word][ele] > item[ele])
+                                    item['level'] = serverData[word]['level'];
                                 f = true;
                             }
+
+                            for (var ele in serverData[word]) {
+                                if (ele === "level") continue;
+                                if (serverData[word][ele] && serverData[word][ele] !== "") {
+                                    item[ele] = serverData[word][ele];
+                                    f = true;
+                                }
+                            }
+                            if (f)
+                                itemStore.put(item).onsuccess = getNext;
+                            else
+                                getNext();
+
                         }
-                        ++i;
-                        if (f)
-                            itemStore.put(item).onsuccess = getNext;
-                        else
-                            getNext();
                     }
                 } else {
                     localStorage.setItem('myBooks', JSON.stringify(myBooks));
@@ -651,6 +658,7 @@ function reciteMainView() {
     if (!currentWord.level) {
         myBooks[currentBook].view++;
         $("#currentBookView").html(" 浏览个数:" + myBooks[currentBook].view);
+        currentWord.level = 1;
     }
 
     if ((mode === "zh-en" || (mode === "mix" && currentWord.level > 2 &&

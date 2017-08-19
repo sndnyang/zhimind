@@ -45,7 +45,7 @@ def temp_major_page():
 @college_page.route('/major.html/<int:temp>')
 def major_page(temp = 0):
     if temp == 1 and (g.user is None or not g.user.is_authenticated)\
-            and g.user.get_name() != 'sndnyang'::
+            and g.user.get_name() != 'sndnyang':
         return u"用户不支持访问"
 
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',

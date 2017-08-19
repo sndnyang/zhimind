@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import json
+import copy
 
 from flask import render_template, g, request, Blueprint
 from flask_login import login_required
@@ -79,11 +80,15 @@ def putWords():
         new_word_user = ReciteWord(g.user.get_id(), book.strip(), data)
         db.session.add(new_word_user)
     else:
-        word_dict.data.update(data)
+        newdata = copy.deepcopy(word_dict.get_data())
+        newdata.update(data)
+        word_dict.data = newdata
     if gloss_dict is None:
         new_word_gloss = ReciteWord(g.user.get_id(), 'gloss', data)
         db.session.add(new_word_gloss)
     else:
-        gloss_dict.data.update(data)
+        newdata = copy.deepcopy(gloss_dict.get_data())
+        newdata.update(data)
+        gloss_dict.data = newdata
     db.session.commit()
     return json.dumps({})

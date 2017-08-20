@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<script src="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
+<link href="/static/css/ListTabMenu.css" rel="stylesheet">
+<link href="{{ url_for('talkerchu.static', filename='css/talkerchu.css') }}" rel="stylesheet">
+<link href="/static/css/loader.css" rel="stylesheet" media="screen" type="text/css"/>
+<script src="//cdn.bootcss.com/sql.js/0.3.2/js/sql.js"></script>
+{% if cloudjs %}
+<script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/talkerchu.js?{{ cloudjs }}"></script> 
+{% else %}
+<script src="{{ url_for('talkerchu.static', filename='js/talkerchu.js') }}"></script>
+{% endif %}
+
+
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active">
+        <a href="#recite" data-toggle="tab">脱口而出</a>
+    </li>
+    <li><a href="#books" data-toggle="tab">资源库</a></li>
+    <li><a href="#myBooks" data-toggle="tab" style="display: none">目录</a></li>
+    <li><a href="#setting" data-toggle="tab">学习设置</a></li>
+</ul>
+
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade in active" id="recite">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <div class="col-md-10 col-md-offset-1" id="start">
+                            <div class="col-xs-6 col-md-3">
+                                <a href="#" onclick="keepUp()" href="javascript:void(0)" class="thumbnail storedBook">
+                                    <img alt="" style="height: 180px; width: 100%">
+                                    <p id="currentBook"></p>
+                                    <p id="currentChapter"></p>
+                                    <p id="currentNum"></p>
+                                    <p id="currentFinish"></p>
+                                    <a href="#" onclick="keepUp()" class="btn btn-info">
+                                        继续学习 
+                                    </a>
+                                    <a href="#" onclick="start()" class="btn btn-info">
+                                        重新学习 
+                                    </a>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="learning">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-md-10 col-md-offset-1" id="list">
+                </div>
+                <div class="col-md-offset-1" id="pagination-container">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="books">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <div class="col-md-10 col-md-offset-1" id="books2">
+                            {% for book in books %}
+                            <div class="col-xs-6 col-md-3">
+                                <a onclick="chooseBook(this, '{{book.name}}', '{{ book.link }}', {{ book.num.split('(')[0] }})" id="{{ book.name }}" href="javascript:void(0)" class="thumbnail storedBook">
+                                    <img alt="{{ book.name }}" style="height: 180px; width: 100%">
+                                    <p>{{ book.name }}</p>
+                                    <p>章节数: {{ book.num.split('(')[0] }}</p>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="myBooks">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <div class="col-md-10 col-md-offset-1" id="myBooks2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="setting">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <div class="col-md-6 col-md-offset-1 form-group">
+                            <p>一组单词个数(默认20个):</p>
+                            <input type="text" class="form-control" id="unitNum"/>
+                        </div>
+                        <div class="col-md-6 col-md-offset-1 form-group">
+                            <p>学习模式:</p>
+                            <select id="unitMode" class="form-control">
+                                <option value="en-zh">看英文想中文</option>
+                                <option value="zh-en">看中文、例句填词</option>
+                                <option value="mix">混合</option>
+                            </select>
+                        </div>
+                        <div class="col-md-10 col-md-offset-1">
+                            <a type="button" class="unitNum btn btn-info">更新</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

@@ -1,0 +1,40 @@
+a.class:visited,
+a.class:hover,
+a.class:active {
+    color: #08c;
+    text-decoration: none;
+}
+
+.origin {
+    display: none;
+}
+
+.samePart {
+    color: red;
+}
+
+.box {
+    display: block;
+    border-width: 0 0 1px 0;
+    margin-bottom: 5px;
+    border-radius: 0px;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+
+span {
+    line-height: 24px;
+}
+
+.seg {
+    background-color: #e8e5cb;
+    margin-left: 10px;
+}
+
+input:focus {
+    outline: none;
+    border-top-width: 0px;
+    border-right-width: 0px; 
+    border-bottom-width: 1px;
+    border-left-width: 0px"
+}

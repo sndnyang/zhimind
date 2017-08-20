@@ -11,9 +11,16 @@ String.prototype.trim = function() {
     return this.replace(/(^\s*)|(\s*$)/g, "");
 }
 
+String.prototype.startsWith = function(str){  
+    var reg=new RegExp("^"+str);  
+    return reg.test(this);  
+}  
+
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
+String.prototype.startWith = String.prototype.startsWith;
+String.prototype.endWith = String.prototype.startsWith;
 
 function backendError(e) {
     alert("系统bug " + e.status + ' ' + e.statusText);
@@ -62,31 +69,3 @@ function backToTop() {
     }
 }
 
-function to_backend_create(type, json) {
-    $.ajax({
-        url: '/new'+type,
-        method: 'POST',
-        contentType: 'application/json',
-        dataType: "json",
-        data: JSON.stringify(json),
-        success: function (result) {
-            if (result.error !== "success") {
-                alert(result.error);
-                return;
-            }
-
-            var ctype, div = $("#tutorials");
-            if (type === 'practice') {
-                ctype = '练习';
-            }
-            else if (type === 'tutorial') {
-                ctype = '教程';
-            }
-            var entity = '<table> <tr valign="top"> <td> '+ctype+' </td> '+
-                '<td>|</td> <td> <i> 您发布了:</i> <br> <a href="/'+type+'/'+
-                result.uuid+'">'+json.title+'</a> </td></tr></table>';
-            div.append(entity);
-        },
-        error: backendError
-    });
-}

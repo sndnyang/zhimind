@@ -56,14 +56,16 @@ else:
 
 from models import *
 from views import *
+from mindmappage import map_page
 from college import college_page
 from naodong import recite_word_page
+from talkerchu import talkerchu_page
 from course import tutorial_page, practice_page, answer_checker
-from mindmappage import map_page
 
 app.register_blueprint(map_page)
 app.register_blueprint(college_page)
 app.register_blueprint(tutorial_page)
 app.register_blueprint(practice_page)
+app.register_blueprint(talkerchu_page, url_prefix="/talkerchu")
 app.register_blueprint(answer_checker)
-app.register_blueprint(recite_word_page)
+app.register_blueprint(recite_word_page, url_prefix="/reciteword")

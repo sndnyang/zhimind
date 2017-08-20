@@ -258,7 +258,7 @@ function putWords() {
 
     $.ajax({
         method: "post",
-        url : "/putWords",
+        url : "/naodong/putWords",
         contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify({'data': updateWords, 'book': currentBook}),
@@ -274,7 +274,7 @@ function getWords() {
         view = myBooks[currentBook].view;
     $.ajax({
         method: "get",
-        url : "/getWords/"+currentBook,
+        url : "/naodong/getWords/"+currentBook,
         contentType: 'application/json',
         dataType: "json",
         success : function (data){
@@ -294,10 +294,8 @@ function getWords() {
                         var f = false, item = e.target.result;
                         ++i;
                         if (typeof(item) == "undefined") {
-                            console.log("next")
                             getNext();
                         } else {
-                            console.log(word);
                             if ('level' in serverData[word] && 
                                 serverData[word]['level']) {
                                 if (item['level'] < 10 && serverData[word]['level'] > 9)

@@ -12,7 +12,9 @@ from mindmap import db, app
 
 recite_word_page = Blueprint('naodong_word', __name__,
                              template_folder=os.path.join(
-                                 os.path.dirname(__file__), 'templates'))
+                                 os.path.dirname(__file__), 'templates'),
+                             static_folder=os.path.join(
+                                 os.path.dirname(__file__), "static"))
 
 
 @recite_word_page.route('/reciteWord.html')

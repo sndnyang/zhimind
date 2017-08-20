@@ -213,6 +213,12 @@ function compareSentence(obj) {
         parts = findCorrect(origin_sets, user_inputs);
     // console.log(parts);
 
+    if (parts.length * 2 < origin_sets.length) {
+        // 肯定有更好的方法及别的提示
+        cmp_div.html($("<span>用户输入错误太高， 请再试</span>"));
+        return;
+    }
+
     for (var i in origin_sets) {
         var span = $("<span>{0}</span>".format(origin_sets[i]));
         if (parts.indexOf(origin_sets[i].toLowerCase())>-1 ||

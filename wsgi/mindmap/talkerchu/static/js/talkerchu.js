@@ -147,7 +147,7 @@ function pageTemplate(lines, pagination) {
         }
         sentenceDiv.append(p);
         div.append(sentenceDiv);
-        div.append($("<input type='text' class='form-control box' placeholder='输入英文，回车'>"));
+        div.append($("<input type='text' class='form-control box' placeholder='输入英文，回车验证，tab跳转下一输入框' tabindex='{0}'>".format(i+1)));
         div.append(checkButton);
         div.append(markButton);
         div.append($("<div class='origin'>"+lines[2*i+1]+"</div>"));

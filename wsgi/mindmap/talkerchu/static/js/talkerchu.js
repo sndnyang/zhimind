@@ -7,9 +7,10 @@ var myBooks = JSON.parse(localStorage.getItem("talkBooks")) || {};
 
 function showBook(bookname, book, isChapter) {
     var num = book.num, link = book.link, name = book.name,
-        newBook = $("<div class='col-xs-6 col-md-3'></div>"),
+        newBook = $("<div class='col-xs-12 col-sm-4 col-md-3'></div>"),
         a = $("<a onclick=chooseChapter(this,'{0}','{1}')></a>".format(bookname, book.link)),
-        img = $("<img alt='{0}'>".format(name));
+        img = $("<img alt='{0}'>".format(name)),
+        bookinfo = $("<div></div>");
 
     if (!isChapter) {
         a = $("<a onclick=chooseBook(this,'{0}','{1}','{2}')></a>".format(name, book.link, book.num));
@@ -17,16 +18,19 @@ function showBook(bookname, book, isChapter) {
     a.attr("id", name);
     a.attr("href", 'javascript:void(0)'); 
     a.attr("class", 'thumbnail storedBook'); 
-    img.attr("style" , "height: 180px; width: 100%");
+    img.attr("class" , "bookcover");
+    bookinfo.attr("class" , "bookinfo");
 
     a.append(img);
-    if (isChapter) {
-        a.append($("<p>{0}</p>".format(bookname)));
-        a.append($("<p>{0}</p>".format(name)));
-    }
-    a.append($("<p>{0}</p>".format(link)));
-    a.append($("<p>{0}</p>".format("行数" + num)));
 
+    if (isChapter) {
+        bookinfo.append($("<p>{0}</p>".format(bookname)));
+        bookinfo.append($("<p>{0}</p>".format(name)));
+    }
+    bookinfo.append($("<p>{0}</p>".format(link)));
+    bookinfo.append($("<p>{0}</p>".format("行数" + num)));
+
+    a.append(bookinfo);
     newBook.append(a)
 
     return newBook;

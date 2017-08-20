@@ -38,3 +38,29 @@ input:focus {
     border-bottom-width: 1px;
     border-left-width: 0px"
 }
+
+img.bookcover {
+    width: 100%;
+    height: 180px;
+}
+
+div.bookinfo {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    img.bookcover {
+        width: 25%;
+        height: 80px;
+        float: left;
+        padding: 0 4px 0 1px;
+    }
+    div.bookinfo > p {
+        margin: 0;
+    }
+    a.storedBook {
+        margin: 0;
+    }
+}

@@ -58,6 +58,7 @@ def getWords(book):
     except MultipleResultsFound:
         return json.dumps({'error': u'重复数据异常'})
     data = word_dict.get_data() if word_dict else {}
+    app.logger.info(data)
     return json.dumps(data, ensure_ascii=False)
 
 

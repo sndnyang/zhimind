@@ -258,7 +258,7 @@ function putWords() {
 
     $.ajax({
         method: "post",
-        url : "/naodong/putWords",
+        url : "/reciteword/putWords",
         contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify({'data': updateWords, 'book': currentBook}),
@@ -274,7 +274,7 @@ function getWords() {
         view = myBooks[currentBook].view;
     $.ajax({
         method: "get",
-        url : "/naodong/getWords/"+currentBook,
+        url : "/reciteword/getWords/"+currentBook,
         contentType: 'application/json',
         dataType: "json",
         success : function (data){
@@ -300,6 +300,8 @@ function getWords() {
                                 serverData[word]['level']) {
                                 if (item['level'] < 10 && serverData[word]['level'] > 9)
                                     myBooks[currentBook].finish++;
+                                if (item['level'] == 0 && serverData[word]['level'] > 0)
+                                    myBooks[currentBook].view++;
                                 if (serverData[word][ele] > item[ele])
                                     item['level'] = serverData[word]['level'];
                                 f = true;
@@ -653,7 +655,7 @@ function reciteMainView() {
     index = new_index;
     currentWord = unit[index];
 
-    if (!currentWord.level) {
+    if (!currentWord.level || currentWord.level === 0) {
         myBooks[currentBook].view++;
         $("#currentBookView").html(" 浏览个数:" + myBooks[currentBook].view);
         currentWord.level = 1;

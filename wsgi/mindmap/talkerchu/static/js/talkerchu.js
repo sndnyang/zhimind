@@ -71,7 +71,7 @@ function chooseChapter(obj, name, no) {
 
 function downloadChapter(name, no) {
     var xhr = new XMLHttpRequest();
-    name = "https://7xt8es.com1.z0.glb.clouddn.com/naodong/talkerchu/{0}/{1}.txt".format(name, no);
+    name = "//7xt8es.com1.z0.glb.clouddn.com/naodong/talkerchu/{0}/{1}.txt".format(name, no);
     xhr.open('GET', name+"?v="+Math.round(Math.random()*10000), true);
 
     xhr.onload = function(e) {

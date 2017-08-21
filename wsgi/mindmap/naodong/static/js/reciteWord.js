@@ -116,7 +116,7 @@ $(document).ready(function(){
             $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
             $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
             var media = document.getElementsByTagName('audio')[0];
-            audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+            audio(media, '//dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         }
         updateWord('level', Math.max(Math.floor(currentWord.level/2), 1));
         reciteTimes[currentWord.word] = reciteTimes[currentWord.word] + 1 || 1;
@@ -222,7 +222,7 @@ $(document).ready(function(){
     function show_after_quiz() {
         $(".word").html(currentWord.word);
         var media = document.getElementsByTagName('audio')[0];
-        audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+        audio(media, '//dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
         $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
 
@@ -627,11 +627,11 @@ function genBlank(sentence, word) {
 
 function learnPage() {
     $(".phonetic").html(currentWord.phonetic);
-    $(".uk").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
-    $(".us").attr('data-rel', 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+    $(".uk").attr('data-rel', '//dict.youdao.com/dictvoice?type=1&audio=' + currentWord.word);
+    $(".us").attr('data-rel', '//dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
     $("#etyma").html(currentWord.etyma.replace(/[\r\n]/g, '<br>'));
     $("#example").html(currentWord.example.replace(/[\r\n]/g, '<br>'));
-    $("#youdao").attr("href", "http://dict.youdao.com/search?q=" + currentWord.word);
+    $("#youdao").attr("href", "//dict.youdao.com/search?q=" + currentWord.word);
     $("#youdao").attr("target", "_blank");
 
     if (currentWord.selfLenovo !== "") {
@@ -689,7 +689,7 @@ function reciteMainView() {
     } else {
         $(".word").html(currentWord.word);
         var media = document.getElementsByTagName('audio')[0];
-        audio(media, 'http://dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
+        audio(media, '//dict.youdao.com/dictvoice?type=2&audio=' + currentWord.word);
         $("#zh").html(currentWord.meanZh.replace(/[\r\n]/g, '<br>'));
         $("#en").html(currentWord.meanEn.replace(/[\r\n]/g, '<br>'));
         $("#fuzzy").text("模糊(左或j)");

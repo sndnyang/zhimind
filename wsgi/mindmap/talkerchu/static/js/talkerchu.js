@@ -147,7 +147,23 @@ function pageTemplate(lines, pagination) {
         }
         sentenceDiv.append(p);
         div.append(sentenceDiv);
-        div.append($("<input type='text' class='form-control box' placeholder='输入英文，回车验证，tab跳转下一输入框' tabindex='{0}'>".format(i+1)));
+
+        var inputGroup = $('<div class="input-group"></div>'),  
+            micphone = $('<i class="fa fa-microphone"></i>'),
+            micContain = $('<a class="input-group-addon" href="javascript:void(0)"></a>'),
+            input = $("<input type='text' class='form-control box' tabindex='{0}'>".format(i+1));
+        micContain.attr("onmousedown", "startRecording()");
+        micContain.attr("onmouseup", "uploadAudio(this)");
+        micContain.append(micphone);
+        
+        input.attr("placeholder", "输入英文,回车,tab跳转,支持语音");
+        // input.attr("list", "dataList"+i);
+
+        inputGroup.append(input);
+        //inputGroup.append($("<dataList id='dataList{0}'></dataList>".format(i)));
+        inputGroup.append(micContain);
+
+        div.append(inputGroup);
         div.append(checkButton);
         div.append(markButton);
         div.append($("<div class='origin'>"+lines[2*i+1]+"</div>"));
@@ -201,7 +217,7 @@ function findCorrect(l1, l2) {
 }
 
 function compareSentence(obj) {
-    var input = $(obj).parent().children("input"),
+    var input = $(obj).parent().children("div").children("input"),
         origin = $(obj).parent().children("div.origin"),
         cmp_div = $(obj).parent().children("div.compare"),
         user_inputs = input.val().match(/(\w|')+/g),
@@ -253,7 +269,7 @@ $(document).ready(function(){
         if ($("input").is(":focus")) {
             if (event.keyCode == 13) {
                 // 输入句子后回车
-                compareSentence($("input:focus")[0]);
+                compareSentence($("input:focus").parent()[0]);
             }
         }
     });

@@ -7,6 +7,8 @@
 <link href="{{ url_for('talkerchu.static', filename='css/talkerchu.css') }}" rel="stylesheet">
 <link href="/static/css/loader.css" rel="stylesheet" media="screen" type="text/css"/>
 <script src="//cdn.bootcss.com/sql.js/0.3.2/js/sql.js"></script>
+<script src="{{ url_for('talkerchu.static', filename='js/recoder.js') }}"></script>
+<script src="{{ url_for('talkerchu.static', filename='js/recoding.js') }}"></script>
 {% if cloudjs %}
 <script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/talkerchu.js?{{ cloudjs }}"></script> 
 {% else %}

@@ -1,4 +1,5 @@
-﻿var serverData = [];
+﻿var unit = [];
+var serverData = [];
 var limit = localStorage.getItem("limit") || 20;
 var currentBook = localStorage.getItem("talkbook");
 var currentName = localStorage.getItem("bookname");
@@ -100,6 +101,7 @@ function sortNumber(a,b) {
 }
 
 function masterSentence(obj, no) {
+    unit.push(no);
     if (serverData.indexOf(no) == -1)
         serverData.push(no);
     serverData.sort(sortNumber);
@@ -114,7 +116,7 @@ function masterSentence(obj, no) {
             if ('error' in data) {
                 alert(data.error);
             }
-            $(obj).parent().hide();
+            $(obj).parent().remove();
         }
     });
 }
@@ -129,8 +131,12 @@ function pageTemplate(lines, pagination) {
     for (var i = 0; i < lines.length/2; i++) {
         if (lines[2*i].trim() == "" || !lines[2*i].startsWith('LineNo:')) continue;
         var no = parseInt(i) + parseInt(base),
-            parts = lines[2*i].split("\t"), lineNo = parseInt(parts[0].split(':')[1]),
-            sentenceDiv = $("<div></div>"), p = $("<h4></h4>"),
+            parts = lines[2*i].split("\t"), lineNo = parseInt(parts[0].split(':')[1]);
+
+        if (unit.indexOf(lineNo) > -1)
+            continue;
+
+        var sentenceDiv = $("<div></div>"), p = $("<h4></h4>"),
             sentence = parts[1], segs = parts[2].split(" "),
             div = $("<div class='col-md-10 col-md-offset-1 form-group'></div>"),
             checkButton = $("<a type='button' onclick='compareSentence(this)'>验证</a>"),
@@ -180,8 +186,10 @@ function generateContent(text) {
             continue;
         }
         var line = lines[2*i+1].trim();
-        if (!line.startsWith("LineNo:")) {
+        if (!line.startsWith("LineNo:{0}".format(i+1))) {
             filter_lines.push("LineNo:{0}\t{1}".format(i+1, line));
+        } else {
+            filter_lines.push(line);
         }
         filter_lines.push(lines[2*i+2]);
     }
@@ -216,6 +224,20 @@ function findCorrect(l1, l2) {
     return parts;
 }
 
+function markWordByColor(head, l, parts) {
+    var div = $("<h4>{0}: </h4>".format(head));
+    for (var i in l) {
+        var span = $("<span>{0}</span>".format(l[i]));
+        if (parts.indexOf(l[i].toLowerCase())>-1 ||
+                parts.indexOf(l[i]) > -1) {
+            span.attr("class", 'samePart'); 
+        }
+        div.append(span);
+        div.append($("<span> </span>"));
+    }
+    return div;
+}
+
 function compareSentence(obj) {
     var input = $(obj).parent().children("div").children("input"),
         origin = $(obj).parent().children("div.origin"),
@@ -224,9 +246,7 @@ function compareSentence(obj) {
         origin_sets = origin.html().match(/(\w|')+/g);
     cmp_div.html("");
 
-    var origin_line = $("<h4>原版: </h4>"),
-        user_line = $("<h4>输入: </h4>"),
-        parts = findCorrect(origin_sets, user_inputs);
+    var parts = findCorrect(origin_sets, user_inputs);
     // console.log(parts);
 
     if (parts.length * 2 < origin_sets.length) {
@@ -235,24 +255,9 @@ function compareSentence(obj) {
         return;
     }
 
-    for (var i in origin_sets) {
-        var span = $("<span>{0}</span>".format(origin_sets[i]));
-        if (parts.indexOf(origin_sets[i].toLowerCase())>-1 ||
-                parts.indexOf(origin_sets[i]) > -1) {
-            span.attr("class", 'samePart'); 
-        }
-        origin_line.append(span);
-        origin_line.append($("<span> </span>"));
-    }
-    for (var i in user_inputs) {
-        var span = $("<span>{0}</span>".format(user_inputs[i]));
-        if (parts.indexOf(user_inputs[i].toLowerCase())>-1 ||
-                parts.indexOf(user_inputs[i]) > -1) {
-            span.attr("class", 'samePart'); 
-        }
-        user_line.append(span);
-        user_line.append($("<span> </span>"));
-    }
+    var origin_line = markWordByColor("原版", origin_sets, parts),
+        user_line = markWordByColor("输入", user_inputs, parts);
+    
     cmp_div.append(origin_line);
     cmp_div.append(user_line);
 }
@@ -265,11 +270,29 @@ $(document).ready(function(){
         $("#currentChapter").html("当前章节: " + currentChapter);
     }
 
-    $(document).keydown(function (event) {
+    $(document).keydown(function (e) {
         if ($("input").is(":focus")) {
-            if (event.keyCode == 13) {
+            if (e.keyCode == 13) {
                 // 输入句子后回车
                 compareSentence($("input:focus").parent()[0]);
+                return;
+            }
+            if (e.keyCode == 9) {
+                // 只有在换页时才需要， 其他时候用 tabindex自动就好
+                // 关键是 tabindex自动和 jquery写明 在平时跳转时都不快 
+                var tabindex = $("input:focus").attr("tabindex");
+                var l = $("input.box");
+
+                if (e.shiftKey && tabindex == $(l[0]).attr("tabindex")) {
+                    $(".J-paginationjs-previous").trigger("click"); // 这个又不是回调了~~~
+                    $($("input.box")[0]).focus();
+                    return false;
+                }
+                if (!e.shiftKey && tabindex == $(l[l.length-1]).attr("tabindex")) {
+                    $(".J-paginationjs-next").trigger("click");
+                    $($("input.box")[0]).focus();
+                    return false;
+                }
             }
         }
     });
@@ -280,7 +303,7 @@ $(document).ready(function(){
      // localStorage.setItem("limit", limit);
      // localStorage.setItem("mode", mode);
      // unit = [];
-     // switchTab("#recite");
+        switchTab("#recite");
      // animate();
     }
 

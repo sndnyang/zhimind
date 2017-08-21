@@ -9,7 +9,7 @@ from flask import render_template, g, request, Blueprint
 from flask_login import login_required
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-from aip import AipSpeech
+from ..aip import AipSpeech
 
 from models import Episode
 from mindmap import db, app
@@ -123,7 +123,7 @@ def speechRecognize():
     last_quest_day = app.redis.get('lastRecogDay') or 0
     if speech_time > 50000 and today == last_quest_day:
         return json.dumps({'err_msg': u'今日使用次数已超过'}, ensure_ascii=False)
-    app.logger.info("where?")
+
     if not aipSpeech:
         return json.dumps({'err_msg': u'平台没有百度API，请联系开发者'}, ensure_ascii=False)
 
@@ -142,5 +142,4 @@ def speechRecognize():
         app.redis.set('speechTime', 60000)
         app.redis.set('lastRecogDay', today)
 
-    app.logger.info(result)
     return json.dumps(result, ensure_ascii=False)

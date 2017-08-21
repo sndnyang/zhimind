@@ -56,9 +56,8 @@ def getWords(book):
             word_dict = ReciteWord.query.filter_by(book_name=book.strip(),
                     user_id=g.user.get_id()).one_or_none()
     except MultipleResultsFound:
-        return json.dumps({'error': u'重复数据异常'})
+        return json.dumps({'error': u'重复数据异常'}, ensure_ascii=False)
     data = word_dict.get_data() if word_dict else {}
-    app.logger.info(data)
     return json.dumps(data, ensure_ascii=False)
 
 
@@ -69,7 +68,7 @@ def putWords():
     data = request.json.get('data', None)
 
     if not book or not data:
-        return json.dumps({'error': u'无书名或无数据'})
+        return json.dumps({'error': u'无书名或无数据'}, ensure_ascii=False)
 
     try:
         word_dict = ReciteWord.query.filter_by(book_name=book.strip(),
@@ -77,7 +76,7 @@ def putWords():
         gloss_dict = ReciteWord.query.filter_by(book_name='gloss',
                 user_id=g.user.get_id()).one_or_none()
     except MultipleResultsFound:
-        return json.dumps({'error': u'重复数据异常'})
+        return json.dumps({'error': u'重复数据异常'}, ensure_ascii=False)
 
     if word_dict is None:
         new_word_user = ReciteWord(g.user.get_id(), book.strip(), data)

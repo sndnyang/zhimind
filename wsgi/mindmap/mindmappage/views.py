@@ -107,7 +107,7 @@ def load_map(map_id):
     except:
         app.logger.debug(traceback.print_exc())
 
-    return json.dumps(ret_code)
+    return json.dumps(ret_code, ensure_ascii=False)
 
 
 @map_page.route('/linkquiz', methods=['POST'])

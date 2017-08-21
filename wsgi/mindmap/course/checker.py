@@ -100,7 +100,7 @@ def checkAnswer():
 
     if not answers or len(answers) != len(expression):
         response['info'] = u'有些空没有填?'
-        return json.dumps(response)
+        return json.dumps(response, ensure_ascii=False)
 
     for i in range(len(answers)):
         user = expression[i].strip()
@@ -122,12 +122,12 @@ def checkAnswer():
                     return json.dumps(response, ensure_ascii=False)
             if 'comment' not in response:
                 response['comment'] = comments[1]
-            return json.dumps(response)
+            return json.dumps(response, ensure_ascii=False)
 
     response['status'] = True
     if '你答对了' in comments[0]:
         response['comment'] = comments[0]['你答对了']
-    return json.dumps(response)
+    return json.dumps(response, ensure_ascii=False)
 
 
 @answer_checker.route('/cmp_math', methods=["POST"])
@@ -152,7 +152,7 @@ def cmp_math():
                     (user, tid, name, no, '@'.join(expression), '@'.join(answers)))
 
     if not answers or len(answers) != len(expression):
-        return json.dumps(response)
+        return json.dumps(response, ensure_ascii=False)
 
     for i in range(len(answers)):
         info = checkCmpExpression(answers[i], expression[i])

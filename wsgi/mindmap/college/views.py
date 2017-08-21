@@ -223,7 +223,7 @@ def submitted_college():
     verification_code = request.form['verification_code']
     code_text = session['code_text']
     if verification_code != code_text:
-        return json.dumps({'error': u'验证码错误'})
+        return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
     try:
@@ -235,7 +235,7 @@ def submitted_college():
             info['input%d' % (i+1)] = request.form['input%d' % (i+1)]
 
         if not name:
-            return json.dumps({'error': u'校名缺失'})
+            return json.dumps({'error': u'校名缺失'}, ensure_ascii=False)
         result = University.query.filter_by(name=name).one_or_none()
         if result is None:
             if g.user and g.user.is_authenticated and g.user.get_name() == 'sndnyang':
@@ -252,10 +252,10 @@ def submitted_college():
         app.redis.set('college', college_set)
     except Exception, e:
         app.logger.debug(traceback.print_exc())
-        return json.dumps({'error': u'错误'})
+        return json.dumps({'error': u'错误'}, ensure_ascii=False)
 
     # comments = request.form['comments']
-    return json.dumps({'info': u'成功'})
+    return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
 
 @college_page.route('/major_submitted', methods=['POST'])
@@ -263,7 +263,7 @@ def submitted_major():
     verification_code = request.form['verification_code']
     code_text = session['code_text']
     if verification_code != code_text:
-        return json.dumps({'error': u'验证码错误'})
+        return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
     try:
@@ -272,7 +272,7 @@ def submitted_major():
         major = request.form['major']
         site_url = request.form['site_url']
         if not name or not degree or not major:
-            return json.dumps({'error': u'关键信息缺失'})
+            return json.dumps({'error': u'关键信息缺失'}, ensure_ascii=False)
         result = College.query.filter_by(name=name, major=major,
                                          degree=degree).one_or_none()
         if result is None:
@@ -315,11 +315,11 @@ def submitted_major():
         db.session.commit()
     except Exception, e:
         app.logger.debug(traceback.print_exc())
-        return json.dumps({'error': u'错误'})
+        return json.dumps({'error': u'错误'}, ensure_ascii=False)
 
     # comments = request.form['comments']
 
-    return json.dumps({'info': u'成功'})
+    return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
 
 @college_page.route('/collegeData/approve', methods=['POST'])

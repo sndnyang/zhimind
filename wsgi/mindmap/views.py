@@ -199,4 +199,4 @@ def search_q():
     query = [{'title': e.title, 'url': '/' + e.type + '/'+e.id,
               'text': qa_parse(e.content)[0]['response'], 'tags': ''}
              for e in db.session.query(Tutorial) if e.content]
-    return json.dumps({'pages': query})
+    return json.dumps({'pages': query}, ensure_ascii=False)

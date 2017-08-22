@@ -5,6 +5,10 @@ function startRecording() {
         recorder = rec;
         recorder.start();
     });
+    var loadingDiv = createLoadingDiv('开始录音...')
+                    
+    //呈现loading效果
+    $("#learning>.container-fluid").append(loadingDiv);
 }
 
 function uploadAudio(obj) {

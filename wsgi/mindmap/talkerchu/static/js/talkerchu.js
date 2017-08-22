@@ -69,19 +69,6 @@ function chooseChapter(obj, name, no) {
     switchTab("#recite");
 }
 
-function downloadChapter(name, no) {
-    var xhr = new XMLHttpRequest();
-    name = "//7xt8es.com1.z0.glb.clouddn.com/naodong/talkerchu/{0}/{1}.txt".format(name, no);
-    xhr.open('GET', name+"?v="+Math.round(Math.random()*10000), true);
-
-    xhr.onload = function(e) {
-        var text = xhr.response;
-        if (!text || typeof(text) == "undefined") return;
-        generateContent(text);
-    };
-    xhr.send();
-}
-
 function keepUp() {
     $.ajax({
         method: "get",
@@ -92,6 +79,18 @@ function keepUp() {
             serverData = data;
             // console.log(serverData);
             start();
+        }
+    });
+}
+
+function downloadChapter(name, no) {
+    $.ajax({
+        method: "get",
+        url : "/talkerchu/getChapter/{0}/{1}".format(name, no),
+        contentType: 'application/json',
+        dataType: "json",
+        success : function (data){
+            generateContent(data);
         }
     });
 }
@@ -179,9 +178,9 @@ function pageTemplate(lines, pagination) {
     return list;
 }
 
-function generateContent(text) {
-    var lines = text.split('\n'), filter_lines = [];
-    for (var i = 0; i < lines.length/2; i++) {
+function generateContent(lines) {
+    var filter_lines = [], length = parseInt(lines.length/2);
+    for (var i = 0; i < length; i++) {
         if (serverData.indexOf(i+1) > -1) {
             continue;
         }

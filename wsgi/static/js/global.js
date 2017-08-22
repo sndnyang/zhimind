@@ -69,3 +69,16 @@ function backToTop() {
     }
 }
 
+function createLoadingDiv(prompt) {
+  var _PageWidth = document.documentElement.clientWidth,
+          _PageHeight = document.documentElement.clientHeight,
+          _LoadingTop = _PageHeight / 2,
+          _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0,
+          _LoadingHtml = $('<div></div>');
+      _LoadingHtml.attr("id", "loadingDiv");
+      _LoadingHtml.css("left", _LoadingLeft + 'px');
+      _LoadingHtml.css("top", _LoadingTop + 'px');
+
+      _LoadingHtml.html(prompt);
+      return _LoadingHtml
+}

@@ -134,20 +134,24 @@
             fd.append("audioData", this.getBlob());
             var xhr = new XMLHttpRequest();
             if (callback) {
-                
+                xhr.upload.addEventListener("progress", function (e) {
+                    $("#loadingDiv").remove();
+                    var loadingDiv = createLoadingDiv('音频上传解析中，请稍等...')
+                    
+                    //呈现loading效果
+                    $("#learning>.container-fluid").append(loadingDiv);
+                    
+                }, false);
                 xhr.addEventListener("error", function (e) {
                     alert("网络传输失败");
                 }, false);
                 xhr.addEventListener("abort", function (e) {
                     alert("网络不畅，失败");
                 }, false);
-                xhr.upload.addEventListener("progress", function (e) {
-                // TODO: 添加语音识别中 的提示字样
-                    console.log('uploading');
-                }, false);
 
                 xhr.onreadystatechange = function(){
                     if(this.readyState == 4){
+                        $("#loadingDiv").remove();
                         callback(eval('('+ this.responseText +')'));
                     }
                 };

@@ -351,6 +351,12 @@ function initIndexDB(type, content, name) {
         };
 
         if (type == "newbook") {
+            $("#loadingDiv").remove();
+            var loadingDiv = createLoadingDiv('正在更新本地词库，请稍等...')  
+            
+            //呈现loading效果
+            switchTab("#myBooks");
+            $("#myBooks>div>div>.container-fluid").append(loadingDiv);
             if (!dbExists) {
                 console.log("create");
                 createNewBook(content, name);
@@ -446,7 +452,11 @@ function updateBook(content, name) {
     var i = 0, count = 0, items = content.values;
     var transaction = db.transaction(["word"], "readwrite");
     var itemStore = transaction.objectStore("word");
-
+    if (items.length !== myBooks[currentBook].num) {
+        myBooks[currentBook].num = i;
+        localStorage.setItem('myBooks', JSON.stringify(myBooks));
+    }
+    
     putNext();
 
     function putNext() {
@@ -467,13 +477,8 @@ function updateBook(content, name) {
         } else {   // complete
             console.log('populate complete  ' + i + ' 更新 单词书 ' + currentBook +
                         " 变更单词 " + count + "个");
-            if (i !== myBooks[currentBook].num) {
-                myBooks[currentBook].num = i;
-                localStorage.setItem('myBooks', JSON.stringify(myBooks));
-                updateProgress(i, myBooks[currentBook].view, myBooks[currentBook].finish);
-            }
-
-            switchTab("#myBooks");
+            updateProgress(i, myBooks[currentBook].view, myBooks[currentBook].finish);
+            $("#loadingDiv").remove();
         }
     }
 }
@@ -483,6 +488,9 @@ function createNewBook(content, name) {
     var i = 0, items = content.values;
     var transaction = db.transaction(["word"], "readwrite");
     var itemStore = transaction.objectStore("word");
+    myBooks[currentBook] = {'num': items.length, 'finish': 0, 'view': 0};
+    localStorage.setItem('myBooks', JSON.stringify(myBooks));
+    $("#myBooks2").append(showBook(currentBook, myBooks[currentBook]));
 
     putNext();
 
@@ -494,11 +502,8 @@ function createNewBook(content, name) {
             ++i;
         } else {   // complete
             console.log('populate complete  ' + i + ' 添加 单词书 ' + currentBook);
-            myBooks[currentBook] = {'num': i, 'finish': 0, 'view': 0};
-            localStorage.setItem('myBooks', JSON.stringify(myBooks));
             updateProgress(i, 0, 0);
-            $("#myBooks2").append(showBook(currentBook, myBooks[currentBook]));
-            switchTab("#myBooks");
+            $("#loadingDiv").remove();
         }
     }
 }
@@ -526,6 +531,10 @@ function downloadbook(obj, name) {
         initIndexDB('newbook', contents[0], name);
         // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
     };
+    var loadingDiv = createLoadingDiv('正在下载词库，请稍等...')  
+        
+    //呈现loading效果
+    $("#books>div>div>.container-fluid").append(loadingDiv);
     xhr.send();
 }
 

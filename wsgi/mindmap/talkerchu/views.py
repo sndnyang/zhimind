@@ -80,14 +80,29 @@ def catalog(name):
 
 @talkerchu_page.route('/getEpisode/<book>/<no>', methods=["GET"])
 @login_required
-def getText(book, no):
+def getUserProgress(book, no):
     try:
         episode = Episode.query.filter_by(name=book.strip(),
-                no = int(no), user_id=g.user.get_id()).one_or_none()
+                                          no = int(no),
+                                          user_id=g.user.get_id()
+                                          ).one_or_none()
     except MultipleResultsFound:
         return json.dumps({'error': u'重复数据异常'}, ensure_ascii=False)
     data = episode.get_data() if episode else []
     return json.dumps(data, ensure_ascii=False)
+
+
+@talkerchu_page.route('/getChapter/<book>/<no>', methods=["GET"])
+def getText(book, no):
+    link = "http://7xt8es.com1.z0.glb.clouddn.com/naodong/talkerchu/%s/%s.txt" % (book, no)
+    r = requests.get(link)
+    lines = []
+    for line in r.iter_lines():
+        if not line:
+            continue
+        lines.append(line)
+    
+    return json.dumps(lines, ensure_ascii=False)
 
 
 @talkerchu_page.route('/putEpisode', methods=["POST"])

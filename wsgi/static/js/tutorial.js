@@ -511,20 +511,10 @@ function loadTutorial(link) {
         contentType: 'application/json',
         dataType: "json",
         beforeSend : function(){
-            var _PageWidth = document.documentElement.clientWidth,
-                _PageHeight = document.documentElement.clientHeight,
-                _LoadingTop = _PageHeight / 2,
-                _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0,
-                _LoadingHtml = $('<div></div>');
-            _LoadingHtml.attr("id", "loadingDiv");
-            _LoadingHtml.css("left", _LoadingLeft + 'px');
-            _LoadingHtml.css("top", _LoadingTop + 'px');
-
-            _LoadingHtml.html('教程加载中，请稍等...');
+            var loadingDiv = createLoadingDiv('教程加载中，请稍等...');
 
             //呈现loading效果
-            $(".container-fluid").append(_LoadingHtml);
-            //setTimeout("$('.loadingDiv').fadeOut('slow')", 5000);
+            $(".container-fluid").append(loadingDiv);
         },
         success : function (data){
             var content = data.content,

@@ -214,10 +214,10 @@ function findCorrect(l1, l2) {
     // 先用求交集的方法，肯定有更好的
     // 但也不一定需要
     var parts = [];
+    var stopped = ['oh','hey','hi','ok','Oops','Hmm','Huh','Umm','Aha','or','and','no','yes','i','you'];
     for (var i in l1) {
-        var w1 = l1[i].toLowerCase();
-        if (l2.indexOf(w1) > -1 || l2.indexOf(l1[i]) > -1) {
-            parts.push(w1);
+        if (l2.indexOf(l1[i]) > -1 || stopped.indexOf(l1[i]) > -1) {
+            parts.push(l1[i]);
         }
     }
     return parts;
@@ -225,10 +225,10 @@ function findCorrect(l1, l2) {
 
 function markWordByColor(head, l, parts) {
     var div = $("<h4>{0}: </h4>".format(head));
+    var stopped = ['oh','hey','hi','ok','Oops','Hmm','Huh','Umm','Aha','or','and','no','yes','i','you'];
     for (var i in l) {
         var span = $("<span>{0}</span>".format(l[i]));
-        if (parts.indexOf(l[i].toLowerCase())>-1 ||
-                parts.indexOf(l[i]) > -1) {
+        if (parts.indexOf(l[i]) > -1 || stopped.indexOf(l1[i]) > -1) {
             span.attr("class", 'samePart'); 
         }
         div.append(span);
@@ -241,8 +241,8 @@ function compareSentence(obj) {
     var input = $(obj).parent().children("div").children("input"),
         origin = $(obj).parent().children("div.origin"),
         cmp_div = $(obj).parent().children("div.compare"),
-        user_inputs = input.val().match(/(\w|')+/g),
-        origin_sets = origin.html().match(/(\w|')+/g);
+        user_inputs = input.val().toLowerCase().match(/(\w|')+/g),
+        origin_sets = origin.html().toLowerCase().match(/(\w|')+/g);
     cmp_div.html("");
 
     var parts = findCorrect(origin_sets, user_inputs);

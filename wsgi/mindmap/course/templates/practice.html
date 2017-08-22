@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="author" content="sndnyang,http://blog.zhimind.com/"/>
+        <meta name="author" content="sndnyang, blog.zhimind.com/"/>
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
 
         <title>{{ meta.title }}</title>
@@ -68,17 +68,23 @@
                                 <a href="{{ url_for('recommendlist') }}">推荐</a>
                             </li>
                             <li>
-                                <a
-                                    href="/intro.html">导图示例</a>
-                            </li>
-                            <li>
-                                <a
-                                    href="/reciteWord.html">脑洞记单词</a>
-                            </li>
-                            <li>
-                                <a
-                                    href="http://sndnyang.github.io/tags.html#zhimind-ref">开发者博客</a>
-                            </li>
+                            <a href="/gewu.html">格物君</a>
+                        </li>
+                        <li>
+                            <a href="http://blog.zhimind.com/tags.html#zhimind-ref">博客</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">留学<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/college.html">大学库</a></li>
+                                <li><a href="/major.html">专业库</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">工具</li>
+                                <li><a href="http://sndnyang.github.io/gpa_calculator.html">GPA计算器</a></li>
+                                <li><a href="http://www.zhimind.com/reciteword/reciteWord.html">脑洞背单词</a></li>
+                                <li><a href="/talkerchu/index.html">脱口而出</a></li>
+                            </ul>
+                        </li>
                             <li>
                                 <form class="navbar-search" action="/search" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search暂时无用" name="q" id="search_input">
                                 </form>
@@ -138,7 +144,7 @@
         </div>
         <div style="margin: auto">
             <div class="bdsharebuttonbox"><a href="#" class="bds_more" data-cmd="more"></a><a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a><a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a></div>
-<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"32"},"share":{},"image":{"viewList":["qzone","tsina","tqq","renren","weixin"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["qzone","tsina","tqq","renren","weixin"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"32"},"share":{},"image":{"viewList":["qzone","tsina","tqq","renren","weixin"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["qzone","tsina","tqq","renren","weixin"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
         </div>
 
         <div class="hint">
@@ -183,7 +189,7 @@
         <script type="text/javascript" src="/static/js/evaluate.js"> </script>
         <script type="text/javascript" src="/static/js/lessons.js"> </script>
         {% if cloudjs %}
-        <script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/tutorial.js?{{ cloudjs }}"></script> 
+        <script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/tutorial.js?{{ cloudjs }}"></script> 
         {% else %}
         <script type="text/javascript" src="/static/js/tutorial.js"> </script>
         {% endif %}

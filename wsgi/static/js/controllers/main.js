@@ -470,7 +470,7 @@ module.directive('mindMap', function ($compile) {
                 dataType: "json",
                 data: JSON.stringify(json),
                 success: function (result) {
-                    var whole_url = 'http://'+ window.location.host +'/'+type
+                    var whole_url = '//'+ window.location.host +'/'+type
                         +'/'+result.uuid;
                     //console.log(whole_url);
                     linkquiz(d, name, whole_url);

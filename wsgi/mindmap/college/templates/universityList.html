@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
-<link href="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="//cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <div class="container-fluid">
     <div class="row-fluid">
@@ -56,14 +56,14 @@
 </div>
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
 {% if cloudjs %}
-<script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/college.js?{{ cloudjs }}"></script> 
+<script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/college.js?{{ cloudjs }}"></script> 
 {% else %}
 <script type="text/javascript" src="/static/js/college.js"></script>
 {% endif %}
 <script>
 getDataList('college', {{ temp }});
     
-var url = 'http://7xt8es.com1.z0.glb.clouddn.com/zcollege/college.txt?'+Math.random();
+var url = '//7xt8es.com1.z0.glb.clouddn.com/zcollege/college.txt?'+Math.random();
 var xhr = new XMLHttpRequest();
 xhr.open('GET', url); 
 xhr.onload = function(e) {

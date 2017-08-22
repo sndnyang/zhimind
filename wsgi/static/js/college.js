@@ -253,7 +253,7 @@ function fillItemInfo(toggle, item) {
             if (key === 'webpage') {
                 key = '主页';
                 if (value.substring(0, 4) != 'http') 
-                    value = 'http://'+value;
+                    value = '//'+value;
                 value = '<a href={0} target=_blank>链接</a>'.format(value);
             }
             toggle.append($('<p>{0} : {1}</p>'.format(key, value)));

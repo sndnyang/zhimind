@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script src="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
-<link href="https://cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="//cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <link href="{{ url_for('talkerchu.static', filename='css/talkerchu.css') }}" rel="stylesheet">
 <link href="/static/css/loader.css" rel="stylesheet" media="screen" type="text/css"/>
@@ -10,7 +10,7 @@
 <script src="{{ url_for('talkerchu.static', filename='js/recoder.js') }}"></script>
 <script src="{{ url_for('talkerchu.static', filename='js/recoding.js') }}"></script>
 {% if cloudjs %}
-<script type="text/javascript" src="http://7xt8es.com1.z0.glb.clouddn.com/zhimind/js/talkerchu.js?{{ cloudjs }}"></script> 
+<script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/talkerchu.js?{{ cloudjs }}"></script> 
 {% else %}
 <script src="{{ url_for('talkerchu.static', filename='js/talkerchu.js') }}"></script>
 {% endif %}

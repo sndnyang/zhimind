@@ -10,6 +10,7 @@ from flask import request, render_template, g, session, json, abort, Blueprint
 
 from flask_login import login_required
 
+
 from mindmap import app
 from utility import *
 from models import *
@@ -20,6 +21,7 @@ from AnswerChecker import *
 tutorial_page = Blueprint('tutorial_page', __name__,
                           template_folder=os.path.join(
                               os.path.dirname(__file__), 'templates'))
+
 
 
 @tutorial_page.route('/editor.html')
@@ -358,3 +360,18 @@ def gewu():
                            meta=meta)
 
 
+@app.route('/search')
+@app.route('/search.html')
+def search_page():
+    meta = {'title': u'知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('search.html', meta=meta)
+
+
+@app.route('/tipuesearch_content.json')
+def search_q():
+    query = [{'title': e.title, 'url': '/' + e.type + '/'+e.id,
+              'text': qa_parse(e.content)[0]['response'], 'tags': ''}
+             for e in db.session.query(Tutorial) if e.content]
+    return json.dumps({'pages': query}, ensure_ascii=False)

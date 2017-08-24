@@ -19,3 +19,8 @@ wheel==0.29.0
 WTForms==2.1
 sympy==1.0
 redis==2.10.5
+Flask-JWT-Extended==3.2.0
+flask-msearch==0.1.5
+Flask-WhooshAlchemy==0.56
+PyJWT==1.5.2
+Whoosh==2.7.4

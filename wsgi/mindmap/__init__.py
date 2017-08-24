@@ -54,8 +54,8 @@ if APP_ID and API_KEY and SECRET_KEY:
 else:
     app.aipNlp = None
 
-from models import *
 from views import *
+from user import user_page
 from mindmappage import map_page
 from college import college_page
 from naodong import recite_word_page
@@ -63,9 +63,10 @@ from talkerchu import talkerchu_page
 from course import tutorial_page, practice_page, answer_checker
 
 app.register_blueprint(map_page)
-app.register_blueprint(college_page)
+app.register_blueprint(user_page)
 app.register_blueprint(tutorial_page)
 app.register_blueprint(practice_page)
-app.register_blueprint(talkerchu_page, url_prefix="/talkerchu")
 app.register_blueprint(answer_checker)
+app.register_blueprint(college_page, url_prefix="/oversea")
+app.register_blueprint(talkerchu_page, url_prefix="/talkerchu")
 app.register_blueprint(recite_word_page, url_prefix="/reciteword")

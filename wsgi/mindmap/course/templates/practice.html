@@ -52,15 +52,15 @@
                             {% if g %}
                             {% if g.user.is_authenticated %}
                             <li>
-                                <a href="{{ url_for('logout') }}">退出登录</a>
+                                <a href="{{ url_for('user.logout') }}">退出登录</a>
                             </li>
                             {% endif %}
                             {% if not g.user.is_authenticated %}
                             <li>
-                                <a href="{{ url_for('login') }}">登录</a>
+                                <a href="{{ url_for('user.login') }}">登录</a>
                             </li>
                             <li>
-                                <a href="{{ url_for('register') }}">注册</a>
+                                <a href="{{ url_for('user.register') }}">注册</a>
                             </li>
                             {% endif %}
                             {% endif %}
@@ -68,7 +68,7 @@
                                 <a href="{{ url_for('recommendlist') }}">推荐</a>
                             </li>
                             <li>
-                            <a href="/gewu.html">格物君</a>
+                            <a href="{{ url_for('tutorial_page.gewu') }}">格物君</a>
                         </li>
                         <li>
                             <a href="http://blog.zhimind.com/tags.html#zhimind-ref">博客</a>
@@ -76,13 +76,17 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">留学<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="/college.html">大学库</a></li>
-                                <li><a href="/major.html">专业库</a></li>
+                                <li><a href="{{ url_for('college_list.college_index') }}">大学库</a></li>
+                                <li><a href="{{ url_for('college_list.major_page') }}">专业库</a></li>
+                                {% if g.user.is_authenticated and g.user.get_name() == "sndnyang" %}
+                                <li><a href="{{ url_for('college_list.temp_college_page') }}">新大学库</a></li>
+                                <li><a href="{{ url_for('college_list.major_page', temp="1") }}">新专业库</a></li>
+                                {% endif %}
                                 <li role="separator" class="divider"></li>
                                 <li class="dropdown-header">工具</li>
                                 <li><a href="http://sndnyang.github.io/gpa_calculator.html">GPA计算器</a></li>
                                 <li><a href="http://www.zhimind.com/reciteword/reciteWord.html">脑洞背单词</a></li>
-                                <li><a href="/talkerchu/index.html">脱口而出</a></li>
+                                <li><a href="{{ url_for('talkerchu.talkerchu') }}">脱口而出</a></li>
                             </ul>
                         </li>
                             <li>
@@ -194,7 +198,7 @@
         <script type="text/javascript" src="/static/js/tutorial.js"> </script>
         {% endif %}
         <script type="text/javascript" src="/static/js/console.js"> </script>
-        <script type="text/javascript" src="/static/js/index.js"> </script>
+        <script type="text/javascript" src="/static/js/global.js"> </script>
         <script>
             setTimeout("$('.hint').fadeOut('slow')", 5000)
         </script>

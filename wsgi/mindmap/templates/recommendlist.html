@@ -2,29 +2,31 @@
 {% block body %}
 {% from "tutorial_link.html" import render_li %}
 
-    <link href="/static/css/ListTabMenu.css" rel="stylesheet">
+<link href="/static/css/ListTabMenu.css" rel="stylesheet">
 <main>
-  <input id="tab1" type="radio" name="tabs">
-  <label for="tab1">思维导图</label>
+    <input id="tab1" type="radio" name="tabs">
+    <label for="tab1">思维导图</label>
 
-  <input id="tab2" type="radio" name="tabs" checked="">
-  <label for="tab2">教程</label>
+    <input id="tab2" type="radio" name="tabs" checked="">
+    <label for="tab2">教程</label>
 
-  <input id="tab3" type="radio" name="tabs">
-  <label for="tab3">练习</label>
+    <input id="tab3" type="radio" name="tabs">
+    <label for="tab3">练习</label>
+    <input id="tab4" type="radio" name="tabs">
+    <label for="tab4">代码块</label>
 
-  <section id="content1">
+    <section id="content1">
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="col-md-10 col-md-offset-1">
                     <div id="maps">
                         <ul class="list-group">
-                        {% for map in maps %}
+                            {% for map in maps %}
                             <a href="/user/{{ map.username }}">
                                 {{ map.username }}
                             </a> 发布了:
-                        {% include 'map_link.html' %}
-                        {% endfor %}
+                            {% include 'map_link.html' %}
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
@@ -40,7 +42,7 @@
                         {% for tutorial in tutorials %}
                         {% if tutorial.type == "tutorial" %}
                         <a href="/user/{{ tutorial.username }}">
-                        {{ tutorial.username }}
+                            {{ tutorial.username }}
                         </a> 发布了:
                         {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
                         {% endif %}
@@ -59,7 +61,26 @@
                         {% for tutorial in tutorials %}
                         {% if tutorial.type == "practice" %}
                         <a href="/user/{{ tutorial.username }}">
-                        {{ tutorial.username }}
+                            {{ tutorial.username }}
+                        </a> 发布了:
+                        {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="content4">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-md-10 col-md-offset-1">
+                    <ul class="list-group">
+                        {% for tutorial in tutorials %}
+                        {% if tutorial.type == "code" %}
+                        <a href="/user/{{ tutorial.username }}">
+                            {{ tutorial.username }}
                         </a> 发布了:
                         {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
                         {% endif %}

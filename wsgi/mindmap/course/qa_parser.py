@@ -202,5 +202,7 @@ def meta_parse(content):
             title = l.split(":")[1].strip()
         elif not l.find('slug'):
             slug = l.split(":")[1].strip()
+        elif not l.find('type'):
+            article_type = l.split(":")[1].strip()
 
-    return title, tags, summary, slug
+    return title, tags, summary, slug, article_type

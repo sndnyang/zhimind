@@ -103,8 +103,8 @@ def before_request():
 
 
 @app.errorhandler(404)
-def page_not_found():
+def page_not_found(error):
     meta = {'title': u'页面不存在 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind 启发式学习 智能学习 在线教育'}
-    return render_template('404.html', meta=meta)
+    return render_template('404.html', meta=meta, error=error)

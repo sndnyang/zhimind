@@ -6,14 +6,14 @@ from datetime import datetime
 
 import uuid
 
-from sqlalchemy.dialects.postgresql import JSON
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import UniqueConstraint
 
-from mindmap import app, db
+from mindmap import db
+
 
 def uuid_gen():
     return str(uuid.uuid4())
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -64,6 +64,6 @@ class User(db.Model):
         return '//www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
     def __repr__(self):
-        return '<User %r>' % (self.username)
+        return '<User %r>' % self.username
 
 

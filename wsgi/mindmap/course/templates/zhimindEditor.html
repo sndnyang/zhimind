@@ -1,92 +1,101 @@
 ﻿{% extends "layout.html" %}
 {% block body %}
 
-    <script src="//cdn.bootcss.com/es5-shim/4.5.9/es5-shim.min.js"></script>
-    <script src="//cdn.bootcss.com/lodash.js/4.16.4/lodash.min.js"></script>
-    <link href="//cdn.bootcss.com/github-markdown-css/2.4.1/github-markdown.min.css" rel="stylesheet">
-    <script src="//cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
-    <script type="text/javascript" src="/static/js/markdown-it-mathjax.js"> </script>
-    <script type="text/javascript" src="/static/js/markdown-it-emoji.js"> </script>
+<script src="//cdn.bootcss.com/es5-shim/4.5.9/es5-shim.min.js"></script>
+<script src="//cdn.bootcss.com/lodash.js/4.16.4/lodash.min.js"></script>
+<link href="//cdn.bootcss.com/github-markdown-css/2.4.1/github-markdown.min.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/markdown-it/6.0.0/markdown-it.min.js"></script>
+<script type="text/javascript" src="/static/js/markdown-it-mathjax.js"></script>
+<script type="text/javascript" src="/static/js/markdown-it-emoji.js"></script>
 
-    <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
-    <script src="//cdn.bootcss.com/twemoji/2.2.1/twemoji.min.js"></script>
-    <link rel="stylesheet" href="/static/css/markdownDemo.css">
-    <link rel="stylesheet" href="/static/css/tutorial.css">
+<script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<script src="//cdn.bootcss.com/twemoji/2.2.1/twemoji.min.js"></script>
+<link rel="stylesheet" href="/static/css/markdownDemo.css">
+<link rel="stylesheet" href="/static/css/tutorial.css">
 
-    <script src="/static/js/tutorial.js"></script>
-    <script src="/static/js/editor.js"></script>
-    <script src="/static/js/markdownDemo.js"></script>
-    <script type="text/javascript">
+<script src="/static/js/tutorial.js"></script>
+<script src="/static/js/editor.js"></script>
+<script src="/static/js/markdownDemo.js"></script>
+<script type="text/javascript">
         window.onbeforeunload = function() {
             return "确定离开页面吗？"; 
         }
-    </script>
-  </head>
-  <body class="opt_linkify opt_typographer opt_highlight result-as-html">
-    <div class="container">
-      <h1>
+
+</script>
+</head>
+<body class="opt_linkify opt_typographer opt_highlight result-as-html">
+<div class="container">
+    <h1>
         zhimind教程编写
-         <small>在线编辑器</small>
-         <small>
-           <button type="button" class="btn btn-success" onclick="save_tutorial()">
-           保存
-           </button>
-         </small>
-      </h1>
-      <div class="form-inline demo-options">
+        <small>在线编辑器</small>
+        <small>
+            <button type="button" class="btn btn-success" onclick="save_tutorial()">
+                保存
+            </button>
+            <a class="btn btn-success" href="/">
+                退出
+            </a>
+        </small>
+    </h1>
+    <div class="form-inline demo-options">
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="enable html tags in source text">
-            <input id="html" type="checkbox"> html
-          </label>
+            <label title="" class="_tip" data-original-title="enable html tags in source text">
+                <input id="html" type="checkbox"> html
+            </label>
         </div>
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="produce xtml output (add / to single tags (&lt;br /&gt; instead of &lt;br&gt;)">
-            <input id="xhtmlOut" type="checkbox"> xhtmlOut
-          </label>
+            <label title="" class="_tip"
+                   data-original-title="produce xtml output (add / to single tags (&lt;br /&gt; instead of &lt;br&gt;)">
+                <input id="xhtmlOut" type="checkbox"> xhtmlOut
+            </label>
         </div>
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="newlines in paragraphs are rendered as &lt;br&gt;">
-            <input id="breaks" type="checkbox"> breaks
-          </label>
+            <label title="" class="_tip" data-original-title="newlines in paragraphs are rendered as &lt;br&gt;">
+                <input id="breaks" type="checkbox"> breaks
+            </label>
         </div>
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="autoconvert link-like texts to links">
-            <input id="linkify" type="checkbox"> linkify
-          </label>
+            <label title="" class="_tip" data-original-title="autoconvert link-like texts to links">
+                <input id="linkify" type="checkbox"> linkify
+            </label>
         </div>
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="do typographyc replacements, (c) -&gt; ? and so on">
-            <input id="typographer" type="checkbox"> typographer
-          </label>
+            <label title="" class="_tip" data-original-title="do typographyc replacements, (c) -&gt; ? and so on">
+                <input id="typographer" type="checkbox"> typographer
+            </label>
         </div>
         <div class="checkbox not-strict">
-          <label title="" class="_tip" data-original-title="enable output highlight for fenced blocks">
-            <input id="_highlight" type="checkbox"> highlight
-          </label>
+            <label title="" class="_tip" data-original-title="enable output highlight for fenced blocks">
+                <input id="_highlight" type="checkbox"> highlight
+            </label>
         </div>
         <div class="form-group not-strict">
-          <input id="langPrefix" type="input" placeholder="language prefix" title="" class="form-control _tip" data-original-title="css class language prefix for fenced code blocks">
+            <input id="langPrefix" type="input" placeholder="language prefix" title="" class="form-control _tip"
+                   data-original-title="css class language prefix for fenced code blocks">
         </div>
         <div class="checkbox">
-          <label title="" class="_tip" data-original-title="force strict CommonMark mode - output will be equal to reference parser">
-            <input id="_strict" type="checkbox"> CommonMark strict
-          </label>
+            <label title="" class="_tip"
+                   data-original-title="force strict CommonMark mode - output will be equal to reference parser">
+                <input id="_strict" type="checkbox"> CommonMark strict
+            </label>
         </div>
-      </div>
     </div>
-    <div class="container full-height">
-      <div class="row full-height">
+</div>
+<div class="container full-height">
+    <div class="row full-height">
         <div class="col-xs-6 full-height">
-          <div class="demo-control"><a href="https://markdown-it.github.io/#" class="source-clear">clear</a></div>
-          <textarea class="source full-height">{{ source }}</textarea></div>
+            <div class="demo-control"><a href="https://markdown-it.github.io/#" class="source-clear">clear</a></div>
+            <textarea class="source full-height">{{ source }}</textarea></div>
         <section class="col-xs-6 full-height">
-          <div class="demo-control"><a href="https://markdown-it.github.io/#" data-result-as="html">html</a><a href="https://markdown-it.github.io/#" data-result-as="src">source</a><a href="https://markdown-it.github.io/#" data-result-as="debug">debug</a></div>
-          <div id="result-html" class="result-html full-height">
-          </div>
-          <pre class="hljs result-src full-height"><code class="result-src-content full-height"></code></pre>
-          <pre class="hljs result-debug full-height"><code class="result-debug-content full-height"></code></pre>
+            <div class="demo-control"><a href="https://markdown-it.github.io/#" data-result-as="html">html</a><a
+                    href="https://markdown-it.github.io/#" data-result-as="src">source</a><a
+                    href="https://markdown-it.github.io/#" data-result-as="debug">debug</a></div>
+            <div id="result-html" class="result-html full-height">
+            </div>
+            <pre class="hljs result-src full-height"><code class="result-src-content full-height"></code></pre>
+            <pre class="hljs result-debug full-height"><code class="result-debug-content full-height"></code></pre>
         </section>
-      </div>
     </div>
+</div>
 
 {% endblock %}

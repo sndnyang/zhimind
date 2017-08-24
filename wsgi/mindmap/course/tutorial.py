@@ -400,9 +400,7 @@ def search_q():
 def knowledge_search():
 
     current_user = get_jwt_identity()
-
     keyword = request.args.get('keyword', "神经,网络")
-    app.logger.info(keyword)
     tutors = Tutorial.query.msearch(keyword, fields=['title'], limit=20).all()
     response = {"error": "error, not find any one", "msg": "error, not find any one",
                 "err_code": 1}
@@ -411,6 +409,5 @@ def knowledge_search():
     response = []
     for t in tutors:
         response.append({'title': t.title, 'content': t.content, 'url': t.slug})
-        app.logger.info(t.title)
 
     return json.dumps(response, ensure_ascii=False)

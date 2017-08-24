@@ -24,3 +24,4 @@ flask-msearch==0.1.5
 Flask-WhooshAlchemy==0.56
 PyJWT==1.5.2
 Whoosh==2.7.4
+jieba==0.38

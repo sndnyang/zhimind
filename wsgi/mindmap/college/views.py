@@ -15,7 +15,9 @@ from models import College, TempCollege, University, TempUniversity
 
 
 college_page = Blueprint('college_list', __name__,
-                         template_folder = os.path.join(os.path.dirname(__file__), 'templates'))
+                         template_folder=os.path.join(
+                             os.path.dirname(__file__), 'templates'),
+                         static_folder="static")
 
 
 @college_page.route('/college.html')
@@ -30,7 +32,7 @@ def college_index():
 
 @college_page.route('/tempcollege.html')
 @login_required
-def temp_major_page():
+def temp_college_page():
     if g.user.get_name() != 'sndnyang':
         abort(404)
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
@@ -43,7 +45,7 @@ def temp_major_page():
 
 @college_page.route('/major.html')
 @college_page.route('/major.html/<int:temp>')
-def major_page(temp = 0):
+def major_page(temp=0):
     if temp == 1 and (g.user is None or not g.user.is_authenticated)\
             and g.user.get_name() != 'sndnyang':
         return u"用户不支持访问"

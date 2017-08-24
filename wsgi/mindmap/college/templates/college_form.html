@@ -2,7 +2,7 @@
 {% block body %}
 {% from "major_category.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
-<script src="/static/js/college.js"></script>
+<script src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
@@ -57,11 +57,11 @@ function refresh(obj) {
 </script>
 <script>
 $(document).ready(function(){
-    var param = unescape(document.URL.split('/')[4]);
+    var param = unescape(document.URL.split('/')[5]);
     if (param.indexOf("(") < 0 && param !== "new") {
         $.ajax({
             method: "get",
-            url : '/college/' + param,
+            url : '/oversea/college/' + param,
             contentType: 'application/json',
             dataType: "json",
             success : function (result) {

@@ -24,7 +24,7 @@
             <div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
-                    <a href="/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
+                    <a href="/oversea/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
                 </div>
             </div>
             <div class="col-sm-10">
@@ -58,7 +58,7 @@
 {% if cloudjs %}
 <script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/college.js?{{ cloudjs }}"></script> 
 {% else %}
-<script type="text/javascript" src="/static/js/college.js"></script>
+<script type="text/javascript" src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
 {% endif %}
 <script>
 getDataList('college', {{ temp }});

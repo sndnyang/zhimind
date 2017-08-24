@@ -222,7 +222,7 @@ function addOneInfo(key, item, i) {
 function approve(type, id, n) {
     $.ajax({
         method: "post",
-        url : '/' + type + 'Data/approve',
+        url : '/oversea/' + type + 'Data/approve',
         contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify({'id': id, 'type': n}),
@@ -342,7 +342,7 @@ function getDataList(name, n) {
     if (n == 0) n = ''; 
     $.ajax({
         method: "get",
-        url : '/' + name + 'List' + n,
+        url : '/oversea/' + name + 'List' + n,
         contentType: 'application/json',
         dataType: "json",
         success : function (result){

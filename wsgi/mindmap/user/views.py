@@ -1,17 +1,19 @@
 # -*- coding:utf-8 -*-
 
 import os
-import StringIO
+import json
 
 from flask import request, flash, url_for, redirect, render_template, g, \
     session, Blueprint
 
-from flask_login import logout_user, login_user
+from flask_login import logout_user, login_user, login_required
+from flask_jwt_extended import JWTManager, create_access_token
 
-from mindmap import login_manager
+from mindmap import app, login_manager
 from forms import *
 from ..models import *
 
+jwt = JWTManager(app)
 
 user_page = Blueprint('user', __name__,
                       template_folder=os.path.join(
@@ -89,3 +91,25 @@ def logout():
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(id)
+
+
+@app.route("/developer/token.html", methods=['GET', 'POST'])
+@login_required
+def token_page():
+    auth_token = create_access_token(identity=g.user.get_id())
+    meta = {'title': u'获取密钥 知维图 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
+    return render_template('token.html', meta=meta, token=auth_token, name=g.user.get_name())
+
+
+@app.route("/developer/token", methods=['GET'])
+@login_required
+def get_token():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'status': False,
+                           'msg': u'用户操作太过频繁,请稍候再试'},
+                          ensure_ascii=False)
+    auth_token = create_access_token(identity=g.user.get_id())
+    return json.dumps({'token': auth_token}, ensure_ascii=False)

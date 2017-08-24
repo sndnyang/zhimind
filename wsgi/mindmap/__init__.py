@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import sys
-
+import datetime
 import logging
 
 import redis
@@ -11,6 +11,7 @@ from flask_login import LoginManager
 
 from aip import AipNlp
 
+
 reload(sys)
 
 if sys.getdefaultencoding() != 'utf8':
@@ -18,6 +19,7 @@ if sys.getdefaultencoding() != 'utf8':
 
 app = Flask(__name__, static_folder= os.path.join(os.path.dirname(__file__), "..", "static"))
 app.config.from_pyfile('flaskapp.cfg')
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=360)
 
 log_file_name = os.path.join(
     os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),

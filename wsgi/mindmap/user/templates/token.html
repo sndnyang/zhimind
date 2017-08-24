@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="page-header">
+                    <h1>API接口密钥</h1>
+                </div>
+            <div>
+                <div>
+                    <label for="token">用户{{name}}的密钥Token:</label>
+                    <br>
+                    <input size="128" readonly="readonly" onclick="this.select()" style="width:720px;max-width:720px;"
+                           id="token" type="text" class="TextInput" value="{{ token }}">
+                </div>
+                <div>
+                    <p>
+                        <strong>更多信息请点击 </strong>
+                        <a target="_blank" href="http://blog.zhimind.com/zhimind-api.html">
+                            API接口说明
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

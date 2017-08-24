@@ -55,7 +55,7 @@ class User(db.Model):
         if not self.last_edit:
             return True
         differ = (now - self.last_edit).seconds
-        if differ >= 60:
+        if differ >= 5:
             return True
         else:
             return False

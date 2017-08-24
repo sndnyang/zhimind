@@ -135,8 +135,10 @@ def qa_parse(content):
     answers = []
     comments = []
 
+    article_type = "tutorial"
     try:
         slug = re.search('\nsummary:\s*(.+)', content).group(1)
+        article_type = re.search('\ntype:\s*(.+)', content).group(1)
     except AttributeError:
         slug = ''
 
@@ -163,7 +165,7 @@ def qa_parse(content):
     qa_parts['answer'] = answers
     qa_parts['comment'] = comments
 
-    return qa_parts, slug
+    return qa_parts, slug, article_type
 
 
 def md_qa_parse(real_link):
@@ -181,9 +183,9 @@ def md_qa_parse(real_link):
         return {'response': False, 'info': real_link + u' 太长'}, "", None
 
     content = r.content
-    qa_parts, slug = qa_parse(content)
+    qa_parts, slug, article_type = qa_parse(content)
 
-    return qa_parts, content, slug
+    return qa_parts, content, slug, article_type
 
 
 def meta_parse(content):
@@ -191,6 +193,7 @@ def meta_parse(content):
     tags = ''
     summary = ''
     slug = ''
+    article_type = ''
     meta_lines = content.split("\n")[:10]
     for line in meta_lines:
         l = line.lower()

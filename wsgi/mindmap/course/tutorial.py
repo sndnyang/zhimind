@@ -9,9 +9,11 @@ from sqlalchemy.orm.exc import MultipleResultsFound
 from flask import request, render_template, g, session, json, abort, Blueprint
 
 from flask_login import login_required
+from flask_msearch import Search
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from jieba.analyse import ChineseAnalyzer
 
-
-from mindmap import app
+from mindmap import app, db
 from utility import *
 from models import *
 from ..mindmappage.models import MindMap
@@ -22,6 +24,9 @@ tutorial_page = Blueprint('tutorial_page', __name__,
                           template_folder=os.path.join(
                               os.path.dirname(__file__), 'templates'))
 
+search = Search(db=db, analyzer=ChineseAnalyzer())
+search.init_app(app)
+search.create_index()
 
 
 @tutorial_page.route('/editor.html')
@@ -30,7 +35,7 @@ def editor():
             'description': u'知维图在线编辑器，用于编写markdown格式教程，实时刷新',
             'keywords': u'zhimind mindmap 教程'}
     source = u"Title: 标题\nslug: your-title-in-english\n" + \
-             "tags: tag1 tag2 tag3 用空格隔开\nsummary: 描述"
+             "tags: tag1 tag2 tag3 用空格隔开\nsummary: 描述\nType: tutorial"
     return render_template('zhimindEditor.html', source=source, meta=meta)
 
 
@@ -47,8 +52,8 @@ def edit_online(link):
             if not content:
                 real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
                 # app.logger.debug(real_link)
-                response, content, slug = md_qa_parse(real_link)
-                update_content(tutorial, content, slug)
+                response, content, slug, article_type = md_qa_parse(real_link)
+                update_content(tutorial, content, slug, article_type)
     except NoResultFound:
         app.logger.debug(traceback.print_exc())
 
@@ -100,12 +105,12 @@ def convert(link):
 
             if tutorial.content:
                 content = tutorial.content
-                response, t2 = qa_parse(content)
+                response, t2, article_type = qa_parse(content)
             else:
                 real_link = tutorial.get_url()
                 if real_link:
-                    response, t, t2 = md_qa_parse(real_link)
-                    update_content(tutorial, t, t2)
+                    response, t, t2, article_type = md_qa_parse(real_link)
+                    update_content(tutorial, t, t2, article_type)
 
             app.redis.set(link, response)
         except:
@@ -128,7 +133,7 @@ def create_tutorial():
     now = datetime.now()
     if not g.user.check_frequence(now):
         return json.dumps({'status': False,
-                           'error': u'用户上次操作在一分钟之内，太过频繁'},
+                           'error': u'用户操作太过频繁,请稍候再试'},
                           ensure_ascii=False)
 
     title = request.json.get('title')
@@ -181,20 +186,26 @@ def save_tutorial():
     except MultipleResultsFound:
         return json.dumps(ret, ensure_ascii=False)
 
-    title, tags, summary, slug = meta_parse(content)
+    title, tags, summary, slug, article_type = meta_parse(content)
     if tutorial is None:
-        tutorial = Tutorial(title, "")
+        slug_tutor = Tutorial.query.filter_by(slug=slug,
+                                              user_id=g.user.get_id()
+                                              ).one_or_none()
+        if slug_tutor:
+            return json.dumps({'error': slug + u' 已存在exists'}, ensure_ascii=False)
+        tutorial = Tutorial(title, '', name=article_type)
         tutorial.user_id = g.user.get_id()
         db.session.add(tutorial)
         g.user.last_edit = now
-        update_content(tutorial, content, slug)
+        update_content(tutorial, content, slug, article_type)
         db.session.commit()
         ret['id'] = tutorial.get_id()
     else:
         g.user.last_edit = now
-        update_content(tutorial, content, slug)
+        tutorial.title = title
+        update_content(tutorial, content, slug, article_type)
 
-    response, slug = qa_parse(content)
+    response, slug, article_type = qa_parse(content)
     app.redis.set(tutorial.get_id(), response)
     session[tutorial_id] = {'answer': response['answer'],
                             'comment': response['comment']}
@@ -258,7 +269,7 @@ def sync_tutorial():
 
     real_link = '%s?v=%d' % (tutorial.get_url(), random.randint(0, 10000))
     # app.logger.debug(real_link)
-    response, content, slug = md_qa_parse(real_link)
+    response, content, slug, article_type = md_qa_parse(real_link)
     # for s in response['answer']:
     #    app.logger.debug(' '.join(s))
 
@@ -266,7 +277,7 @@ def sync_tutorial():
                             'comment': response['comment']}
     app.redis.set(tutorial_id, response)
     g.user.last_edit = now
-    update_content(tutorial, content, slug)
+    update_content(tutorial, content, slug, article_type)
 
     ret['error'] = 'success'
     return json.dumps(ret, ensure_ascii=False)
@@ -334,7 +345,7 @@ def save_map():
         return u'成功更新导图'
 
 
-def update_content(tutorial, content, slug):
+def update_content(tutorial, content, slug, article_type):
     try:
         tutorial.content = content
         db.session.commit()
@@ -348,6 +359,13 @@ def update_content(tutorial, content, slug):
     except:
         app.logger.debug("slug %s repeat" % slug)
 
+    try:
+        if article_type:
+            tutorial.type = article_type
+            db.session.commit()
+    except:
+        app.logger.debug("article type %s update error" % article_type)
+
 
 @tutorial_page.route('/gewu.html')
 def gewu():
@@ -360,8 +378,8 @@ def gewu():
                            meta=meta)
 
 
-@app.route('/search')
-@app.route('/search.html')
+@tutorial_page.route('/search')
+@tutorial_page.route('/search.html')
 def search_page():
     meta = {'title': u'知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
@@ -369,9 +387,30 @@ def search_page():
     return render_template('search.html', meta=meta)
 
 
-@app.route('/tipuesearch_content.json')
+@tutorial_page.route('/tipuesearch_content.json')
 def search_q():
     query = [{'title': e.title, 'url': '/' + e.type + '/'+e.id,
-              'text': qa_parse(e.content)[0]['response'], 'tags': ''}
+                  'text': qa_parse(e.content)[0]['response'], 'tags': ''}
              for e in db.session.query(Tutorial) if e.content]
     return json.dumps({'pages': query}, ensure_ascii=False)
+
+
+@app.route('/codeBlock', methods=['GET'])
+@jwt_required
+def knowledge_search():
+
+    current_user = get_jwt_identity()
+
+    keyword = request.args.get('keyword', "神经,网络")
+    app.logger.info(keyword)
+    tutors = Tutorial.query.msearch(keyword, fields=['title'], limit=20).all()
+    response = {"error": "error, not find any one", "msg": "error, not find any one",
+                "err_code": 1}
+    if not tutors:
+        return json.dumps(response, ensure_ascii=False)
+    response = []
+    for t in tutors:
+        response.append({'title': t.title, 'content': t.content, 'url': t.slug})
+        app.logger.info(t.title)
+
+    return json.dumps(response, ensure_ascii=False)

@@ -3,7 +3,8 @@ var options = [];
 function save_tutorial() {
     var tid = document.URL.split('/')[4], source = $('.source').val(), lines,
         title = /^\s*title/im, slug = /^\s*slug/im, tags = /^\s*tags/im,
-        summary = /^\s*summary/im, temp = source.substr(0, 1000);
+        summary = /^\s*summary/im, type = /^\s*type/im,
+        temp = source.substr(0, 1000);
     if (!temp.match(title)) {
         alert("请在开头添加一行 title: 标题")
         return;
@@ -18,6 +19,10 @@ function save_tutorial() {
     }
     if (!temp.match(summary)) {
         alert("请在开头添加一行 summary: 总结描述")
+        return;
+    }
+    if (!temp.match(summary)) {
+        alert("请在开头添加一行 type: tutorial(代表教程) 或 code(代表代码块)")
         return;
     }
 

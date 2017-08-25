@@ -50,6 +50,7 @@ if __name__ == '__main__':
         try:
             imp.find_module(fw)
             fwtype = fw
+            break
         except ImportError:
             pass
 

@@ -396,11 +396,17 @@ def search_q():
 
 
 @app.route('/codeBlock', methods=['GET'])
-@jwt_required
-def knowledge_search():
-
-    current_user = get_jwt_identity()
+def codeBlock():
+    # @jwt_required
+    # current_user = get_jwt_identity()
+    # now = datetime.now()
+    # response = {'status': False, "error": u'用户操作太过频繁,请稍候再试', 
+    #            "msg": u'用户操作太过频繁,请稍候再试',
+    #            "err_code": 1}
+    # if not current_user.check_frequence(now):
+    #     return json.dumps(response, ensure_ascii=False)
     keyword = request.args.get('keyword', "神经,网络")
+    keyword = ','.join(keyword.split())
     tutors = Tutorial.query.msearch(keyword, fields=['title'], limit=20).all()
     response = {"error": "error, not find any one", "msg": "error, not find any one",
                 "err_code": 1}
@@ -411,3 +417,17 @@ def knowledge_search():
         response.append({'title': t.title, 'content': t.content, 'url': t.slug})
 
     return json.dumps(response, ensure_ascii=False)
+
+
+@app.route('/ksearch', methods=['GET'])
+@login_required
+def knowledge_search():
+
+    keyword = request.args.get('keyword', "神经,网络")
+    keyword = ','.join(keyword.split())
+    tutors = Tutorial.query.msearch(keyword, fields=['title'], limit=20).all()
+    meta = {'title': u'知维图知识搜索 -- 互联网学习实验室',
+            'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
+            'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育 知识搜索'}
+    return render_template("knowledge_search.html", meta=meta,
+                           tutorials=tutors)

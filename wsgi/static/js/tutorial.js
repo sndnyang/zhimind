@@ -506,7 +506,7 @@ function loadTutorial(link) {
     'use strict';
     var root = document.URL.split('/')[3], params = getRequest();
 
-    if ('id' in params) {
+    if (params && 'id' in params) {
         androidLoadMap("#sidebar-wrapper", "/loadmap/"+params['id']);
     }
 
@@ -514,12 +514,6 @@ function loadTutorial(link) {
         url : "/convert/"+link+"?random="+Math.random(),
         contentType: 'application/json',
         dataType: "json",
-        beforeSend : function(){
-            var loadingDiv = createLoadingDiv('教程加载中，请稍等...');
-
-            //呈现loading效果
-            $(".container-fluid").append(loadingDiv);
-        },
         success : function (data){
             var content = data.content,
                 loadingMask = document.getElementById('loadingDiv');            
@@ -550,7 +544,7 @@ function loadTutorial(link) {
                 draw();
             }
             initLesson(link);
-            loadingMask.parentNode.removeChild(loadingMask);
+            loadingMask.remove();
         },
         error: backendError
     });

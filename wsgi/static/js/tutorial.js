@@ -504,7 +504,11 @@ function generate_lesson(div, html, root, count) {
 
 function loadTutorial(link) {
     'use strict';
-    var root = document.URL.split('/')[3];
+    var root = document.URL.split('/')[3], params = getRequest();
+
+    if ('id' in params) {
+        androidLoadMap("#sidebar-wrapper", "/loadmap/"+params['id']);
+    }
 
     $.ajax({
         url : "/convert/"+link+"?random="+Math.random(),
@@ -518,9 +522,7 @@ function loadTutorial(link) {
         },
         success : function (data){
             var content = data.content,
-                loadingMask = document.getElementById('loadingDiv');
-            // console.log(content);
-            loadingMask.parentNode.removeChild(loadingMask);
+                loadingMask = document.getElementById('loadingDiv');            
 
             if (!content || !data.status) {
                 alert(data.info);
@@ -548,6 +550,7 @@ function loadTutorial(link) {
                 draw();
             }
             initLesson(link);
+            loadingMask.parentNode.removeChild(loadingMask);
         },
         error: backendError
     });

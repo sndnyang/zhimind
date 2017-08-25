@@ -37,7 +37,7 @@ def gen_meta_for_tp(name, entity):
     if 'response' not in d or not d['response']:
         return meta
 
-    title, tags, summary, slug = meta_parse(d['response'])
+    title, tags, summary, slug, article_type = meta_parse(d['response'])
     meta['description'] = summary + meta['description']
     meta['keywords'] += tags
 

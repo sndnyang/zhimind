@@ -42,16 +42,7 @@ function showList() {
         $("#mainMap").append("<li><a href='#' onclick='goUpLevel()'>上层:"+root.parent.name+"</a></li>");
 }
 
-function androidLoadMap() {
-    var url = document.URL.split('/'),
-        mapid = url[url.length-1];
-    if (url.length > 4) {
-        link = "/loadmap/" + mapid;
-    }
-    else {
-        link = "/static/data/data.json";
-    }
-
+function androidLoadMap(id, link) {
     $.ajax({
         url: link,
         contentType: 'application/json',
@@ -59,7 +50,7 @@ function androidLoadMap() {
         success : function (data) {
             root = data;
             var treeData = constructParent(root);
-            $('#mainMap').treeview({
+            $(id).treeview({
                 color: "#428bca",
                 expandIcon: 'glyphicon glyphicon-chevron-right',
                 collapseIcon: 'glyphicon glyphicon-chevron-down',
@@ -86,7 +77,7 @@ function constructParent(node) {
         temp.tags.push(node.link.length);
         for (var i in node.link) {
             var url = {text: node.link[i].name, href: node.link[i].url,
-                color: "yellow", backColor: "purple"}
+                color: "purple"}
             temp.nodes.push(url);
         }
     }

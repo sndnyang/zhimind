@@ -5,12 +5,21 @@
         <link href="//cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css" rel="stylesheet">
         <script src="//cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 
+        <script src="//cdn.bootcss.com/d3/3.5.14/d3.min.js"></script>
         <script type="text/javascript" src="/static/js/android.js"></script>
 
         <div id="mainMap">
         </div>
 
         <script type="text/javascript">
-            $(document).ready(androidLoadMap());
+            var url = document.URL.split('/'),
+                mapid = url[url.length-1];
+            if (url.length > 4) {
+                link = "/loadmap/" + mapid;
+            }
+            else {
+                link = "/static/data/data.json";
+            }
+            $(document).ready(androidLoadMap("#mainMap", link));
         </script>
 {% endblock %}

@@ -36,6 +36,11 @@ from mindmap import app as application
 from mindmap import db
 db.configure_mappers()
 db.create_all()
+application.logger.info('create all database')
+filename = os.path.join(
+    os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),  'tmp.log')
+with open(filename, 'a') as fp:
+    fp.write("create all database")
 
 if __name__ == '__main__':
     # application = imp.load_source('application', 'main.py')
@@ -56,6 +61,8 @@ if __name__ == '__main__':
 
     print('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
     application.logger.info('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
+    with open(filename, 'a') as fp:
+        fp.write('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
     if fwtype == "gevent":
         from gevent.pywsgi import WSGIServer
         WSGIServer((ip, port), application).serve_forever()

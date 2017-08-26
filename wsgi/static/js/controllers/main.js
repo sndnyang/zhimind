@@ -428,7 +428,6 @@ module.directive('mindMap', function ($compile) {
                 color: "#428bca",
                 expandIcon: 'glyphicon glyphicon-chevron-right',
                 collapseIcon: 'glyphicon glyphicon-chevron-down',
-                nodeIcon: 'glyphicon glyphicon-bookmark',
                 levels: 3,
                 enableLinks: true,
                 showTags: true,
@@ -438,7 +437,14 @@ module.directive('mindMap', function ($compile) {
         });
 
         function constructParent(node) {
-            var temp = {text: node.name, nodes: [], tags: []};
+            var temp = {text: node.name, nodes: [], tags: []},
+                curparts = document.URL.split('/'), url_params;
+
+            url_params = '?id=' + curparts[curparts.length-1] + '&name=' + d.name;
+
+            if (d.parent)
+                url_params += '&parent=' + d.parent.name;
+
             if (node.level) {
                 var white = d3.rgb(255, 255, 255);
                 var red   = d3.rgb(255, 0,   0);
@@ -446,11 +452,12 @@ module.directive('mindMap', function ($compile) {
                 temp.backColor = compute(node.level / 8.0);
             }
             if (node.link && node.link.length) {
-                temp.href = "";
+                temp.href = "javascript:void(0)";
                 temp.tags.push(node.link.length);
                 for (var i in node.link) {
-                    var url = {text: node.link[i].name, href: node.link[i].url,
-                        color: "yellow", backColor: "purple"}
+                    var url = {text: node.link[i].name, 
+                        href: node.link[i].url + url_params,
+                        color: "purple", 'icon': 'glyphicon glyphicon-bookmark'};
                     temp.nodes.push(url);
                 }
             }
@@ -486,10 +493,6 @@ module.directive('mindMap', function ($compile) {
                 curparts = document.URL.split('/'),
                 practice_map = ['tutorial', 'practice'];
 
-            dict['url'] += '?id=' + curparts[4] + '&name=' + d.name;
-            if (d.parent)
-                dict['url'] += '&parent=' + d.parent.name;
-
             if (urlparts[2] === curparts[2]) {
                 var flag = false;
                 for (var i in practice_map) {
@@ -505,8 +508,8 @@ module.directive('mindMap', function ($compile) {
                                 'mapid': curparts[4], 
                                 'tutorid': urlparts[4].split('?')[0],
                                 'name': d.name, 
-                                'parent':p}
-                            ),
+                                'parent':p
+                            }),
                             success : function (result){
                                 var response = result.status;
                                 if (!response) {

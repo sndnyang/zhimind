@@ -10,7 +10,7 @@
         {% endif %}
         <div class="navbar-brand">
             <span>{% if item.type == "practice" %}练习{% else %}教程{% endif %}</span>
-            <a class="tutoriallink" href="/{{ 'tutorial' if item.type != 'practice' else 'practice'}}/{{item.id}}">{{item.title}}</a>
+            <a class="tutoriallink" href="/{{ 'tutorial' if item.type != 'practice' else 'practice'}}/{{item.slug}}">{{item.title}}</a>
         </div>
         {% include 'tutorial_link.html' %}
         {% if isSelf %}

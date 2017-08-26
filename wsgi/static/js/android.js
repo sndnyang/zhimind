@@ -74,7 +74,14 @@ function androidLoadMap(id, link) {
 } 
 
 function constructParent(node) {
-    var temp = {text: node.name, nodes: [], tags: []};
+    var temp = {text: node.name, nodes: [], tags: []},
+        curparts = document.URL.split('/'), url_params;
+
+    url_params = '?id=' + curparts[curparts.length-1] + '&name=' + d.name;
+
+    if (d.parent)
+        url_params += '&parent=' + d.parent.name;
+
     if (node.level) {
         var white = d3.rgb(255, 255, 255);
         var red   = d3.rgb(255, 0,   0);
@@ -85,7 +92,8 @@ function constructParent(node) {
         temp.href = "javascript:void(0)";
         temp.tags.push(node.link.length);
         for (var i in node.link) {
-            var url = {text: node.link[i].name, href: node.link[i].url,
+            var url = {text: node.link[i].name, 
+                href: node.link[i].url + url_params,
                 color: "purple", 'icon': 'glyphicon glyphicon-bookmark'}
             temp.nodes.push(url);
         }

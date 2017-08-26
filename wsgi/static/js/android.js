@@ -21,25 +21,31 @@ function showList() {
         name = ">" + name;
     }
 
-    $("#mainMap").append("<li><a href='#' id='nodename'"+name+"</a></li>");
+    $("#mainMap").append("<li><a href='javascript:void(0)' id='nodename'"+name+"</a></li>");
 
     if (root.link && root.link.length) {
         for (var i in root.link) {
             var link = root.link[i],
                 name = link.name,
-                url = link.url;
-            $("#mainMap").append("<li><a href='"+url+"' class='link'>"+name+"</a></li>");
+                url = link.url,
+                curparts = document.URL.split('/'),
+                li = $("<li></li>"),
+                a = $("<a class='link'></a>");
+            a.attr("href", url+'?id='+curparts[4]+'&name='+name+'&parent='+root.name);
+            cnsole.log(a)
+            li.append(a);
+            $("#mainMap").append(li);
         }
     }
 
     if (root.children && root.children.length) {
         for (var i in root.children) {
             var child = root.children[i];
-            $("#mainMap").append("<li><a href='#' class='subnode' onclick='goSub("+i+")'>"+child.name+"</a></li>");
+            $("#mainMap").append("<li><a href='javascript:void(0)' class='subnode' onclick='goSub("+i+")'>"+child.name+"</a></li>");
         }
     }
     if (root.parent)
-        $("#mainMap").append("<li><a href='#' onclick='goUpLevel()'>上层:"+root.parent.name+"</a></li>");
+        $("#mainMap").append("<li><a href='javascript:void(0)' onclick='goUpLevel()'>上层:"+root.parent.name+"</a></li>");
 }
 
 function androidLoadMap(id, link) {
@@ -50,14 +56,17 @@ function androidLoadMap(id, link) {
         success : function (data) {
             root = data;
             var treeData = constructParent(root);
+            var showTag = true;
+            if (id == "#sidebar-wrapper") 
+                showTag = false;
             $(id).treeview({
                 color: "#428bca",
                 expandIcon: 'glyphicon glyphicon-chevron-right',
                 collapseIcon: 'glyphicon glyphicon-chevron-down',
-                nodeIcon: 'glyphicon glyphicon-bookmark',
+                // nodeIcon: 'glyphicon glyphicon-bookmark',
                 levels: 3,
                 enableLinks: true,
-                showTags: true,
+                showTags: showTag,
                 data: [treeData]
             });
         }
@@ -73,11 +82,11 @@ function constructParent(node) {
         temp.backColor = compute(node.level / 8.0);
     }
     if (node.link && node.link.length) {
-        temp.href = "";
+        temp.href = "javascript:void(0)";
         temp.tags.push(node.link.length);
         for (var i in node.link) {
             var url = {text: node.link[i].name, href: node.link[i].url,
-                color: "purple"}
+                color: "purple", 'icon': 'glyphicon glyphicon-bookmark'}
             temp.nodes.push(url);
         }
     }

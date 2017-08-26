@@ -85,6 +85,7 @@ module.controller('MainCtrl', function ($scope, $http, $compile) {
         $http.post('/save', jsonData).success(function (data) {
             $scope.msg = 'Data saved';
             alert("success message:" + data);
+            window.onbeforeunload = null;
         }).error(function (data) {
             alert("failure message:" + data);
         });
@@ -485,6 +486,10 @@ module.directive('mindMap', function ($compile) {
                 curparts = document.URL.split('/'),
                 practice_map = ['tutorial', 'practice'];
 
+            dict['url'] += '?id=' + curparts[4] + '&name=' + d.name;
+            if (d.parent)
+                dict['url'] += '&parent=' + d.parent.name;
+
             if (urlparts[2] === curparts[2]) {
                 var flag = false;
                 for (var i in practice_map) {
@@ -501,7 +506,7 @@ module.directive('mindMap', function ($compile) {
                                 'tutorid': urlparts[4].split('?')[0],
                                 'name': d.name, 
                                 'parent':p}
-                                ),
+                            ),
                             success : function (result){
                                 var response = result.status;
                                 if (!response) {
@@ -554,6 +559,9 @@ module.directive('mindMap', function ($compile) {
                     }
                 }
                 linkquiz(d, name, url);
+                window.onbeforeunload = function() {
+                    return "修改尚未保存，确定离开页面吗？"; 
+                }
             }
             //update(d);
             //scope.root = root;	

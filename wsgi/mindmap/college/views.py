@@ -314,9 +314,9 @@ def submitted_major():
         college.evalue = request.form['evalue']
         college.finance = request.form['finance']
         college.docum_url = request.form['docum_url']
+        college.int_docum_url = request.form['int_docum_url']
 
         info = {}
-        app.logger.info(len(request.form.keys()))
         l = (len(request.form.keys()) - 23) / 2
         for i in range(l):
             info['label%d' % (i+1)] = request.form.get('label%d' % (i+1), '')

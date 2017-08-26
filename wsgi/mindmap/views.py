@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
+import json
 import traceback
 import StringIO
 
+import requests
 from sqlalchemy.orm.exc import NoResultFound
 
 from flask import flash, url_for, redirect, render_template, g, session
@@ -108,3 +110,11 @@ def page_not_found(error):
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind 启发式学习 智能学习 在线教育'}
     return render_template('404.html', meta=meta, error=error)
+
+@app.route("/qnfile/<fname>")
+def qnfile(fname):
+    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/%s?v=%s" % (
+                '/'.join(e for e in fname.split('-')), str(random.randint(1, 10000)))
+    app.logger.info(real_link)
+    r = requests.get(real_link)
+    return json.dumps(json.loads(r.content, strict=False), ensure_ascii=False)

@@ -24,7 +24,13 @@
             <div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
-                    <a href="{{ url_for('uni_major_page.college_page') }}"Form/new target="_blank" class="btn btn-primary">添加</a>
+                    <a href="{{ url_for('uni_major_page.college_form', name='new') }}" target="_blank" class="btn btn-primary">添加</a>
+                </div>
+            </div>
+            <div class="col-sm-1">
+                <div class="form-group">
+                    <h4><br></h4>
+                    <a href="{{ url_for('uni_major_page.major_page') }}" class="btn btn-primary">专业信息汇总</a>
                 </div>
             </div>
             <div class="col-sm-10">
@@ -34,7 +40,7 @@
                   </span>
                   <input type="text" class="form-control" 
                   placeholder="Search for..."
-                  onkeyup=filterByName(this, ("{{ url_for('uni_major_page.college_page') }}")>
+                  onkeyup="filterByName(this, 'college')">
                 </div>
             </div>
             <table class="table table-striped">
@@ -62,24 +68,7 @@
 {% endif %}
 <script>
 getDataList("{{ url_for('uni_major_page.college_page') }}", {{ temp }});
-    
-var url = '//7xt8es.com1.z0.glb.clouddn.com/zcollege/college.txt?'+Math.random();
-var xhr = new XMLHttpRequest();
-xhr.open('GET', url); 
-xhr.onload = function(e) {
-    var data = eval('(' + this.response + ')'); 
-    console.log(data.sort); 
-    var t = '<option value="{0}">{1}</option>';
-    for (var i in data.nation) {
-        var nation = data.nation[i]
-        $("#degreeName").append($(t.format(nation, nation))); 
-    }
-    for (var i in data['sort']) {
-        var rank = data['sort'][i]
-        $("#sortName").append($(t.format(rank, rank))); 
-    }
-}
-xhr.send();
+getProperty();
 </script>
 
 {% endblock %}

@@ -458,14 +458,14 @@ function filterBy(v, t, col) {
     pageIt(filterList, "college", 0);
 }
 
-function filterByName(obj) {
+function filterByName(obj, type) {
     var name = $(obj).val();
     if (!rankBy) rankBy = "Q.S.";
     var filterList = filterCollege(collegeList, 'name', name); 
-    if (!name)
-        sortCollege('college', rankBy, true);
+    if (!name && type == "college")
+        sortCollege(type, rankBy, true);
     else
-        pageIt(filterList, "college", 0);
+        pageIt(filterList, type, 0);
 }
 
 function filterByMajor() {
@@ -500,3 +500,23 @@ $(document).ready(function () {
     });
 });
 
+function getProperty() {
+    var url = '/qnfile/zcollege-college.txt';
+    $.ajax({
+        method: "get",
+        url : url,
+        contentType: 'application/json',
+        dataType: "json",
+        success : function (data) {
+            var t = '<option value="{0}">{1}</option>';
+            for (var i in data.nation) {
+                var nation = data.nation[i]
+                $("#degreeName").append($(t.format(nation, nation))); 
+            }
+            for (var i in data['sort']) {
+                var rank = data['sort'][i]
+                $("#sortName").append($(t.format(rank, rank))); 
+            }
+        }
+    });
+}

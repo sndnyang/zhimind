@@ -248,10 +248,7 @@ def submitted_college():
             else:
                 college = TempUniversity(name, info)
         else:
-            import copy
             college = result
-            old_info = copy.deepcopy(college.info)
-            info.update(old_info)
             college.info = info
 
         if result is None:

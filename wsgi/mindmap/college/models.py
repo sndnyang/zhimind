@@ -14,6 +14,7 @@ class College(db.Model):
     name = db.Column(db.String(70))
     degree = db.Column(db.Integer)
     major = db.Column(db.String(10))
+    program_name = db.Column(db.String(70))
     site_url = db.Column(db.String(250))
     gpa = db.Column(db.Float)
     gpa_url = db.Column(db.String(250))
@@ -33,14 +34,15 @@ class College(db.Model):
     docum_url = db.Column(db.String(250))
     int_docum_url = db.Column(db.String(250))
     info = db.Column(JSON)
-    __table_args__ = (UniqueConstraint('name', 'degree', 'major', 
+    __table_args__ = (UniqueConstraint('name', 'degree', 'major', 'program_name',
                       name='_degree_major'),)
     
-    def __init__(self, name, degree, major, site_url):
+    def __init__(self, name, degree, major, site_url, pname=''):
         self.name = name
         self.degree = degree
         self.major = major
         self.site_url = site_url
+        self.program_name = pname
 
     def set(self, college):
         self.gpa = college.gpa
@@ -69,6 +71,7 @@ class TempCollege(db.Model):
     name = db.Column(db.String(70))
     degree = db.Column(db.Integer)
     major = db.Column(db.String(10))
+    program_name = db.Column(db.String(70))
     site_url = db.Column(db.String(250))
     gpa = db.Column(db.Float)
     gpa_url = db.Column(db.String(250))

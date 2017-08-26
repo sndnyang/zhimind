@@ -66,10 +66,10 @@
 {% if cloudjs %}
 <script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/college.js?{{ cloudjs }}"></script> 
 {% else %}
-<script type="text/javascript" src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
+<script type="text/javascript" src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 {% endif %}
 <script>
-getDataList('major', {{ temp }});
+getDataList("{{ url_for('uni_major_page.major_page') }}", {{ temp }});
 </script>
 
 {% endblock %}

@@ -1,3 +1,3 @@
 # -*- coding:utf-8 -*-
 
-from views import college_page
+from views import uni_major_page

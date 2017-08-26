@@ -2,7 +2,7 @@
 {% block body %}
 {% from "major_category.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
-<script src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
+<script src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
@@ -10,7 +10,8 @@
         <h1>提交学校专业信息</h1>
     </div>
     <div id="main">
-        <form method="post" action="/major_submitted" id="majors">
+        <form method="post" action="{{ url_for('uni_major_page.submitted_major') }}" id="majors">
+            <input type="hidden" name="id">
             <label for="name">学校名:</label>
             <select id="collegeName" name="name" class="form-control">
             </select>
@@ -22,6 +23,8 @@
             </select>
             <label for="major">专业名:</label>
             {{ render_major() }}
+            <label for="program_name">项目名(默认空):</label>
+            <input type="text" name="program_name"><hr />
             <label for="site_url">学校主页:</label>
             <input type="url" name="site_url"><hr />
             <label for="gpa">GPA要求:
@@ -133,6 +136,8 @@ $(document).ready(function(){
                 $("select[name='name']").append(option);
                 $("#degreeName").find("option[value='{0}']".format(result.degree)).attr("selected",true);
                 $("#majorName").find("option[value='{0}']".format(result.major)).attr("selected",true);
+                $("input[name='id']").val(result.id);
+                $("input[name='program_name']").val(result.program_name);
                 $("input[name='site_url']").val(result.site_url);
                 $("input[name='gpa']").val(result.gpa);
                 $("input[name='gpa_url']").val(result.gpa_url);
@@ -181,6 +186,9 @@ $(document).ready(function(){
         });
 
     }
+    $("#majors").submit(function() {
+        return submitRedirect(this, "college", "{{url_for('uni_major_page.major_page')}}");
+    });
 });
 </script>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% block body %}
 {% from "major_category.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
-<script src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
+<script src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
@@ -10,7 +10,7 @@
         <h1>提交学校专业信息</h1>
     </div>
     <div id="main">
-        <form method="post" action="/college_submitted" id="college">
+        <form method="post" action="{{ url_for('uni_major_page.submitted_college')}}" id="college">
             <label for="name">学校名:</label>
             <div class="form-group name-div">
                 <select id="collegeName" name="name" class="form-control">
@@ -21,9 +21,9 @@
                 <div class="info">
                     <div class="info-item">
                         <label for="nationlabel">信息名称:</label>
-                        <input type="text" name="nationlabel" value="国家" readOnly="true">
+                        <input type="text" name="citylabel" value="城市" readOnly="true">
                         <label for="nationinput">内容:</label>
-                        <input type="text" name="nationinput">
+                        <input type="text" name="cityinput">
                     </div>                   
                 </div>
                 <button id="addInfo" class="btn-info" onclick="addOneInfo('', '', -1)">添加新内容</button>
@@ -87,6 +87,9 @@ $(document).ready(function(){
         }
         $(".name-div").html(p);
     }
+    $("#college").submit(function() {
+        return submitRedirect(this, "college", "{{url_for('uni_major_page.college_page')}}");
+    });
 });
 </script>
 {% endblock %}

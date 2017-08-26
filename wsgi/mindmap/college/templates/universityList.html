@@ -9,7 +9,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>Filter by nation</h4>
-                    <select id="degreeName" name="degree" onchange="filterBy(this.options[this.options.selectedIndex].value, true, '国家')" class="form-control">
+                    <select id="degreeName" name="degree" onchange=filterBy(this.options[this.options.selectedIndex].value, true, '国家', "{{ url_for('uni_major_page.college_page') }}") class="form-control">
                         <option value="">不限</option>
                     </select>
                 </div>
@@ -17,14 +17,14 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>Sort by 排名</h4>
-                    <select id="sortName" onchange="sortCollege('college', this.options[this.options.selectedIndex].value, true)" class="form-control">
+                    <select id="sortName" onchange=sortCollege("{{ url_for('uni_major_page.college_page') }}", this.options[this.options.selectedIndex].value, true) class="form-control">
                     </select>
                 </div>
             </div>
             <div class="col-sm-1">
                 <div class="form-group">
                     <h4><br></h4>
-                    <a href="/oversea/collegeForm/new" target="_blank" class="btn btn-primary">添加</a>
+                    <a href="{{ url_for('uni_major_page.college_page') }}"Form/new target="_blank" class="btn btn-primary">添加</a>
                 </div>
             </div>
             <div class="col-sm-10">
@@ -34,13 +34,13 @@
                   </span>
                   <input type="text" class="form-control" 
                   placeholder="Search for..."
-                  onkeyup="filterByName(this)">
+                  onkeyup=filterByName(this, ("{{ url_for('uni_major_page.college_page') }}")>
                 </div>
             </div>
             <table class="table table-striped">
 <thead>
 <tr>
-<th><a href="javascript:void(0)" onclick="sortCollege('college', 'name', false)">校名</a></th>
+<th><a href="javascript:void(0)" onclick=sortCollege("{{ url_for('uni_major_page.college_page') }}", 'name', false)>校名</a></th>
 <th>国家</th>
 <th id="rankName">QS排名</th>
 <th></th>
@@ -58,10 +58,10 @@
 {% if cloudjs %}
 <script type="text/javascript" src="//7xt8es.com1.z0.glb.clouddn.com/zhimind/js/college.js?{{ cloudjs }}"></script> 
 {% else %}
-<script type="text/javascript" src="{{url_for('college_list.static', filename='js/college.js')}}"></script>
+<script type="text/javascript" src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 {% endif %}
 <script>
-getDataList('college', {{ temp }});
+getDataList("{{ url_for('uni_major_page.college_page') }}", {{ temp }});
     
 var url = '//7xt8es.com1.z0.glb.clouddn.com/zcollege/college.txt?'+Math.random();
 var xhr = new XMLHttpRequest();

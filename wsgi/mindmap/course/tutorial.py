@@ -24,9 +24,9 @@ tutorial_page = Blueprint('tutorial_page', __name__,
                           template_folder=os.path.join(
                               os.path.dirname(__file__), 'templates'))
 
-search = Search(db=db, analyzer=ChineseAnalyzer())
-search.init_app(app)
-search.create_index()
+# search = Search(db=db, analyzer=ChineseAnalyzer())
+# search.init_app(app)
+# search.create_index()
 
 
 @tutorial_page.route('/editor.html')

@@ -14,14 +14,15 @@ from mindmap import app, db
 from models import College, TempCollege, University, TempUniversity
 
 
-college_page = Blueprint('college_list', __name__,
+uni_major_page = Blueprint('uni_major_page', __name__,
                          template_folder=os.path.join(
                              os.path.dirname(__file__), 'templates'),
                          static_folder="static")
 
 
-@college_page.route('/college.html')
-def college_index():
+@uni_major_page.route('/college.html')
+@uni_major_page.route('/college')
+def college_page():
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
             'keywords': u'zhimind 美国 大学 CS 学费 截止日期'}
@@ -30,7 +31,7 @@ def college_index():
                            if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 
-@college_page.route('/tempcollege.html')
+@uni_major_page.route('/tempcollege.html')
 @login_required
 def temp_college_page():
     if g.user.get_name() != 'sndnyang':
@@ -43,8 +44,9 @@ def temp_college_page():
                            if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
 
 
-@college_page.route('/major.html')
-@college_page.route('/major.html/<int:temp>')
+@uni_major_page.route('/major.html')
+@uni_major_page.route('/major.html/<int:temp>')
+@uni_major_page.route('/major')
 def major_page(temp=0):
     if temp == 1 and (g.user is None or not g.user.is_authenticated)\
             and g.user.get_name() != 'sndnyang':
@@ -65,6 +67,7 @@ def convert_dict(e):
             'name': e.name,
             'degree': e.degree,
             'major': e.major,
+            'program_name': e.program_name,
             'site_url': e.site_url,
             'gpa': e.gpa,
             'gpa_url': e.gpa_url,
@@ -96,9 +99,9 @@ def getCollegeRedis():
 
     try:
         data = json.load(open(fname))
-        # college_list = University.query.paginate(int(pageno), 25).items
-        college_list = University.query.all()
-        for e in college_list:
+        # uni_major_page = University.query.paginate(int(pageno), 25).items
+        uni_major_page = University.query.all()
+        for e in uni_major_page:
             college_set.append({'id': e.id, 'name': e.name, 'info': e.info})
             name_list.append(e.name)
         for e in data:
@@ -112,8 +115,8 @@ def getCollegeRedis():
     return college_set
 
 
-@college_page.route('/collegeList')
-@college_page.route('/collegeList/<int:pageno>')
+@uni_major_page.route('/collegeList')
+@uni_major_page.route('/collegeList/<int:pageno>')
 def collegeListPage(pageno = 1):
     entity = app.redis.get('college')
     if entity and eval(entity):
@@ -126,8 +129,8 @@ def collegeListPage(pageno = 1):
     return json.dumps(college_set, ensure_ascii=False)
 
 
-@college_page.route('/majorList')
-@college_page.route('/majorList/<int:pageno>')
+@uni_major_page.route('/majorList')
+@uni_major_page.route('/majorList/<int:pageno>')
 def majorListPage(pageno = 1):
     base_dir = os.path.dirname(__file__)
     # fname = os.path.join(base_dir, '..', 'static', 'data', 'college.json')
@@ -148,7 +151,7 @@ def majorListPage(pageno = 1):
     return json.dumps(major_set, ensure_ascii=False)
 
 
-@college_page.route('/majorList1')
+@uni_major_page.route('/majorList1')
 def temp_major_list():
     major_set = []
     try:
@@ -161,12 +164,12 @@ def temp_major_list():
     return json.dumps(major_set, ensure_ascii=False)
 
 
-@college_page.route('/collegeList1')
+@uni_major_page.route('/collegeList1')
 def temp_college_list():
     college_set = []
     try:
-        college_list = TempUniversity.query.all()
-        for e in college_list:
+        uni_major_page = TempUniversity.query.all()
+        for e in uni_major_page:
             college_set.append(convert_dict(e))
     except Exception, e:
         app.logger.debug(traceback.print_exc())
@@ -174,7 +177,7 @@ def temp_college_list():
     return json.dumps(college_set, ensure_ascii=False)
 
 
-@college_page.route('/college/<cid>')
+@uni_major_page.route('/college/<cid>')
 def university(cid):
     try:
         e = University.query.get(cid)
@@ -184,7 +187,7 @@ def university(cid):
     return json.dumps({'error': 'not find'}, ensure_ascii=False)
 
 
-@college_page.route('/major/<cid>')
+@uni_major_page.route('/major/<cid>')
 def single_major(cid):
     try:
         college = College.query.get(cid)
@@ -194,7 +197,7 @@ def single_major(cid):
     return json.dumps({'error': 'not find'}, ensure_ascii=False)
 
 
-@college_page.route('/collegeForm/<name>')
+@uni_major_page.route('/collegeForm/<name>')
 def college_form(name):
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
@@ -207,7 +210,7 @@ def college_form(name):
     return render_template('college_form.html', veri=verification_code, meta=meta)
 
 
-@college_page.route('/majorForm/<name>')
+@uni_major_page.route('/majorForm/<name>')
 def major_form(name):
     meta = {'title': u'美国大学库 知维图 -- 互联网学习实验室',
             'description': u'美国大学申请信息库，包括GPA、英语成绩、截止日期、学费等',
@@ -220,7 +223,7 @@ def major_form(name):
     return render_template('major_form.html', veri=verification_code, meta=meta)
 
 
-@college_page.route('/college_submitted', methods=['POST'])
+@uni_major_page.route('/college_submitted', methods=['POST'])
 def submitted_college():
     verification_code = request.form['verification_code']
     code_text = session['code_text']
@@ -230,7 +233,7 @@ def submitted_college():
     session['code_text'] = code_string
     try:
         name = request.form['name']
-        info = {u'国家': request.form['nationinput']}
+        info = {u'city': request.form.get('cityinput', '')}
         l = len(request.form.keys()) / 2 - 1
         for i in range(1, l):
             info['label%d' % (i+1)] = request.form['label%d' % (i+1)]
@@ -245,7 +248,11 @@ def submitted_college():
             else:
                 college = TempUniversity(name, info)
         else:
+            import copy
             college = result
+            old_info = copy.deepcopy(college.info)
+            info.update(old_info)
+            college.info = info
 
         if result is None:
             db.session.add(college)
@@ -260,7 +267,7 @@ def submitted_college():
     return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
 
-@college_page.route('/major_submitted', methods=['POST'])
+@uni_major_page.route('/major_submitted', methods=['POST'])
 def submitted_major():
     verification_code = request.form['verification_code']
     code_text = session['code_text']
@@ -269,22 +276,28 @@ def submitted_major():
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
     try:
+        cid = request.form['id']
         name = request.form['name']
         degree = request.form['degree']
         major = request.form['major']
+        program_name = request.form['program_name']
         site_url = request.form['site_url']
         if not name or not degree or not major:
             return json.dumps({'error': u'关键信息缺失'}, ensure_ascii=False)
-        result = College.query.filter_by(name=name, major=major,
-                                         degree=degree).one_or_none()
+        result = College.query.get(cid)
+        if result is None:
+            result = College.query.filter_by(name=name, major=major,
+                                             degree=degree, program_name=program_name
+                                             ).one_or_none()
         if result is None:
             if g.user and g.user.is_authenticated and g.user.get_name() == 'sndnyang':
-                college = College(name, degree, major, site_url)
+                college = College(name, degree, major, site_url, program_name)
             else:
-                college = TempCollege(name, degree, major, site_url)
+                college = TempCollege(name, degree, major, site_url, program_name)
         else:
             college = result
 
+        college.program_name = program_name
         college.gpa = request.form['gpa'] if request.form['gpa'] else 6.6
         college.gpa_url = request.form['gpa_url']
         college.tuition = request.form['tuition'] if request.form['tuition'] else 66666
@@ -306,10 +319,11 @@ def submitted_major():
         college.docum_url = request.form['docum_url']
 
         info = {}
-        l = (len(request.form.keys()) - 21) / 2
+        app.logger.info(len(request.form.keys()))
+        l = (len(request.form.keys()) - 23) / 2
         for i in range(l):
-            info['label%d' % (i+1)] = request.form['label%d' % (i+1)]
-            info['input%d' % (i+1)] = request.form['input%d' % (i+1)]
+            info['label%d' % (i+1)] = request.form.get('label%d' % (i+1), '')
+            info['input%d' % (i+1)] = request.form.get('input%d' % (i+1), '')
         college.info = info
 
         if result is None:
@@ -324,7 +338,7 @@ def submitted_major():
     return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
 
-@college_page.route('/collegeData/approve', methods=['POST'])
+@uni_major_page.route('/collegeData/approve', methods=['POST'])
 @login_required
 def college_approve():
     if g.user.get_name() != 'sndnyang':
@@ -354,7 +368,8 @@ def college_approve():
         app.logger.debug(traceback.print_exc())
     return json.dumps({'error': 'not find'}, ensure_ascii=False)
 
-@college_page.route('/majorData/approve', methods=['POST'])
+
+@uni_major_page.route('/majorData/approve', methods=['POST'])
 @login_required
 def major_approve():
     if g.user.get_name() != 'sndnyang':
@@ -374,7 +389,7 @@ def major_approve():
                     college.major, degree=college.degree).one_or_none()
             if result is None:
                 result = College(college.name, college.degree, college.major,
-                        college.site_url)
+                        college.site_url, college.program_name)
                 result.set(college)
                 db.session.add(result)
             else:

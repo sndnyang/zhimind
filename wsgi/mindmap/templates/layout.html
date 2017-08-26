@@ -78,11 +78,11 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">留学<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="{{ url_for('college_list.college_index') }}">大学库</a></li>
-                                <li><a href="{{ url_for('college_list.major_page') }}">专业库</a></li>
+                                <li><a href="{{ url_for('uni_major_page.college_page') }}">大学库</a></li>
+                                <li><a href="{{ url_for('uni_major_page.major_page') }}">专业库</a></li>
                                 {% if g.user.is_authenticated and g.user.get_name() == "sndnyang" %}
-                                <li><a href="{{ url_for('college_list.temp_college_page') }}">新大学库</a></li>
-                                <li><a href="{{ url_for('college_list.major_page', temp="1") }}">新专业库</a></li>
+                                <li><a href="{{ url_for('uni_major_page.temp_college_page') }}">新大学库</a></li>
+                                <li><a href="{{ url_for('uni_major_page.major_page', temp="1") }}">新专业库</a></li>
                                 {% endif %}
                                 <li role="separator" class="divider"></li>
                                 <li class="dropdown-header">工具</li>

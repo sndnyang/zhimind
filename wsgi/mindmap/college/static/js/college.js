@@ -64,7 +64,7 @@ function appendButton(item, tr, n, url) {
         tr.append(pass);
         tr.append(rej);
     } else {
-        var edit_url = "/" + url + "Form/";
+        var edit_url = url + "Form/";
            
         if (item.id) {
             edit_url += item.id;
@@ -92,14 +92,14 @@ function fillName(name) {
     return $('<td>{0}</td>'.format(temp || ''));
 }
 
-function fillCollegeInformation(item, i, n) {
+function fillCollegeInformation(item, i, n, backend) {
     var name, temp, expand, tr = $('<tr></tr>');
 
     name = fillName(item.name);
 
     temp = '';
-    if (item.info && (item.info['国家'] || item.info['nation']))
-        temp = item.info['国家'] || item.info['nation'];
+    if (item.info && (item.info['城市'] || item.info['city']))
+        temp = item.info['城市'] || item.info['city'];
     nation = $('<td>{0}</td>'.format(temp));
 
     temp = '';
@@ -114,12 +114,12 @@ function fillCollegeInformation(item, i, n) {
     tr.append(qsrank);
     tr.append(expand);
 
-    appendButton(item, tr, n, 'college');
+    appendButton(item, tr, n, backend);
 
     return tr;
 }
 
-function fillInformation(item, i, n) {
+function fillInformation(item, i, n, backend) {
     var name, degree, major, gpa, tuition, deadline, other,
         temp, expand, edit, tr = $('<tr></tr>');
     name = fillName(item.name);
@@ -178,6 +178,7 @@ function fillInformation(item, i, n) {
         }
     }
     major = $('<td>{0}</td>'.format(temp));
+    program_name = $('<td>{0}</td>'.format(item.program_name || ''));
     gpa = $('<td>{0}</td>'.format(item.gpa || ''));
     tuition = $('<td>{0}</td>'.format(item.tuition || ''));
 
@@ -198,7 +199,7 @@ function fillInformation(item, i, n) {
     tr.append(deadline);
     tr.append(expand);
 
-    appendButton(item, tr, n, 'major');
+    appendButton(item, tr, n, backend);
     return tr;
 }
 
@@ -264,9 +265,10 @@ function fillItemInfo(toggle, item) {
 
 function fillExtraInfo(item, i) {
     var toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
-    var toefl, ielts, gre, evalue, rl, finance, page,
+    var toefl, ielts, gre, evalue, rl, finance, page, program_name,
         gpa_p, gre_p, eng_p, deadline_p, docum_p, int_docum_p;
 
+    program_name = item.program_name || '';
     rl = item.rl || '';
     gre = item.gre || '';
     toefl = item.toefl || '';
@@ -278,6 +280,8 @@ function fillExtraInfo(item, i) {
         url = '<p><a href="{0}" target="_blank">{1}</a></p>';
     page = fillItemInfo(page, item.info);
 
+    if (item.site_url)
+        page.append($(url.format(item.site_url, '官方主页')));
     if (item.gpa_url)
         page.append($(url.format(item.gpa_url, 'GPA网页')));
     if (item.gre_url)
@@ -293,7 +297,13 @@ function fillExtraInfo(item, i) {
     if (item.int_docum_url)
         page.append($(url.format(item.int_docum_url, '国际生材料网页')));
 
-    toggle.html('托福：{0} 雅思：{1} GRE: {2}'.format(toefl, ielts, gre));
+    if (item.program_name) {
+        toggle.html("<p>项目名: {0}</p>".format(item.program_name));
+        toggle.append('<p>托福：{0} 雅思：{1} GRE: {2}</p>'.format(toefl, ielts, gre));
+    } else {
+        toggle.html('<p>托福：{0} 雅思：{1} GRE: {2}</p>'.format(toefl, ielts, gre));
+    }
+    
     other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
     toggle.append(other);
     toggle.append(page);
@@ -342,7 +352,7 @@ function getDataList(name, n) {
     if (n == 0) n = ''; 
     $.ajax({
         method: "get",
-        url : '/oversea/' + name + 'List' + n,
+        url : name + "List" + n,
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
@@ -423,16 +433,16 @@ function sortCollege(name, col, ininfo) {
 function pageTemplate(data, name, n) {
     var list = [];
     $.each(data, function (i, item) {
-        if (name === 'major' && !('degree' in item)) {
+        if (name.indexOf('major') > -1 && !('degree' in item)) {
             return;
         }
         var row, toggle;
-        if (name === 'college') {
-            row = fillCollegeInformation(item, i, n);
+        if (name.indexOf('college') > -1) {
+            row = fillCollegeInformation(item, i, n, name);
             toggle = fillCollegeExtraInfo(item.info, i);
         }
-        else if (name === 'major') {
-            row = fillInformation(item, i, n);
+        else if (name.indexOf('major') > -1) {
+            row = fillInformation(item, i, n, name);
             toggle = fillExtraInfo(item, i);
         }
         list.push(row);
@@ -466,44 +476,26 @@ function filterByMajor() {
     pageIt(filterList, "major", 0);
 }
 
+function submitRedirect(obj, type, url) {
+    var options = {
+        dataType: 'json',
+        success: function (data) {
+            if (data.error) {
+                alert(data.error);
+                document.getElementById("vericode")
+                    .setAttribute('src','/verifycode?random='+Math.random());
+                return;
+            }
+            alert('请等待审核，准备跳转...');
+            window.location.href = "{0}.html".format(url);
+        }
+    };
+    $(obj).ajaxSubmit(options);
+    return false;
+}
+
 $(document).ready(function () {
-    $("#majors").submit(function (){
-        var options = {
-            dataType: 'json',
-            success: function (data) {
-                if (data.error) {
-                    alert(data.error);
-                    document.getElementById("vericode")
-                        .setAttribute('src','/verifycode?random='+Math.random());
-                    return;
-                }
-                alert('请等待审核，准备跳转...');
-                window.location.href = "/major.html";
-            }
-        };
-        $(this).ajaxSubmit(options);
-        return false;
-    });
-
     $("#addInfo").click(function () {
-        return false;
-    });
-
-    $("#college").submit(function (){
-        var options = {
-            dataType: 'json',
-            success: function (data) {
-                if (data.error) {
-                    alert(data.error);
-                    document.getElementById("vericode")
-                        .setAttribute('src','/verifycode?random='+Math.random());
-                    return;
-                }
-                alert('请等待审核，准备跳转...');
-                window.location.href = "/college.html";
-            }
-        };
-        $(this).ajaxSubmit(options);
         return false;
     });
 });

@@ -79,3 +79,7 @@ tags
 
 backup/
 whoosh*
+bin/
+include/
+lib64/
+share/

@@ -9,7 +9,7 @@ from flask import render_template, g, request, Blueprint
 from flask_login import login_required
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-from ..aip import AipSpeech
+from aip import AipSpeech
 
 from models import Episode
 from mindmap import db, app

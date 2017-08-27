@@ -11,6 +11,7 @@ from flask import request, render_template, g, session, json, abort, Blueprint
 from flask_login import login_required
 from flask_msearch import Search
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from whoosh.index import LockError
 from jieba.analyse import ChineseAnalyzer
 
 from mindmap import app, db
@@ -26,7 +27,11 @@ tutorial_page = Blueprint('tutorial_page', __name__,
 
 search = Search(db=db, analyzer=ChineseAnalyzer())
 search.init_app(app)
-search.create_index()
+
+try:
+    search.create_index()
+except whoosh.store.LockError, e:
+    pass
 
 
 @tutorial_page.route('/editor.html')

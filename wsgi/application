@@ -55,8 +55,7 @@ if __name__ == '__main__':
             pass
 
     print('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
-    with open(filename, 'a') as fp:
-        fp.write('Starting WSGIServer type %s on %s:%d ... ' % (fwtype, ip, port))
+
     if fwtype == "gevent":
         from gevent.pywsgi import WSGIServer
         WSGIServer((ip, port), application).serve_forever()

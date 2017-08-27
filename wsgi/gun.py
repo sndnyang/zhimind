@@ -10,8 +10,8 @@ import multiprocessing
 debug = False #True
 loglevel = 'debug'
 bind = '0.0.0.0:8000'
-pidfile = '../logs/gunicorn.pid'
-logfile = '../logs/debug.log'
+pidfile = os.path.join(os.environ.get('ZHIMIND_DIR', '..'), 'logs/gunicorn.pid')
+logfile = os.path.join(os.environ.get('ZHIMIND_DIR', '..'), 'logs/debug.log')
 
 #启动的进程数
 workers = multiprocessing.cpu_count() * 2

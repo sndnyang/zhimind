@@ -30,7 +30,7 @@ search.init_app(app)
 
 try:
     search.create_index()
-except whoosh.store.LockError, e:
+except LockError, e:
     pass
 
 

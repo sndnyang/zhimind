@@ -77,10 +77,10 @@ function constructParent(node) {
     var temp = {text: node.name, nodes: [], tags: []},
         curparts = document.URL.split('/'), url_params;
 
-    url_params = '?id=' + curparts[curparts.length-1] + '&name=' + d.name;
+    url_params = '?id=' + curparts[curparts.length-1] + '&name=' + node.name;
 
-    if (d.parent)
-        url_params += '&parent=' + d.parent.name;
+    if (node.parent)
+        url_params += '&parent=' + node.parent.name;
 
     if (node.level) {
         var white = d3.rgb(255, 255, 255);

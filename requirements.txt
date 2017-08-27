@@ -28,3 +28,4 @@ jieba==0.38
 gevent==1.2.2
 gunicorn==19.7.1
 supervisor==3.3.3
+baidu-aip==1.6.3.1

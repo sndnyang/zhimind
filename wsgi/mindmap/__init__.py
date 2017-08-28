@@ -59,8 +59,8 @@ else:
 from views import *
 from user import user_page
 from mindmappage import map_page
-from college import uni_major_page
-from naodong import recite_word_page
+from oversea import uni_major_page
+from reciteword import recite_word_page
 from talkerchu import talkerchu_page
 from course import tutorial_page, practice_page, answer_checker
 

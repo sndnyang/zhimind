@@ -7,9 +7,9 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-10 col-md-offset-1">
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <div class="form-group">
-                    <h4>Filter by degree</h4>
+                    <h4>学位</h4>
                     <select id="degreeName" name="degree" onchange="filterByMajor()" class="form-control">
                         <option value="0">不限</option>
                         <option value="1">本科</option>
@@ -18,21 +18,32 @@
                     </select>
                 </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <div class="form-group">
-                    <h4>Filter by major</h4>
+                    <h4>专业</h4>
                     {{ render_major() }}
                 </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <div class="form-group">
-                    <h4>Filter by 推荐信</h4>
+                    <h4>推荐信</h4>
                     <select id="rlName" name="rl" onchange="filterByMajor()" class="form-control">
                         <option value="0">不限</option>
-                        <option value="-1">可免</option>
+                        <option value="">可免</option>
                         <option value="1">1封</option>
                         <option value="2">2封</option>
                         <option value="3">3封</option>
+                        
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <h4>Filter by 成绩单</h4>
+                    <select id="transcript" name="transcript" onchange="filterByMajor()" class="form-control">
+                        <option value="0">不限</option>
+                        <option value="no">不用邮寄</option>
+                        <option value="yes">需要邮寄</option>
                     </select>
                 </div>
             </div>

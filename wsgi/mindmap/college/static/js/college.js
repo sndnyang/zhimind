@@ -208,11 +208,11 @@ function addOneInfo(key, item, i) {
         i = $(".info-item").length + 1;
     }
     var div = $('<div class="info-item"></div>');
-    var label = $('<label for="label{0}">信息名称:</label>'.format(i));
+    var label = $('<label for="label{0}">信息名称: </label>'.format(i));
     var input = $('<input type="text" name="label{0}" value="{1}">'.format(i, key));
-    var label2 = $('<label for="input{0}">内容:</label>'.format(i));
+    var label2 = $('<label for="input{0}">内容: </label>'.format(i));
     var input2 = $('<input type="text" name="input{0}" value="{1}">'.format(i, item));
-            
+    
     div.append(label);
     div.append(input);
     div.append(label2);
@@ -243,6 +243,10 @@ function fillItemInfo(toggle, item) {
         if (e.substring(0, 5) === 'input') continue;
         else if (e.substring(0, 5) === 'label') {
             var j = e.substring(5, e.length);
+            if ("申请时是不是要邮寄密封成绩单" == item['label' + j]) {
+                if (item['input' + j] == 'no') item['input' + j] = '不需要';
+                else item['input' + j] = '需要';
+            }
             toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
                         item['input' + j])));
         }
@@ -299,12 +303,18 @@ function fillExtraInfo(item, i) {
 
     if (item.program_name) {
         toggle.html("<p>项目名: {0}</p>".format(item.program_name));
-        toggle.append('<p>托福：{0} 雅思：{1} GRE: {2}</p>'.format(toefl, ielts, gre));
+        toggle.append('<p>托福：{0},  雅思：{1},  GRE: {2}</p>'.format(toefl, ielts, gre));
     } else {
-        toggle.html('<p>托福：{0} 雅思：{1} GRE: {2}</p>'.format(toefl, ielts, gre));
+        toggle.html('<p>托福：{0},  雅思：{1},  GRE: {2}</p>'.format(toefl, ielts, gre));
     }
     
-    other.append('成绩单认证：{0} 推荐信：{1} 存款证明：{2}'.format(evalue, rl, finance));
+    if (evalue == 'no') evalue = '不需要';
+    else evalue = '需要';
+    if (rl == 0 || rl == -1) rl = '可免';
+    else rl += '封';
+    if (finance == 'no') finance = '不需要';
+    else finance = '需要';
+    other.append('成绩单认证：{0},  推荐信：{1},  存款证明：{2}'.format(evalue, rl, finance));
     toggle.append(other);
     toggle.append(page);
     return toggle;
@@ -471,8 +481,14 @@ function filterByName(obj, type) {
 function filterByMajor() {
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val()),
+        transcript = parseInt($("#transcript").val()),
         rl = parseInt($("#rlName").val());
-    filterList = filterCollege(filterCollege(filterCollege(collegeList, 'degree', degree), 'major',major), 'rl', rl);
+    filterList = filterCollege(filterCollege(
+        filterCollege(
+            filterCollege(collegeList, 'input1', transcript),
+            'degree', degree),
+        'major',major),
+    'rl', rl);
     pageIt(filterList, "major", 0);
 }
 

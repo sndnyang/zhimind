@@ -90,11 +90,12 @@
                 添加任何想添加的信息 :), 如录取率、小分、申请方式
                 <div class="info">
                     <div class="info-item">
-                        <label for="label1">信息名称:</label>
-                        <input type="text" name="label1" value="申请时是不是要邮寄密封成绩单" readOnly="true" style="width: 250px">
-                        <label for="input1">内容:</label>
-                        <select name="input1">
-                            <option value="no">录取后</option>
+                        <label for="label0">信息名称:</label>
+                        <input type="text" name="label0" value="申请时是不是要邮寄密封成绩单" style="width: 250px">
+                        <label for="input0">内容:</label>
+                        <select name="input0">
+                            <option value="">不知道</option>
+                            <option value="no">不需要</option>
                             <option value="yes">需要寄</option>
                         </select>
                     </div> 
@@ -168,16 +169,12 @@ $(document).ready(function(){
                 $("input[name='int_docum_url']").val(result.int_docum_url);
                 var item = result.info;
                 var l = Math.floor(Object.keys(item).length / 2);
-                for (var i = 0; i < l; i++) {
-                    if ($("input[name='label{0}']".format(i+1)).length) {
-                        $("input[name='label{0}']".format(i+1)).val(item['label'+(i+1)]);
-                        if (i == 0)
-                            $("select[name='input{0}']".format(i+1)).val(item['input'+(i+1)]);
-                        else
-                            $("input[name='input{0}']".format(i+1)).val(item['input'+(i+1)]);
-                    } else {
-                        addOneInfo(item['label'+(i+1)], item['input'+(i+1)], i+1);
-                    }
+                if (item['label0']) {
+                    $("input[name='label0']".format(i+1)).val(item['label0']);
+                    $("select[name='input0']".format(i+1)).val(item['input0']);
+                }
+                for (var i = 1; i < l; i++) {
+                    addOneInfo(item['label'+i], item['input'+i], i);
                 }
             }
         });

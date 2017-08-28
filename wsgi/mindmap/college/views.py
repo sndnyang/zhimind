@@ -319,8 +319,8 @@ def submitted_major():
         info = {}
         l = (len(request.form.keys()) - 23) / 2
         for i in range(l):
-            info['label%d' % (i+1)] = request.form.get('label%d' % (i+1), '')
-            info['input%d' % (i+1)] = request.form.get('input%d' % (i+1), '')
+            info['label%d' % i] = request.form.get('label%d' % i, '')
+            info['input%d' % i] = request.form.get('input%d' % i, '')
         college.info = info
 
         if result is None:

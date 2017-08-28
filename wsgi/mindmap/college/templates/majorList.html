@@ -29,7 +29,7 @@
                     <h4>推荐信</h4>
                     <select id="rlName" name="rl" onchange="filterByMajor()" class="form-control">
                         <option value="0">不限</option>
-                        <option value="">可免</option>
+                        <option value="-1">可免</option>
                         <option value="1">1封</option>
                         <option value="2">2封</option>
                         <option value="3">3封</option>
@@ -39,11 +39,21 @@
             </div>
             <div class="col-sm-2">
                 <div class="form-group">
-                    <h4>Filter by 成绩单</h4>
-                    <select id="transcript" name="transcript" onchange="filterByMajor()" class="form-control">
-                        <option value="0">不限</option>
+                    <h4>成绩单邮寄</h4>
+                    <select id="transcriptName" name="transcript" onchange="filterByMajor()" class="form-control">
+                        <option value="">不限</option>
                         <option value="no">不用邮寄</option>
                         <option value="yes">需要邮寄</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <h4>成绩单认证</h4>
+                    <select id="evalueName" name="evalue" onchange="filterByMajor()" class="form-control">
+                        <option value="">不限</option>
+                        <option value="no">不用认证</option>
+                        <option value="yes">需要认证</option>
                     </select>
                 </div>
             </div>

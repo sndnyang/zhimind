@@ -7,6 +7,7 @@ function filterCollege(l, col, t) {
     for (var i in l) {
         if (col == 'deadline' && (('fall' in l[i] && l[i].fall)
                     || ('spring' in l[i] && l[i].spring))) {
+            // 截止日期过滤
             data.push(l[i]); 
             continue;
         }
@@ -35,7 +36,7 @@ function filterCollege(l, col, t) {
             }
         }
         
-        if (t) {
+        if (t) {              
             if (col !== 'deadline' && col in l[i]) {
                 if (l[i][col] == t || 
                       l[i][col].toString().substr(0, prefix.length) == prefix)
@@ -44,10 +45,8 @@ function filterCollege(l, col, t) {
                     data.push(l[i]);
                 }
             }
-            else if (col in l[i].info) {
-                if (l[i].info[col].indexOf(t) > -1) {
+            else if (l[i].info && col in l[i].info && l[i].info[col].indexOf(t) > -1) {
                     data.push(l[i]);
-                }
             }
         } 
         else {
@@ -243,12 +242,13 @@ function fillItemInfo(toggle, item) {
         if (e.substring(0, 5) === 'input') continue;
         else if (e.substring(0, 5) === 'label') {
             var j = e.substring(5, e.length);
+            var temp = item['input' + j];
             if ("申请时是不是要邮寄密封成绩单" == item['label' + j]) {
-                if (item['input' + j] == 'no') item['input' + j] = '不需要';
-                else item['input' + j] = '需要';
+                if (temp == 'no') temp = '不需要';
+                else if (temp == 'yes') temp = '需要';
             }
             toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
-                        item['input' + j])));
+                        temp)));
         }
         else {
             var key = e, value = item[e];
@@ -309,11 +309,11 @@ function fillExtraInfo(item, i) {
     }
     
     if (evalue == 'no') evalue = '不需要';
-    else evalue = '需要';
+    else if (evalue == 'yes') evalue = '需要';
     if (rl == 0 || rl == -1) rl = '可免';
     else rl += '封';
     if (finance == 'no') finance = '不需要';
-    else finance = '需要';
+    else if (finance == 'yes') finance = '需要';
     other.append('成绩单认证：{0},  推荐信：{1},  存款证明：{2}'.format(evalue, rl, finance));
     toggle.append(other);
     toggle.append(page);
@@ -481,11 +481,14 @@ function filterByName(obj, type) {
 function filterByMajor() {
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val()),
-        transcript = parseInt($("#transcript").val()),
+        evalue = $("#evalueName").val(),
+        transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
     filterList = filterCollege(filterCollege(
         filterCollege(
-            filterCollege(collegeList, 'input1', transcript),
+            filterCollege(
+                filterCollege(collegeList, 'evalue', evalue),
+                 'input0', transcript),
             'degree', degree),
         'major',major),
     'rl', rl);

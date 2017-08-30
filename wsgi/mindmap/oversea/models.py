@@ -119,3 +119,38 @@ class TempUniversity(db.Model):
     def __init__(self, name, info):
         self.name = name
         self.info = info
+
+
+professor_interests_table = db.Table('professor_interests', db.Model.metadata,
+                                     db.Column('professor_id', db.String, 
+                                        db.ForeignKey('Professor.professor_id')),
+                                     db.Column('interests_id', db.String, 
+                                        db.ForeignKey('Interests.interests_id'))
+                                    )
+
+
+class Professor(db.Model):
+    __tablename__ = 'Professor'
+    id = db.Column('professor_id', db.String, primary_key=True, default=uuid_gen)
+    name = db.Column(db.String(30))
+    school = db.Column(db.String(60))
+    major = db.Column(db.String(30))
+    position_available = db.Column(db.Boolean)
+    term = db.Column(db.String(15))
+    interests = db.relationship('Interests', secondary=professor_interests_table,
+        backref=db.backref('Professors', lazy='dynamic'))
+
+    def __init__(self, name, school, major, interests):
+        self.name = name
+        self.school_id = school
+        self.major = major
+        self.interests = interests
+
+
+class Interests(db.Model):
+    __tablename__ = 'Interests'
+    id = db.Column('interests_id', db.String, primary_key=True, default=uuid_gen)
+    name = db.Column(db.String(30))
+
+    def __init__(self, name):
+        self.name = name

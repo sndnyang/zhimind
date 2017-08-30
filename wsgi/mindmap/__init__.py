@@ -59,7 +59,7 @@ else:
 from views import *
 from user import user_page
 from mindmappage import map_page
-from oversea import uni_major_page
+from oversea import uni_major_page, research_page
 from reciteword import recite_word_page
 from talkerchu import talkerchu_page
 from course import tutorial_page, practice_page, answer_checker
@@ -70,5 +70,6 @@ app.register_blueprint(tutorial_page)
 app.register_blueprint(practice_page)
 app.register_blueprint(answer_checker)
 app.register_blueprint(uni_major_page, url_prefix="/oversea")
+app.register_blueprint(research_page, url_prefix="/oversea")
 app.register_blueprint(talkerchu_page, url_prefix="/talkerchu")
 app.register_blueprint(recite_word_page, url_prefix="/reciteword")

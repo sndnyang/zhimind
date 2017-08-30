@@ -505,8 +505,18 @@ function submitRedirect(obj, type, url) {
                     .setAttribute('src','/verifycode?random='+Math.random());
                 return;
             }
-            alert('请等待审核，准备跳转...');
-            window.location.href = "{0}.html".format(url);
+            if (type != "research" || (type == "research" && $("#approveIt").val() == 1)) {
+                alert('请等待审核，准备跳转...');
+                window.location.href = "{0}.html".format(url);
+            } else {
+                $("#approveIt").val(1);
+                var list = data.list;
+                for (var i in list) {
+                    var line = $("<p>{0} website:{1} research:{2} position:{3}</p>".format(
+                        list[i].name, list[i].faculty_page, list[i].interests, list[i].position));
+                    $("#crawlResult").append(line);
+                }
+            }
         }
     };
     $(obj).ajaxSubmit(options);
@@ -516,6 +526,30 @@ function submitRedirect(obj, type, url) {
 $(document).ready(function () {
     $("#addInfo").click(function () {
         return false;
+    });
+    $("#college_name").keyup(function() {
+        var text = $("#college_name").val().toLowerCase();
+        if (text.length == 3 || (text.length == 2 &&
+                    (text[0] == 'u' || text[0] == 'c' || text[1] == 'u' || text[1] == 'c'))) {
+            $("#collegeNameList").html("");
+            for (var i in collegeList) {
+                var item = collegeList[i].name;
+                if (item.toLowerCase().indexOf("("+text) > 0) {
+                    var option = $('<option value="{0}">{1}</option>'.format(item, item));
+                    $("#collegeNameList").append(option);
+                }
+            }
+        }
+        if (text.length > 3 && "university".indexOf(text) == -1 && "college".indexOf(text) == -1) {
+            $("#collegeNameList").html("");
+            for (var i in collegeList) {
+                var item = collegeList[i].name;
+                if (item.toLowerCase().indexOf(text) > 0) {
+                    var option = $('<option value="{0}">{1}</option>'.format(item, item));
+                    $("#collegeNameList").append(option);
+                }
+            }
+        }
     });
 });
 

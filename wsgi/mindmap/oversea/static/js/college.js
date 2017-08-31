@@ -507,10 +507,11 @@ function submitRedirect(obj, type, url) {
                 return;
             }
             console.log($("#approveIt").val())
-            if (type != "research") {
+            if (type != "research" || (type == "research" && $("approveIt").val() == 1)) {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);
             } else {
+                $("#researchSubmit").val("点击确认");
                 $("#approveIt").val(1);
                 var list = data.list;
                 collegeList = data.list;

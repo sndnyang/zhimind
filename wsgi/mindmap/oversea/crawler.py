@@ -4,39 +4,78 @@ import os
 import re
 import json
 import traceback
-# from collections import defaultdict
 
 import requests
 from bs4 import BeautifulSoup
+
 
 
 def contain_keys(href, keys, is_name=False):
     """
 
     """
-    for e in keys:
-        if is_name and re.search('%s' % e, href, re.I):
-            return True
-        if re.search(r'\b%s\b' % e, href, re.I):
-            return True
-        if re.search(r'_?%s_?' % e, href, re.I):
-            return True
+    words = "(%s)" % '|'.join(e for e in keys)
+    if is_name and re.search('%s' % words, href, re.I):
+        return True
+    if re.search(r'\b%s\b' % words, href, re.I):
+        return True
+    if re.search(r'_?%s_?' % words, href, re.I):
+        return True
     return False
 
 
-def format_url(href, domain, university_name):
+def format_url(href, domain):
 
-    if href[0] == '/':
+    if href[0] == '/' and (len(href) == 1 or href[1] != '/'):
         full_url = domain + href
     elif href.startswith('http'):
         full_url = href
     elif href.startswith('//'):
         full_url = 'http:' + href
-    elif href.find(university_name) > -1:
+    elif href.find(domain) > -1:
         full_url = 'http://' + href
     else:
         full_url = "Error!!!!!! at", href
     return full_url
+
+
+def get_and_store_page(page_url):
+    parts = page_url.split("/")[2].split(".")
+    university_name = parts[-2]
+    dir_name = 'data/' + university_name
+    if not os.path.isdir(dir_name):
+        os.mkdir(dir_name)
+    file_name = dir_name+'/' + page_url.split('/')[-1] if page_url[-1] != '/' else page_url.split('/')[-2] + '.html'
+    if os.path.isfile(file_name):
+        with open(file_name) as fp:
+            html = fp.read()
+    else:
+        try:
+            r = requests.get(page_url, time=10)
+            r.raise_for_status()
+            html = r.content
+        except:
+            html = "Error"
+        with open(file_name, 'w') as fp:
+            fp.write(html)
+    return html
+
+
+def onsocial(href):
+    for e in ['facebook', 'twitter', 'google']:
+        if e in href:
+            return True
+    return False
+
+
+def same_tags(a, b):
+    if len(a) != len(b):
+        return False
+    for i in range(len(a)):
+        if a[i] != b[i]:
+            print a[i], b[i]
+            return False
+    return True
 
 
 class ResearchCrawler:
@@ -60,24 +99,23 @@ class ResearchCrawler:
 
         self.example = example
         self.url = directory_url
-        self.university_name = re.search('(\w+).(edu|com|me|org|net)', self.url).group(1)
-        self.domain = re.search('(http.+.(edu|com|me|org|net))/', self.url).group(1)
-        # print self.university_name, self.domain
-
-        soup, anchors = self.find_all_anchor(self.open_page(directory_url))
+        self.university_name = re.search('(\w+).edu', self.url).group(1)
+        self.domain = '/'.join(directory_url.split("/")[:3])
+        content, soup = self.open_page(directory_url)
+        anchors = self.find_all_anchor(soup)
         index = self.find_example_index(anchors, example)
-        print directory_url, len(anchors[index:]), 
+        # print directory_url, len(anchors[index:]), 
 
         # 第一个教授主页的作用主要在这里——如果能再来一个更好
         # 求共同祖先
-        count, links = self.find_faculty_list(anchors[index:], directory_url)
-        print len(links)
-        assert count >= url_check[url]
-
-        for link in links:
-            print self.dive_into_page(link)
-
-        return links
+        count, faculty_list = self.find_faculty_list(anchors[index:], directory_url)
+        # print len(links)
+        # assert count >= url_check[url]
+        result = []
+        for one in faculty_list:
+            # print link
+            result.append(self.dive_into_page(one))
+        return result
 
     def load_key(self):
         with open('data/key.json') as fp:
@@ -90,41 +128,30 @@ class ResearchCrawler:
 
         """
         try:
-            dir_name = re.search('(\w+).(edu|com|me|org|net)', page_url).group(1)
-            dir_name = 'data/' + dir_name
-            if not os.path.isdir(dir_name):
-                os.mkdir(dir_name)
-            file_name = os.path.join(dir_name, page_url.split('/')[-1] + '.html')
+            html = get_and_store_page(page_url)
+            if html == "Error":
+                return "Error", None
+            soup = BeautifulSoup(html, 'html.parser')
 
-            if os.path.isfile(file_name):
-                with open(file_name) as fp:
-                    html = fp.read()
-            else:
-                r = requests.get(page_url)
-                r.raise_for_status()
-                html = r.content
-                with open(file_name, 'w') as fp:
-                    fp.write(html)
-            return html
-        except:
+            if soup.find("noframes"):
+                for e in soup.find_all("frame"):
+                    if contain_keys(e.get("src"), self.key_words["div_pass"]):
+                        continue
+                    page_url = '/'.join(page_url.split('/')[:-1] + [e.get("src")])
+                    html = get_and_store_page(page_url)
+                    soup = BeautifulSoup(html, 'html.parser')
+            return html, soup
+        except Exception, e:
             traceback.print_exc()
-            return "error"
+            print page_url, "error at open_page"
+            return "Error", None
 
-    def find_all_anchor(self, html):
+    def find_all_anchor(self, soup):
         """
 
         """
-        soup = BeautifulSoup(html, 'html.parser')
         l = soup.find_all('a')
-        return soup, l
-
-    @staticmethod
-    def find_name_in_emails(l):
-        """
-
-        """
-        return [re.search(':(\w+)@', e.get("href")).group(1)
-                for e in l if e.get("href") and re.search(':(\w+)@', e.get("href"))]
+        return l
 
     def filter_list(self, e):
         name = e.string
@@ -154,6 +181,7 @@ class ResearchCrawler:
         """
         count = 0
         links = []
+        faculty_list = []
         # names = find_name_in_emails(l)
         # print names
         for e in l:
@@ -161,7 +189,7 @@ class ResearchCrawler:
                 continue
 
             href = e.get('href')
-            faculty_link = format_url(href, self.domain, self.university_name)
+            faculty_link = format_url(href, self.domain)
             if faculty_link.startswith("Error"):
                 print "Error!!!!!! at", href
                 continue
@@ -169,6 +197,8 @@ class ResearchCrawler:
             if faculty_link == faculty_url or faculty_link in links:
                 continue
             links.append(faculty_link)
+            e['href'] = faculty_link
+            faculty_list.append(e)
             count += 1
 
             name = e.string
@@ -179,51 +209,18 @@ class ResearchCrawler:
             else:
                 # print "faculty page:", faculty_link
                 pass
-        return count, links
+        return count, faculty_list
 
     def find_example_index(self, l, a):
-        self.domain = re.search('(http.+.(edu|com|me|org|net))/', a).group(1)
         for i in l:
             href = i.get("href")
             if not href:
                 continue
-            url = format_url(href, self.domain, self.university_name)
-            if url == a:
+            page_url = format_url(href, self.domain)
+        #   print page_url, a
+            if page_url == a:
                 return l.index(i)
         return -1
-
-    def dive_into_page(self, faculty_link):
-        print faculty_link
-        content = self.open_page(faculty_link)
-        if content == 'error':
-            print "Error!!!!!! at the link", faculty_link
-            return "Error!!!!!! at the link", faculty_link
-
-        soup, anchors = self.find_all_anchor(content)
-        faculty_page, mail = self.get_personal_website(anchors, faculty_link)
-
-        print 'page url: ', faculty_page,
-
-        if not faculty_page:
-            print "just this page"
-            return '', mail, self.get_research_interests(soup, content)
-        else:
-            faculty_page = format_url(faculty_page, self.domain, self.university_name)
-            print "div into"
-            page_c = self.open_page(faculty_page)
-            if page_c == 'error':
-                print "Error!!!!!! at the page", faculty_page
-                return '', mail, "error"
-            else:
-                soup, anchors = self.find_all_anchor(page_c)
-                return faculty_page, mail, self.get_research_interests(soup, page_c)
-
-    @staticmethod
-    def onsocial(href):
-        for e in ['facebook', 'twitter', 'google']:
-            if e in href:
-                return True
-        return False
 
     def get_personal_website(self, l, faculty_url):
         potential_name = re.findall(r"([A-Z]?[a-z]+)", faculty_url[faculty_url.index(".edu") + 4:]) + ['personal']
@@ -235,13 +232,26 @@ class ResearchCrawler:
             href = a.get('href')
             if not href or len(href) < 5:
                 continue
-            if contain_keys(href, potential_name, True) and href not in faculty_url and not ResearchCrawler.onsocial(
+            if contain_keys(href, potential_name, True) and href not in faculty_url and not onsocial(
                     href):
                 if href.startswith('mailto:'):
                     mail = href
                 else:
                     faculty_page = href
         return faculty_page, mail
+
+    def filter_research_interests(self, alist):
+        """
+        暂时只想到这么多条件
+        """
+        result = []
+        for e in alist:
+            if e.parent.name == 'a':
+                continue
+            if contain_keys(e, self.key_words['notresearch']):
+                continue
+            result.append(e)
+        return result
 
     def extract_from_line(self, line):
         """
@@ -259,43 +269,147 @@ class ResearchCrawler:
             line[-1] = ''
         return [x.strip() for x in line[pos:].split(',') if x and x.strip()]
 
-    def get_research_interests(self, soup, content):
+    def get_research_interests(self, soup, content, tags):
         """
         
         """
-        pattern = re.compile('<(\w+)>(\s*\w*\s*(Research|interests)[^<.]*)(<|.)', re.I)
-        result = pattern.search(content)
-        if not result:
-            return "not found"
+        # 先用 完整的 research interests 找
+        result = soup.find_all(string=re.compile("research\s+interest", re.I))
+        # print len(result)
+        if len(result) == 1:
+            if len(re.sub("\s+", " ", result[0])) > 19:
+                # print "by line"
+                research_tags = self.extract_from_line(result[0], tags)
+                if research_tags:
+                    return research_tags
+            node = result[0].parent
+            tags = self.extract_from_sibling(node, tags)
+            return tags
+        elif len(result) > 1:
+            for n in result:
+                if len(n) > 19:
+                    research_tags = self.extract_from_line(n, tags)
+                    return research_tags
+            
+        # 再用 research or interests to find
+        # then filter it by some rules
+        result = soup.find_all(string=re.compile("(research|interests|focuses on|Expertise)", re.I))
+        nodes = self.filter_research_interests(result)
+        # print len(nodes)
 
-        tag = result.group(1)
-        s = result.group(2)
-        print tag, s
-        if len(s) > 19 or s[-1] == '.':
-            print "by line"
-            research_tags = self.extract_from_line(s)
-            return research_tags
+        if len(nodes) == 1:
+            # print nodes[0]
+            if len(nodes[0]) > 19:
+                # print "by line",
+                research_tags = self.extract_from_line(result[0], tags)
+                if research_tags:
+                    return research_tags
+            node = nodes[0].parent
+            # print node.next_sibling
+            tags = self.extract_from_sibling(node, tags)
+            
+            return tags
+        elif len(nodes) > 1 and not len(tags):
+            return [u"I'm so stupid to found it,我太蠢了找不到 %d" % len(nodes)]
+        elif not len(tags):
+            return [u"I'm so stupid to found it,我太蠢了找不到"]
+        return tags
 
-        print 'tag', tag
-        x = soup.find_all(tag, string=s)
-        # print x
-        if len(x) == 0:
-            return "not found"
-        elif len(x) > 1:
-            return "too much"
+    def select_line_part(self, line):
+        pos = 0
+        for flag in self.key_words['interest_line_mode']:
+            new_pos = line.find(flag)    
+            if new_pos > pos:
+                pos = new_pos + len(flag)
+        return line[pos:]
 
-        node = x[0]
+    def replace_words(self, line):
+        line = re.sub("\s+", " ", line)
+        line = line.replace("(", "").replace(")", "")
+        for x in self.key_words['replace']:
+            line = re.sub(r'\b%s\b' % x, ',', line)
+        return line
+
+    def extract_from_line(self, line, tags):
+        for sent in line.split('.'):
+            if contain_keys(sent, self.key_words['interest_break'], True):
+                break
+            sent = self.select_line_part(re.sub("\s+", " ", re.sub("\n", ",", sent)))
+            sent = self.replace_words(sent)
+            # print sent
+            for x in re.split("[,:;?]", sent):
+                if x and x.strip():
+                    tag = x.strip().lower()
+                    if ' ' in tag and not contain_keys(tag, tags, True) and tag.count(' ') < 3:
+                        tags.append(tag)
+
+        return tags
+
+    def extract_from_sibling(self, node, tags):
+        # print node.name, node.string
         next_node = node.find_next_sibling()
         # print next_node
-        # print next_node.name
-        tags = []
-        if next_node.name == 'ul':
-            tags = [e for e in next_node.strings if e.strip()]
+        if next_node and next_node.name == 'ul':
+            tags = [e.strip().lower() for e in next_node.strings if e and e.strip()]
             return tags
         for n in node.find_next_siblings():
             if n.name != next_node.name:
                 break
-            tags.append(n.string)
+            # print n, n.text
+            tags = self.extract_from_line(n.text, tags)
+        return tags
+
+    def get_open_position(self, soup, content):
+        open_position = False
+        open_term = ""
+        text = soup.get_text()
+        if contain_keys(text, self.key_words["open_position"], True):
+            open_position = True
+        if contain_keys(text, self.key_words["open_term"], True):
+            open_term = "always"
+        return open_position, open_term
+
+    def dive_into_page(self, faculty_ele):
+        faculty_link = faculty_ele.get("href")
+
+        person = {'name': '', 'link': faculty_link, 'tags': None,
+                'position': '', 'term': ''}
+        if faculty_ele.string and contain_keys(faculty_link, faculty_ele.string.split(), True):
+            person['name'] = faculty_ele.string
+
+        content, soup = self.open_page(faculty_link)
+        if content == 'Error':
+            print "Error!!!!!! at the link", faculty_link
+            return "Error in get", "Error in get", ["Error in get"]
+        
+        tags = self.get_research_interests(soup, content, [])
+        # print tags
+        
+        anchors = self.find_all_anchor(soup)
+        faculty_page, mail = self.get_personal_website(anchors, faculty_link)
+
+        if faculty_page:
+            # print 'page url: ',faculty_page
+            faculty_page = format_url(faculty_page, self.domain)
+            page_c, page_soup = self.open_page(faculty_page)
+            if 'Error' == page_c or 'error' == page_c:
+                print "Error!!!!!! at the page", faculty_page
+            else:
+                tags = self.get_research_interests(page_soup, page_c, tags)
+                position, term = self.get_open_position(page_soup, page_c)
+                person['position'] = position
+                person['term'] = term
+
+        if len(tags) > 1 and tags[0].startswith("I'm so stupid to"):
+            tags = tags[1:]
+        if len(tags) == 1 and tags[0].startswith("I'm so stupid to"):
+            tags = []
+        
+        person['website'] = faculty_page
+        person['mail'] = mail
+        person['tags'] = tags
+
+        return person
 
 
 if __name__ == "__main__":
@@ -333,9 +447,13 @@ if __name__ == "__main__":
                  'http://www.cs.ucf.edu/people/index.php': 54,
                  }
 
+    import cProfile
     crawler = ResearchCrawler()
-    for url in urls[0:1]:
-        crawler.crawl_from_directory(url, examples[urls.index(url)])
+    for url in urls[1:2]:
+
+        cProfile.run("crawler.crawl_from_directory(url, examples[urls.index(url)])", sort="cumulative")
+        # print len(result)
+        # print result[0]
 
         # i = 1
         # directory_url = urls[i]

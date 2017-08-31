@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 {% from "major_filter.html" import render_major %}
+<script src="//cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
+<link href="//cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <script src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
@@ -10,7 +12,7 @@
         <h1>提交学校专业信息</h1>
     </div>
     <div id="main">
-        <form method="post" action="{{ url_for('research_page.submitted_research') }}" id="majors">
+        <form method="post" action="{{ url_for('research_page.submitted_research') }}" id="research">
             <input type="hidden" name="id">
             <label for="college_name">学校:</label>
             <input id="college_name" name="college_name" list="collegeNameList" class="form-control"/>
@@ -40,6 +42,8 @@
             </div>
             <hr>    
             <div id="crawlResult">
+            </div>
+            <div id="pagination-container"></div>
             </div>
             <input id="approveIt" name="approve" type="hidden" value="0">
             <hr>
@@ -82,7 +86,7 @@ $(document).ready(function(){
         }
     });
 
-    $("#majors").submit(function() {
+    $("#research").submit(function() {
         return submitRedirect(this, "research", "{{url_for('research_page.research_index')}}");
     });
 });

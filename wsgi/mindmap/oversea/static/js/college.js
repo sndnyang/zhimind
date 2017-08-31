@@ -499,23 +499,46 @@ function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
         success: function (data) {
+            console.log(data);
             if (data.error) {
                 alert(data.error);
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
                 return;
             }
-            if (type != "research" || (type == "research" && $("#approveIt").val() == 1)) {
+            console.log($("#approveIt").val())
+            if (type != "research") {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);
             } else {
                 $("#approveIt").val(1);
                 var list = data.list;
-                for (var i in list) {
-                    var line = $("<p>{0} website:{1} research:{2} position:{3}</p>".format(
-                        list[i].name, list[i].faculty_page, list[i].interests, list[i].position));
-                    $("#crawlResult").append(line);
+                collegeList = data.list;
+                $("#crawlResult").html("")
+                var table = $("<table class='table table-striped'></table>");
+                for (var i in collegeList) {
+                    var tr = $("<tr></tr>"),
+                        select = $("<select></select>"),
+                        option_tmp = "<option>{0}</option>";
+                    
+                    for (var j in collegeList[i].tags) {
+                        select.append($(option_tmp.format(collegeList[i].tags[j])));
+                    }
+                    tr.append($("<td>{0}</td>".format(collegeList[i].name)));
+                    tr.append($("<td><a href='{0}'>学校主页</a></td>".format(collegeList[i].link)));
+                    if (collegeList[i].website)
+                        tr.append($("<td><a href='{0}'>个人主页</a></td>".format(collegeList[i].website)));
+                    else {
+                        tr.append($("<td></td>"));
+                        
+                    }
+                    var td = $("<td></td>").append(select)
+                    tr.append(td);
+                    tr.append($("<td>{0}</td>".format(collegeList[i].position)));
+                    tr.append($("<td>{0}</td>".format(collegeList[i].term || "")));
+                    table.append(tr);
                 }
+                $("#crawlResult").append(table);
             }
         }
     };

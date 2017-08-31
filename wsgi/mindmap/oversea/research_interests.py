@@ -11,7 +11,7 @@ from wtforms import StringField, validators
 from ..validation import *
 from mindmap import app, db
 
-from models import College, TempCollege, University, TempUniversity
+from crawler import ResearchCrawler
 
 
 research_page = Blueprint('research_page', __name__,
@@ -41,24 +41,25 @@ def research_form():
     return render_template('research_form.html', veri=verification_code, meta=meta)
 
 
-@research_page.route('/college_submitted', methods=['POST'])
+@research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
-    verification_code = request.form['verification_code']
-    code_text = session['code_text']
-    if verification_code != code_text:
-        return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
-    approve = request.form['approve']
-    if approve == '1':
-        json.dumps({'info': u'成功'}, ensure_ascii=False)
-    code_img, code_string = create_validate_code()
-    session['code_text'] = code_string
+    #verification_code = request.form['verification_code']
+    # code_text = session['code_text']
+    # if verification_code != code_text:
+    #    return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
+    #approve = request.form['approve']
+    # if approve == '1':
+    #    json.dumps({'info': u'成功'}, ensure_ascii=False)
+    # code_img, code_string = create_validate_code()
+    # session['code_text'] = code_string
 
-    college_name = request.form['college_name']
-    major = request.form['major']
+    #college_name = request.form['college_name']
+    #major = request.form['major']
     directory_url = request.form['directory_url']
-    college_name = request.form['college_name']
     professor_url = request.form['professor_url']
     
-
-    link_list = []
-    return json.dumps({'info': u'成功', "link": link_list}, ensure_ascii=False)
+    crawl = ResearchCrawler()
+    link_list = crawl.crawl_from_directory(directory_url, professor_url)
+    app.logger.info(len(link_list))
+    app.logger.info(len(link_list[0]))
+    return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)

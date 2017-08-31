@@ -511,7 +511,7 @@ function submitRedirect(obj, type, url) {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);
             } else {
-                $("#researchSubmit").val("点击确认");
+                $("#researchSubmit").html("点击确认");
                 $("#approveIt").val(1);
                 var list = data.list;
                 collegeList = data.list;

@@ -117,7 +117,7 @@ class ResearchCrawler:
         return result
 
     def load_key(self):
-        with open('data/key.json') as fp:
+        with open(os.path.join(os.path.dirname(__file__), 'key.json')) as fp:
             self.key_words = json.loads(fp.read(), strict=False)
         if self.key_words is None:
             return 'Error'

@@ -91,6 +91,32 @@ function fillName(name) {
     return $('<td>{0}</td>'.format(temp || ''));
 }
 
+function fillResearchInformation(item) {
+    var tr = $("<tr></tr>"),
+        select = $("<select></select>"),
+        option_tmp = "<option>{0}</option>";
+
+    for (var j in item.tags) {
+        select.append($(option_tmp.format(item.tags[j])));
+    }
+    tr.append($("<td>{0}</td>".format(item.name)));
+    tr.append($("<td>{0}</td>".format(item.school)));
+    tr.append($("<td>{0}</td>".format(item.major)));
+    tr.append($("<td><a href='{0}'>学校主页</a></td>".format(item.link)));
+    if (item.website)
+        tr.append($("<td><a href='{0}'>个人主页</a></td>".format(item.website)));
+    else {
+        tr.append($("<td></td>"));
+        
+    }
+    var td = $("<td></td>").append(select)
+    tr.append(td);
+    tr.append($("<td>{0}</td>".format(item.position)));
+    tr.append($("<td>{0}</td>".format(item.term || "")));
+
+    return tr;
+}
+
 function fillCollegeInformation(item, i, n, backend) {
     var name, temp, expand, tr = $('<tr></tr>');
 
@@ -446,7 +472,7 @@ function pageTemplate(data, name, n) {
         if (name.indexOf('major') > -1 && !('degree' in item)) {
             return;
         }
-        var row, toggle;
+        var row = null, toggle = null;
         if (name.indexOf('college') > -1) {
             row = fillCollegeInformation(item, i, n, name);
             toggle = fillCollegeExtraInfo(item.info, i);
@@ -454,6 +480,8 @@ function pageTemplate(data, name, n) {
         else if (name.indexOf('major') > -1) {
             row = fillInformation(item, i, n, name);
             toggle = fillExtraInfo(item, i);
+        } else if (name.indexOf('research') > -1) {
+            row = fillResearchInformation(item);
         }
         list.push(row);
         if (toggle) {
@@ -478,7 +506,59 @@ function filterByName(obj, type) {
         pageIt(filterList, type, 0);
 }
 
-function filterByMajor() {
+function getProfessorByInterests() {
+    var major = parseInt($("#majorName").val()),
+        interests = $("#researchName").val();
+    $.ajax({
+        type: "get",//请求方式  
+        url: "getProfessorByInterests/" + major + "/" + interests,//发送请求地址  
+        timeout: 30000,//超时时间：30秒
+        dataType: "json",//设置返回数据的格式
+        success: function(data) {  
+            var info = data.error;
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            collegeList = data.list;
+            filterList = data.list;
+            pageIt(data.list, "research", 0);
+        }
+    });
+}
+
+function getMajorInterestsList() {
+    var major = parseInt($("#majorName").val());
+    $.ajax({
+        type: "get",//请求方式  
+        url: "getMajorInterestsList/" + major,//发送请求地址  
+        timeout: 30000,//超时时间：30秒
+        dataType: "json",//设置返回数据的格式
+        success: function(data) {  
+            var info = data.error;
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            
+            $("#researchName").html("<option value=''>不限</option>");
+            for (var i in data.list) {
+                if (data.list[i].zh) 
+                    $("#researchName").append('<option value="{0}">{1}</option>'.format(
+                        data.list[i].name, data.list[i].zh));
+                else
+                    $("#researchName").append('<option value="{0}">{1}</option>'.format(
+                        data.list[i].name, data.list[i].name));
+            }
+        }
+    })
+}
+
+function filterByMajor(type) {
+    if (type.indexOf("research") > -1) {
+        getMajorInterestsList();
+        return;
+    }
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val()),
         evalue = $("#evalueName").val(),
@@ -548,32 +628,15 @@ function submitRedirect(obj, type, url) {
                 collegeList = data.list;
                 var table = $("<table class='table table-striped'></table>");
                 for (var i in collegeList) {
-                    var tr = $("<tr></tr>"),
-                        select = $("<select></select>"),
-                        option_tmp = "<option>{0}</option>";
-                    
-                    for (var j in collegeList[i].tags) {
-                        select.append($(option_tmp.format(collegeList[i].tags[j])));
-                    }
-                    tr.append($("<td>{0}</td>".format(collegeList[i].name)));
-                    tr.append($("<td><a href='{0}'>学校主页</a></td>".format(collegeList[i].link)));
-                    if (collegeList[i].website)
-                        tr.append($("<td><a href='{0}'>个人主页</a></td>".format(collegeList[i].website)));
-                    else {
-                        tr.append($("<td></td>"));
-                        
-                    }
-                    var td = $("<td></td>").append(select)
-                    tr.append(td);
-                    tr.append($("<td>{0}</td>".format(collegeList[i].position)));
-                    tr.append($("<td>{0}</td>".format(collegeList[i].term || "")));
+                    var tr = fillResearchInformation(collegeList[i]);
                     table.append(tr);
                 }
                 $("#crawlResult").append(table);
             }
         }
     };
-    $("#crawlResult").html("")
+    if ($("approveIt").val() == 0)
+        $("#crawlResult").html("")
     $(obj).ajaxSubmit(options);
     // timerId = window.setInterval(getProcess, 2000);  
     return false;

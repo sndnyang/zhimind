@@ -352,6 +352,10 @@ class ResearchCrawler:
         if name and not contain_keys(name, self.key_words['site_flag']):
             person['name'] = name
 
+        if not name:
+            # TODO: 还没能保证拿到名字
+            return person
+
         if contain_keys(faculty_link.split('/')[-1], self.key_words['skip_file']):
             return person
 

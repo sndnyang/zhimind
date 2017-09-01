@@ -134,23 +134,30 @@ class Professor(db.Model):
     id = db.Column('professor_id', db.String, primary_key=True, default=uuid_gen)
     name = db.Column(db.String(30))
     school = db.Column(db.String(60))
-    major = db.Column(db.String(30))
-    position_available = db.Column(db.Boolean)
-    term = db.Column(db.String(15))
+    major = db.Column(db.String(4))
+    school_url = db.Column(db.String(150))
+    home_page = db.Column(db.String(150))
+    position = db.Column(db.Boolean)
+    term = db.Column(db.String(20))
     interests = db.relationship('Interests', secondary=professor_interests_table,
         backref=db.backref('Professors', lazy='dynamic'))
+    __table_args__ = (UniqueConstraint('name', 'school', 'major',
+                      name='_professor_uniq'),)
 
-    def __init__(self, name, school, major, interests):
+    def __init__(self, name, school, major):
         self.name = name
-        self.school_id = school
+        self.school = school
         self.major = major
-        self.interests = interests
 
 
 class Interests(db.Model):
     __tablename__ = 'Interests'
     id = db.Column('interests_id', db.String, primary_key=True, default=uuid_gen)
-    name = db.Column(db.String(30))
+    name = db.Column(db.String(50))
+    zh_name = db.Column(db.String(20), default='')
+    major = db.Column(db.String(4))
+    __table_args__ = (UniqueConstraint('name', 'major', name='_interests_uniq'),)
 
-    def __init__(self, name):
+    def __init__(self, name, major):
         self.name = name
+        self.major = major

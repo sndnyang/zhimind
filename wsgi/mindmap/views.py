@@ -115,6 +115,5 @@ def page_not_found(error):
 def qnfile(fname):
     real_link = "http://7xt8es.com1.z0.glb.clouddn.com/%s?v=%s" % (
                 '/'.join(e for e in fname.split('-')), str(random.randint(1, 10000)))
-    app.logger.info(real_link)
     r = requests.get(real_link)
     return json.dumps(json.loads(r.content, strict=False), ensure_ascii=False)

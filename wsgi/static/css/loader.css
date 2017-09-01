@@ -54,7 +54,11 @@
     z-index: 2;
 }
 
-
+#loadingDiv p {
+    position: fixed;
+    left: 52%;
+    top: 49%;
+}
 /***************************************/
 /* BELOW HERE IS SOLELY FOR AESTHETICS */
 /*_____________________________________*/

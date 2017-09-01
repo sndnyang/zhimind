@@ -3,7 +3,7 @@
 import os
 import traceback
 
-from flask import request, render_template, g, session, json, Blueprint, abort
+from flask import flash, request, render_template, g, session, json, Blueprint, abort
 from flask_login import login_required
 from sqlalchemy.orm.exc import NoResultFound
 from wtforms import StringField, validators
@@ -41,6 +41,11 @@ def research_form():
     return render_template('research_form.html', veri=verification_code, meta=meta)
 
 
+@research_page.route('/getResearchProgress', methods=['POST'])
+def process():
+    return json.dumps({'info': session['research_process']}, ensure_ascii=False)
+
+
 @research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
     #verification_code = request.form['verification_code']
@@ -57,9 +62,17 @@ def submitted_research():
     #major = request.form['major']
     directory_url = request.form['directory_url']
     professor_url = request.form['professor_url']
-    
+    app.logger.info(directory_url)
     crawl = ResearchCrawler()
-    link_list = crawl.crawl_from_directory(directory_url, professor_url)
-    app.logger.info(len(link_list))
-    app.logger.info(len(link_list[0]))
+    count, faculty_list = crawl.crawl_faculty_list(directory_url, professor_url)
+    session['research_process'] = "%d,0" % count
+    app.logger.info(session['research_process'])
+    link_list = []
+    i = 0
+    for f in faculty_list:
+        link_list.append(crawl.dive_into_page(f))
+        i += 1
+        session['research_process'] = "%d,%d" % (count, i)
+        app.logger.info(session['research_process'])
+
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)

@@ -495,6 +495,36 @@ function filterByMajor() {
     pageIt(filterList, "major", 0);
 }
 
+var timerId;
+function getProcess() {  
+    //使用JQuery从后台获取JSON格式的数据  
+    $.ajax({  
+        type: "post",//请求方式  
+        url: "getResearchProgress",//发送请求地址  
+        timeout: 30000,//超时时间：30秒
+        dataType: "json",//设置返回数据的格式  
+        //请求成功后的回调函数 data为json格式  
+        success:function(data){  
+            var info = data.info, total = info.split(",")[0], now = info.split(',')[1];
+            console.log(info);
+            if (total == now) {
+                window.clearInterval(timerId);
+                $("#loadingDiv").remove();
+                return;
+            }
+            $("#loadingDiv").remove();
+            var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位'.format(total, now))                    
+            //呈现loading效果
+            $(".container-fluid").append(loadingDiv);
+        },  
+        //请求出错的处理  
+        error:function(){  
+            window.clearInterval(timerId);  
+            alert("请求出错");  
+        }  
+    });  
+}  
+
 function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
@@ -507,7 +537,8 @@ function submitRedirect(obj, type, url) {
                 return;
             }
             console.log($("#approveIt").val())
-            if (type != "research" || (type == "research" && $("approveIt").val() == 1)) {
+            // if (type != "research" || (type == "research" && $("approveIt").val() == 1)) {
+            if (type != "research") {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);
             } else {
@@ -515,7 +546,6 @@ function submitRedirect(obj, type, url) {
                 $("#approveIt").val(1);
                 var list = data.list;
                 collegeList = data.list;
-                $("#crawlResult").html("")
                 var table = $("<table class='table table-striped'></table>");
                 for (var i in collegeList) {
                     var tr = $("<tr></tr>"),
@@ -543,7 +573,9 @@ function submitRedirect(obj, type, url) {
             }
         }
     };
+    $("#crawlResult").html("")
     $(obj).ajaxSubmit(options);
+    // timerId = window.setInterval(getProcess, 2000);  
     return false;
 }
 

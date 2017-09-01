@@ -73,6 +73,6 @@ def submitted_research():
         link_list.append(crawl.dive_into_page(f))
         i += 1
         session['research_process'] = "%d,%d" % (count, i)
-        app.logger.info(session['research_process'])
+    app.logger.info(session['research_process'] + "finish")
 
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)

@@ -66,7 +66,7 @@ def get_and_store_page(page_url):
 
 
 def onsocial(href):
-    for e in ['facebook', 'twitter', 'google']:
+    for e in ['facebook', 'twitter', 'google', 'youtube', 'calendar']:
         if e in href:
             return True
     return False
@@ -186,7 +186,6 @@ class ResearchCrawler:
 
             href = e.get('href')
             faculty_link = format_url(href, self.domain)
-            name = e.string
             if faculty_link.startswith("Error"):
                 # print "Error!!!!!! at", href
                 continue
@@ -232,22 +231,6 @@ class ResearchCrawler:
             result.append(e)
         return result
 
-    def extract_from_line(self, line):
-        """
-
-        """
-        flag = re.search("(Research|interests)", line, re.I).group(1)
-        pos = line.find(flag)
-        if pos < 0:
-            pos = 0
-        else:
-            pos = pos + len(flag)
-        for x in self.key_words['replace']:
-            line = re.sub(r'\b%s\b' % x, ',', line)
-        if line[-1] == '.':
-            line[-1] = ''
-        return [x.strip() for x in line[pos:].split(',') if x and x.strip()]
-
     def select_line_part(self, line):
         pos = 0
         for flag in self.key_words['interest_line_mode']:
@@ -278,7 +261,10 @@ class ResearchCrawler:
         next_node = node.find_next_sibling()
         # print next_node
         if next_node and next_node.name == 'ul':
-            tags = [e.strip().lower() for e in next_node.strings if e and e.strip()]
+            
+            for e in next_node.strings:
+                if e and e.strip():
+                    tags = self.extract_from_line(e.strip(), tags)
             return tags
         for n in node.find_next_siblings():
             if n.name != next_node.name:
@@ -297,7 +283,7 @@ class ResearchCrawler:
                 if x and x.strip():
                     tag = x.strip().lower()
 
-                    if ' ' in tag and not contain_keys(tag, tags, True) and tag.count(' ') < 3:
+                    if ' ' in tag and not contain_keys(tag, tags, True) and tag.count(' ') < 4:
                         tags.append(tag)
 
         return tags
@@ -308,27 +294,37 @@ class ResearchCrawler:
         """
         # 先用 完整的 research interests 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
-        # print len(result)
+        # print("research interest has %d " % len(result))
         if len(result) == 1:
-            if len(re.sub("\s+", " ", result[0])) > 19:
+            # print "      position", result[0].lower().find("interest")
+            if len(result[0]) > result[0].lower().find("interest") + 15:
                 # print "by line"
-                research_tags = self.extract_from_line(result[0], tags)
+                line = self.select_line_part(re.sub("\s+", " ", re.sub("\n", ",", result[0])))
+                research_tags = self.extract_from_line(line, tags)
+                
                 if research_tags:
+                    # print(" extract from line %d  ge " % len(research_tags))
+                    # print research_tags
                     return research_tags
             node = result[0].parent
             tags = self.extract_from_sibling(node, tags)
+            # print(" extract from sibling %d  ge " % len(tags))
             return tags
         elif len(result) > 1:
             for n in result:
                 if len(n) > 19:
-                    research_tags = self.extract_from_line(n, tags)
-                    return research_tags
+                    tags = self.extract_from_line(n, tags)
+                    # print(" extract from line %d  ge " % len(tags))
+                node = n.parent
+                tags = self.extract_from_sibling(node, tags)
+            return tags
             
         # 再用 research or interests to find
         # then filter it by some rules
-        result = soup.find_all(string=re.compile("(research|interests|focuses on|Expertise)", re.I))
+        result = soup.find_all(string=re.compile("(research|focuses on|Expertise)", re.I))
         nodes = self.filter_research_interests(result)
-        # print len(nodes)
+        #print("only one has %d "%len(nodes))
+        #print tags
 
         if len(nodes) == 1:
             # print nodes[0]
@@ -342,9 +338,9 @@ class ResearchCrawler:
             tags = self.extract_from_sibling(node, tags)
             
             return tags
-        elif len(nodes) > 1 and not len(tags):
-            return [u"I'm so stupid to found it,我太蠢了找不到 %d" % len(nodes)]
-        elif not len(tags):
+        # else 搞不定了
+        
+        if not len(tags):
             return [u"I'm so stupid to found it,我太蠢了找不到"]
         return tags
     
@@ -353,16 +349,15 @@ class ResearchCrawler:
         person = {'name': '', 'link': faculty_link, 'tags': None,
                 'position': False, 'term': ''}
         name = faculty_ele.get_text()
-        print name
         if name and not contain_keys(name, self.key_words['site_flag']):
             person['name'] = name
 
-        if contain_keys(faculty_link, self.key_words['skip_file']):
+        if contain_keys(faculty_link.split('/')[-1], self.key_words['skip_file']):
             return person
 
         content, soup = self.open_page(faculty_link)
         if content.startswith('Error to load'):
-            #nprint "Error!!!!!! at the link", faculty_link
+            # print "Error!!!!!! at the link", faculty_link
             return person
         
         tags = self.get_research_interests(soup, content, [])

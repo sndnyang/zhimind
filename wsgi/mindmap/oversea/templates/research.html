@@ -16,7 +16,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>研究方向</h4>
-                    <select id="degreeName" name="degree" onchange=filterBy(this.options[this.options.selectedIndex].value, true, '国家', "{{ url_for('uni_major_page.college_page') }}") class="form-control">
+                    <select id="researchName" name="research" onchange="getProfessorByInterests()"" class="form-control">
                         <option value="">不限</option>
                     </select>
                 </div>
@@ -25,6 +25,12 @@
                 <div class="form-group">
                     <h4><br></h4>
                     <a href="{{ url_for('research_page.research_form', name='new') }}" target="_blank" class="btn btn-primary">添加学者名录</a>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <h4><br></h4>
+                    <a href="javascript:void(0)" target="_blank" class="btn btn-primary">研究方向修正(TODO)</a>
                 </div>
             </div>
             <div class="col-sm-10">
@@ -42,11 +48,14 @@
 <th>学者名</th>
 <th>学校</th>
 <th>专业</th>
+<th>学校主页</th>
+<th>个人主页</th>
+<th>研究方向</th>
 <th>招生意愿</th>
 <th>招生时期</th>
 </tr>
 </thead>
-<tbody id="researchList">
+<tbody id="collegeList">
 </tbody>
 </table>
         <div id="pagination-container"></div>

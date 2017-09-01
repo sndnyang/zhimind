@@ -80,6 +80,7 @@
                             <ul class="dropdown-menu">
                                 <li><a href="{{ url_for('uni_major_page.college_page') }}">大学库</a></li>
                                 <li><a href="{{ url_for('uni_major_page.major_page') }}">专业库</a></li>
+                                <li><a href="{{ url_for('research_page.research_index') }}">研究方向库(Beta)</a></li>
                                 {% if g.user.is_authenticated and g.user.get_name() == "sndnyang" %}
                                 <li><a href="{{ url_for('uni_major_page.temp_college_page') }}">新大学库</a></li>
                                 <li><a href="{{ url_for('uni_major_page.major_page', temp="1") }}">新专业库</a></li>

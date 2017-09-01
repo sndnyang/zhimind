@@ -73,3 +73,6 @@ app.register_blueprint(uni_major_page, url_prefix="/oversea")
 app.register_blueprint(research_page, url_prefix="/oversea")
 app.register_blueprint(talkerchu_page, url_prefix="/talkerchu")
 app.register_blueprint(recite_word_page, url_prefix="/reciteword")
+
+db.configure_mappers()
+db.create_all()

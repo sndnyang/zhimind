@@ -128,10 +128,11 @@ def submitted_research():
             professor = None
             if ele.get("name", None):
                 professor = query_add_professor(ele.get("name"), college_name, major)
-            for tag in ele.get('tags', []):
-                tag_obj = query_add_interests(tag, major)
-                if professor and tag_obj:
-                    professor.interests.append(tag_obj)
+            if ele.get('tags'):
+                for tag in ele.get('tags', []):
+                    tag_obj = query_add_interests(tag, major)
+                    if professor and tag_obj:
+                        professor.interests.append(tag_obj)
             if professor:
                 professor.position = ele.get("position")
                 professor.term = ele.get("term")

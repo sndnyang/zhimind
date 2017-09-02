@@ -319,6 +319,8 @@ class ResearchCrawler:
                     tag = and_tags[i]
                     if tag.count(' ') >= 4:
                         continue
+                    if len(tag) > 45:
+                        continue
                     if contain_keys(tag, tags, True):
                         continue
 

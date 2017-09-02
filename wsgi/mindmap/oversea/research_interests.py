@@ -2,9 +2,11 @@
 
 import os
 import re
+import traceback
 
 from flask import request, render_template, session, json, Blueprint
 from wtforms import StringField, validators
+from sqlalchemy import asc
 
 from ..validation import *
 from mindmap import app, db
@@ -55,9 +57,9 @@ def get_professor_by_interests(major, interest):
 @research_page.route('/getMajorInterestsList/<major>')
 def get_major_interests_list(major):
     research_set = []
-    results = Interests.query.filter_by(major=major).all()
+    results = Interests.query.filter_by(major=major).order_by(asc(Interests.name)).all()
     for ele in results:
-        research_set.append({'name': ele.name, 'zh': ele.zh_name})
+        research_set.append({'name': ele.name, 'zh': ele.zh_name, 'category_name': ele.category_name})
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -118,6 +120,12 @@ def submitted_research():
     approve = request.form['approve']
     college_name = request.form['college_name']
     directory_url = request.form['directory_url']
+    professor_url = request.form['professor_url']
+    
+    if major == '0' or not college_name.strip() or not directory_url.strip() or\
+        not professor_url.strip():
+        return json.dumps({'error': u'信息不全'}, ensure_ascii=False)
+
     app.logger.info(directory_url)
 
     if approve == '1':
@@ -141,7 +149,6 @@ def submitted_research():
                 db.session.commit()
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
-    professor_url = request.form['professor_url']
     crawl = ResearchCrawler()
     count, faculty_list = crawl.crawl_faculty_list(directory_url, professor_url)
     session['research_process'] = "%d,0" % count
@@ -156,3 +163,40 @@ def submitted_research():
     app.redis.set(directory_url, link_list)
 
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
+
+
+@research_page.route('/interests.html')
+def interests_page():
+    meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
+            'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
+            'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
+    return render_template('interests.html', meta=meta, temp=0)
+
+
+@research_page.route('/modifyInterests', methods=['POST'])
+def modify_interests():
+
+    name = request.json.get('name', None)
+
+    action = str(request.json.get('type', None))
+    if not name or not action:
+        return json.dumps({'error': '%s %s not right' % (name, action)}, ensure_ascii=False)
+
+    try:
+        interest = Interests.query.filter_by(name=name).one_or_none()
+        if action == "1":
+            if interest:
+                db.session.delete(interest)
+            else:
+                return json.dumps({'error': 'not find' + name}, ensure_ascii=False)
+        else:
+            if interest is None:
+                return json.dumps({'error': 'not find' + name}, ensure_ascii=False)
+            else:
+                interest.zh_name = request.json.get('zh', None)
+                interest.category_name = request.json.get('category', None)
+        db.session.commit()
+        return json.dumps({'info': 'success'}, ensure_ascii=False)
+    except Exception, e:
+        app.logger.info(traceback.print_exc())
+    return json.dumps({'error': 'not find'}, ensure_ascii=False)

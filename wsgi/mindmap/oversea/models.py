@@ -140,7 +140,7 @@ class Professor(db.Model):
     position = db.Column(db.Boolean)
     term = db.Column(db.String(20))
     interests = db.relationship('Interests', secondary=professor_interests_table,
-        backref=db.backref('Professors', lazy='dynamic'))
+        backref=db.backref('Professor', lazy='dynamic'))
     __table_args__ = (UniqueConstraint('name', 'school', 'major',
                       name='_professor_uniq'),)
 
@@ -153,9 +153,10 @@ class Professor(db.Model):
 class Interests(db.Model):
     __tablename__ = 'Interests'
     id = db.Column('interests_id', db.String, primary_key=True, default=uuid_gen)
-    name = db.Column(db.String(50))
-    zh_name = db.Column(db.String(20), default='')
+    name = db.Column(db.String(50), unique=True)
+    zh_name = db.Column(db.String(20), unique=True)
     major = db.Column(db.String(4))
+    category_name = db.Column(db.String(50), default='')
     __table_args__ = (UniqueConstraint('name', 'major', name='_interests_uniq'),)
 
     def __init__(self, name, major):

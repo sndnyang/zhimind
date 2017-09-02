@@ -348,7 +348,7 @@ def college_approve():
     app.logger.debug(no + ' ' + action)
     try:
         college = TempUniversity.query.get(no)
-        if action == 1:
+        if action == "1":
             db.session.delete(college)
         else:
             result = University.query.filter_by(name=college.name).one_or_none()
@@ -358,7 +358,6 @@ def college_approve():
                 db.session.add(result)
             else:
                 result.set(college)
-            db.session.delete(college)
         db.session.commit()
         return json.dumps({'info': 'success'}, ensure_ascii=False)
     except Exception, e:

@@ -58,8 +58,8 @@ function filterCollege(l, col, t) {
 
 function appendButton(item, tr, n, url) {
     if (n) {
-        var pass = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',0)" class="btn-success">通过</a></td>'.format(url, item.id));
-        var rej = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',1)" class="btn-danger">删除</a></td>'.format(url, item.id));
+        var pass = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',0)" class="btn btn-success">通过</a></td>'.format(url, item.id));
+        var rej = $('<td><a href="javascript:void(0);" onclick="approve(\'{0}\', \'{1}\',1)" class="btn btn-danger">删除</a></td>'.format(url, item.id));
         tr.append(pass);
         tr.append(rej);
     } else {
@@ -70,7 +70,7 @@ function appendButton(item, tr, n, url) {
         } else {
             edit_url += item.name;
         }
-        edit = $('<td><a href="{0}" target="_blank" class="btn-success">编辑</a></td>'.format(edit_url));
+        edit = $('<td><a href="{0}" target="_blank" class="btn btn-success">编辑</a></td>'.format(edit_url));
         tr.append(edit);
     }
 }
@@ -108,7 +108,7 @@ function fillCollegeInformation(item, i, n, backend) {
 
     qsrank = $('<td>{0}</td>'.format(temp));
 
-    expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
+    expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
     tr.append(name);
     tr.append(nation);
     tr.append(qsrank);
@@ -190,7 +190,7 @@ function fillInformation(item, i, n, backend) {
         tmp_dl = item.spring + '(春)';
 
     deadline = $('<td>{0}</td>'.format(tmp_dl));
-    expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
+    expand = $('<td><a data-toggle="collapse" aria-expanded="false" class="False collapsed btn btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a></td>'.format(i, i));
     tr.append(name);
     tr.append(degree);
     tr.append(major);
@@ -235,7 +235,7 @@ function approve(type, id, n) {
             }
             alert('success');
         }
-    });   
+    });
 }
 
 function fillItemInfo(toggle, item) {
@@ -514,7 +514,7 @@ function submitRedirect(obj, type, url) {
                 return;
             }
 
-            if (type != "research" || (type == "research" && $("approveIt").val() == 1)) {
+            if (type.indexOf("research") == -1 || (type.indexOf("research") > -1 && $("approveIt").val() == 1)) {
             // if (type != "research") {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);

@@ -26,10 +26,11 @@ tutorial_page = Blueprint('tutorial_page', __name__,
                               os.path.dirname(__file__), 'templates'))
 
 search = Search(db=db, analyzer=ChineseAnalyzer())
-search.init_app(app)
 
 try:
-    search.create_index(update=True)
+    if app.debug:
+        search.init_app(app)
+        search.create_index(update=True)
     pass
 except LockError, e:
     pass

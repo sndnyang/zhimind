@@ -104,16 +104,18 @@ def query_add_professor(name, college_name, major):
 
 @research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
-    verification_code = request.form['verification_code']
-    code_text = session['code_text']
-    if verification_code != code_text:
-        return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
+    if not app.debug:
+        verification_code = request.form['verification_code']
+        code_text = session['code_text']
+        if verification_code != code_text:
+            return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
+
+    major = request.form['major']
     approve = request.form['approve']
     college_name = request.form['college_name']
-    major = request.form['major']
-
     directory_url = request.form['directory_url']
     app.logger.info(directory_url)
+
     if approve == '1':
         entity = eval(app.redis.get(directory_url))
         code_img, code_string = create_validate_code()

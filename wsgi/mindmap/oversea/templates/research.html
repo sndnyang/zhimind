@@ -21,6 +21,16 @@
                     </select>
                 </div>
             </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <h4>招生意向</h4>
+                    <select id="positionName" name="position" onchange="filterProfessorByPosition()" class="form-control">
+                        <option value="">不限</option>
+                        <option value="always">长期</option>
+                        <option value="true">在招</option>
+                    </select>
+                </div>
+            </div>
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4><br></h4>
@@ -39,20 +49,20 @@
                       <button class="btn btn-default" type="button">查询!</button>
                   </span>
                   <input type="text" class="form-control" 
-                  placeholder="Search for University(not faculty)">
+                  placeholder="TODO: Search for University(not faculty) ">
                 </div>
             </div>
             <table class="table table-striped">
 <thead>
 <tr>
-<th>学者名</th>
+<th>学者</th>
 <th>学校</th>
 <th>专业</th>
-<th>学校主页</th>
-<th>个人主页</th>
+<th>主页</th>
+<th>个人页</th>
 <th>研究方向</th>
 <th>招生意愿</th>
-<th>招生时期</th>
+<th>学期</th>
 </tr>
 </thead>
 <tbody id="collegeList">
@@ -63,7 +73,7 @@
     </div>
 </div>
 <script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
-
+<script type="text/javascript" src="{{url_for('research_page.static', filename='js/research.js')}}"></script>
 <script type="text/javascript" src="{{url_for('research_page.static', filename='js/college.js')}}"></script>
 <script>
 getDataList("{{ url_for('research_page.research_index') }}", {{ temp }});

@@ -91,31 +91,6 @@ function fillName(name) {
     return $('<td>{0}</td>'.format(temp || ''));
 }
 
-function fillResearchInformation(item) {
-    var tr = $("<tr></tr>"),
-        select = $("<select></select>"),
-        option_tmp = "<option>{0}</option>";
-
-    for (var j in item.tags) {
-        select.append($(option_tmp.format(item.tags[j])));
-    }
-    tr.append($("<td>{0}</td>".format(item.name)));
-    tr.append($("<td>{0}</td>".format(item.school)));
-    tr.append($("<td>{0}</td>".format(item.major)));
-    tr.append($("<td><a href='{0}'>学校主页</a></td>".format(item.link)));
-    if (item.website)
-        tr.append($("<td><a href='{0}'>个人主页</a></td>".format(item.website)));
-    else {
-        tr.append($("<td></td>"));
-        
-    }
-    var td = $("<td></td>").append(select)
-    tr.append(td);
-    tr.append($("<td>{0}</td>".format(item.position)));
-    tr.append($("<td>{0}</td>".format(item.term || "")));
-
-    return tr;
-}
 
 function fillCollegeInformation(item, i, n, backend) {
     var name, temp, expand, tr = $('<tr></tr>');
@@ -506,54 +481,6 @@ function filterByName(obj, type) {
         pageIt(filterList, type, 0);
 }
 
-function getProfessorByInterests() {
-    var major = parseInt($("#majorName").val()),
-        interests = $("#researchName").val();
-    $.ajax({
-        type: "get",//请求方式  
-        url: "getProfessorByInterests/" + major + "/" + interests,//发送请求地址  
-        timeout: 30000,//超时时间：30秒
-        dataType: "json",//设置返回数据的格式
-        success: function(data) {  
-            var info = data.error;
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-            collegeList = data.list;
-            filterList = data.list;
-            pageIt(data.list, "research", 0);
-        }
-    });
-}
-
-function getMajorInterestsList() {
-    var major = parseInt($("#majorName").val());
-    $.ajax({
-        type: "get",//请求方式  
-        url: "getMajorInterestsList/" + major,//发送请求地址  
-        timeout: 30000,//超时时间：30秒
-        dataType: "json",//设置返回数据的格式
-        success: function(data) {  
-            var info = data.error;
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-            
-            $("#researchName").html("<option value=''>不限</option>");
-            for (var i in data.list) {
-                if (data.list[i].zh) 
-                    $("#researchName").append('<option value="{0}">{1}</option>'.format(
-                        data.list[i].name, data.list[i].zh));
-                else
-                    $("#researchName").append('<option value="{0}">{1}</option>'.format(
-                        data.list[i].name, data.list[i].name));
-            }
-        }
-    })
-}
-
 function filterByMajor(type) {
     if (type.indexOf("research") > -1) {
         getMajorInterestsList();
@@ -575,36 +502,6 @@ function filterByMajor(type) {
     pageIt(filterList, "major", 0);
 }
 
-var timerId;
-function getProcess() {  
-    //使用JQuery从后台获取JSON格式的数据  
-    $.ajax({  
-        type: "post",//请求方式  
-        url: "getResearchProgress",//发送请求地址  
-        timeout: 30000,//超时时间：30秒
-        dataType: "json",//设置返回数据的格式  
-        //请求成功后的回调函数 data为json格式  
-        success:function(data){  
-            var info = data.info, total = info.split(",")[0], now = info.split(',')[1];
-            console.log(info);
-            if (total == now) {
-                window.clearInterval(timerId);
-                $("#loadingDiv").remove();
-                return;
-            }
-            $("#loadingDiv").remove();
-            var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位'.format(total, now))                    
-            //呈现loading效果
-            $(".container-fluid").append(loadingDiv);
-        },  
-        //请求出错的处理  
-        error:function(){  
-            window.clearInterval(timerId);  
-            alert("请求出错");  
-        }  
-    });  
-}  
-
 function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
@@ -616,7 +513,7 @@ function submitRedirect(obj, type, url) {
                     .setAttribute('src','/verifycode?random='+Math.random());
                 return;
             }
-            console.log($("#approveIt").val())
+
             if (type != "research" || (type == "research" && $("approveIt").val() == 1)) {
             // if (type != "research") {
                 alert('请等待审核，准备跳转...');

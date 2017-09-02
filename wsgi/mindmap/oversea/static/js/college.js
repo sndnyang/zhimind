@@ -513,8 +513,7 @@ function submitRedirect(obj, type, url) {
                     .setAttribute('src','/verifycode?random='+Math.random());
                 return;
             }
-
-            if (type.indexOf("research") == -1 || (type.indexOf("research") > -1 && $("approveIt").val() == 1)) {
+            if (type.indexOf("research") == -1 || (type.indexOf("research") > -1 && $("#approveIt").val() == 1)) {
             // if (type != "research") {
                 alert('请等待审核，准备跳转...');
                 window.location.href = "{0}.html".format(url);

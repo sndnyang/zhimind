@@ -10,12 +10,13 @@ from bs4 import BeautifulSoup
 
 from requests import ConnectionError, HTTPError
 
+debug_level = 0
 
 def contain_keys(href, keys, is_name=False):
     """
 
     """
-    if not keys:
+    if not href or not keys:
         return False
     words = "(%s)" % '|'.join(e for e in keys)
     if is_name and re.search('%s' % words, href, re.I):
@@ -86,6 +87,30 @@ class ResearchCrawler:
         self.key_words = None
         self.load_key()
 
+    def open_page(self, page_url):
+        """
+
+        """
+        try:
+            html = get_and_store_page(page_url)
+            if html.startswith("Error at "):
+                return "Error to load", None
+            soup = BeautifulSoup(html, 'html.parser')
+
+            if soup.find("frameset") and not soup.find("body"):
+                frames = soup.find_all("frame")
+                for e in frames[1:]:
+                    if contain_keys(e.get("src"), self.key_words["div_pass"]):
+                        continue
+                    # if debug_level == 4: print(' ' * 2 * debug_level, "from frameset import ", e.get("src"))
+                    page_url = page_url + e.get("src") if page_url[-1] == '/' else page_url + '/' + e.get("src") 
+                    html = get_and_store_page(page_url)
+                    soup = BeautifulSoup(html, 'html.parser')
+            return html, soup
+        except Exception, e:
+            traceback.print_exc()
+            return "Error to load", None
+
     def crawl_faculty_list(self, directory_url, example):
         self.example = example
         self.url = directory_url
@@ -104,7 +129,7 @@ class ResearchCrawler:
         count, faculty_list = self.find_faculty_list(anchors[index:], directory_url)
         return count, faculty_list
     
-    def crawl_from_directory(self, directory_url, example):
+    def crawl_from_directory(self, directory_url, example, name):
         """
         从目录爬
         """
@@ -113,7 +138,8 @@ class ResearchCrawler:
         # assert count >= url_check[url]
         result = []
         for one in faculty_list:
-            result.append(self.dive_into_page(one))
+            person = self.dive_into_page(one)
+            result.append(person)
         return result
 
     def load_key(self):
@@ -121,28 +147,6 @@ class ResearchCrawler:
             self.key_words = json.loads(fp.read(), strict=False)
         if self.key_words is None:
             return 'Error'
-
-    def open_page(self, page_url):
-        """
-
-        """
-        try:
-            html = get_and_store_page(page_url)
-            if html.startswith("Error at "):
-                return "Error to load", None
-            soup = BeautifulSoup(html, 'html.parser')
-
-            if soup.find("noframes"):
-                for e in soup.find_all("frame"):
-                    if contain_keys(e.get("src"), self.key_words["div_pass"]):
-                        continue
-                    page_url = page_url + e.get("src") if page_url[-1] == '/' else page_url + '/' + e.get("src") 
-                    html = get_and_store_page(page_url)
-                    soup = BeautifulSoup(html, 'html.parser')
-            return html, soup
-        except Exception, e:
-            traceback.print_exc()
-            return "Error to load", None
 
     def find_all_anchor(self, soup, domain, page_url):
         """
@@ -157,6 +161,8 @@ class ResearchCrawler:
         base_faculty_filter = [e for e in self.example.split('/')
                                if e and not e.startswith('http') and not e.endswith('.edu')]
 
+        if name and "&" in name:
+            return False
         if href and '~' in href:
             return False
         elif name is not None and contain_keys(name, self.key_words['site_flag']):
@@ -170,6 +176,40 @@ class ResearchCrawler:
         elif not contain_keys(href, self.key_words['keys']):
             return True
         return False
+
+    def get_personal_website(self, l, page_url):
+        potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url) + ['personal']
+
+        potential_name = [e for e in potential_name if not contain_keys(e, self.key_words['keys'] + self.key_words[
+            'stop_word'] + self.key_words['notprof'] + ['people', self.university_name])]
+        # if debug_level == 1: print('potential name: ' + str(potential_name))
+
+        faculty_page = ''
+        mail = ''
+
+        for a in l:
+            href = a.get('href')
+            
+            if not href or len(href) < 5:
+                continue
+                
+            suffix = href.split('.')[-1]
+            
+            if len(suffix) < 5 and contain_keys(suffix, self.key_words['skip_file']):
+                continue
+            # if debug_level == 1: print(' ' * 2 * debug_level + ' search href: ' + href)
+            
+            if not faculty_page and href not in page_url and\
+                    not onsocial(href) and (contain_keys(href, potential_name,
+                        True) or contain_keys(a.string, potential_name, True)):
+                # if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
+                if href.startswith('mailto:'):
+                    mail = href
+                else:
+                    faculty_page = href
+
+        # if debug_level == 1: print(' ' * 2 * debug_level + ' final link: ' + faculty_page)
+        return faculty_page, mail
 
     def find_faculty_list(self, l, faculty_url):
         """
@@ -195,7 +235,7 @@ class ResearchCrawler:
 
             if faculty_link in links:
                 name = e.get_text()
-                print name
+                # print name
                 i = links.index(faculty_link)
                 if name and not faculty_list[i].string:
                     e['href'] = faculty_link
@@ -250,95 +290,139 @@ class ResearchCrawler:
         open_position = False
         open_term = ""
         text = soup.get_text()
+        # if debug_level == 5: print(" " * 2 * debug_level + text)
         if contain_keys(text, self.key_words["open_position"], True):
             open_position = True
         if contain_keys(text, self.key_words["open_term"], True):
             open_term = "always"
         return open_position, open_term
-    
-    def extract_from_sibling(self, node, tags):
-        # print node.name, node.string
-        next_node = node.find_next_sibling()
-        # print next_node
-        if next_node and next_node.name == 'ul':
-            
-            for e in next_node.strings:
-                if e and e.strip():
-                    tags = self.extract_from_line(e.strip(), tags)
-            return tags
-        for n in node.find_next_siblings():
-            if n.name != next_node.name:
-                break
-            tags = self.extract_from_line(n.text, tags)
-        return tags
 
     def extract_from_line(self, line, tags):
-
+        pref = self.key_words['prefix_major']
         for sent in line.split('.'):
             if contain_keys(sent, self.key_words['interest_break'], True):
                 break
-            sent = self.select_line_part(re.sub("\s+", " ", re.sub("\n", ",", sent)))
+            sent = self.select_line_part(re.sub("\s+", " ", sent))
             sent = self.replace_words(sent)
             for x in re.split("[,:;?]", sent):
-                if x and x.strip():
-                    tag = x.strip().lower()
+                if not x or not x.strip():
+                    continue
+                tag = x.strip().lower()
+                and_tags = [e.strip() for e in tag.replace("and", ",").split(",")]
+                for i in range(1, len(and_tags)):
+                    if and_tags[i] and and_tags[i-1] and ' ' not in\
+                            and_tags[i-1] and (len(and_tags[i-1]) < 9 or and_tags[i-1].endswith('al')):
+                        and_tags[i-1] = "%s and %s" % (and_tags[i-1], and_tags[i])
+                and_tags = sorted(and_tags)
+                # if debug_level == 3: print ' ' * 2 * 3, tag, and_tags
+                for i in range(len(and_tags)):
+                    tag = and_tags[i]
+                    if tag.count(' ') >= 4:
+                        continue
+                    if contain_keys(tag, tags, True):
+                        continue
 
-                    if ' ' in tag and not contain_keys(tag, tags, True) and tag.count(' ') < 4:
+                    if (' ' in tag or contain_keys(tag, pref, True)):
                         tags.append(tag)
 
         return tags
     
-    def get_research_interests(self, soup, content, tags):
+    def extract_from_sibling(self, node, tags):
+
+        while not node.next_sibling:
+            node = node.parent
+
+        next_node = node.find_next_sibling()
+        if next_node and next_node.name == 'ul':
+            for e in next_node.strings:
+                if e and e.strip():
+                    tags = self.extract_from_line(e.strip(), tags)
+            return tags
+
+        if next_node and next_node.name != 'br' and next_node.string:
+            tags = self.extract_from_line(next_node.string, tags)
+
+        if not tags:
+            node = node.parent
+            text = self.select_line_part(re.sub("\n", ".", node.get_text()))
+            # print "      find from text  ", text
+            tags = self.extract_from_line(text, tags)
+        return tags
+
+    def get_research_interests(self, soup, content, tags, website):
         """
         
         """
         # 先用 完整的 research interests 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
-        # print("research interest has %d " % len(result))
+        # if debug_level >= 2: print(' ' * 2 * debug_level+ "research interest has %d at %s" % (len(result), website))
         if len(result) == 1:
-            # print "      position", result[0].lower().find("interest")
             if len(result[0]) > result[0].lower().find("interest") + 15:
-                # print "by line"
-                line = self.select_line_part(re.sub("\s+", " ", re.sub("\n", ",", result[0])))
+                line = self.select_line_part(re.sub("\n", ".", result[0]))
+                # if debug_level == 3: print (' ' * 2 * debug_level + " from the line " + line)
                 research_tags = self.extract_from_line(line, tags)
                 
                 if research_tags:
-                    # print(" extract from line %d  ge " % len(research_tags))
-                    # print research_tags
+                    # if debug_level == 3: print(' ' * 2 * debug_level, "extract from line %d  ge " % len(research_tags))
                     return research_tags
-            node = result[0].parent
+            node = result[0]
             tags = self.extract_from_sibling(node, tags)
             # print(" extract from sibling %d  ge " % len(tags))
             return tags
         elif len(result) > 1:
-            for n in result:
-                if len(n) > 19:
-                    tags = self.extract_from_line(n, tags)
-                    # print(" extract from line %d  ge " % len(tags))
-                node = n.parent
+            # 多个的情况太复杂，不处理了
+            for node in result:
+                if node.parent.name == 'a':
+                    continue
+                if len(node) > 30:
+                    node = self.select_line_part(re.sub("\n", ".", node))
+                    # if debug_level == 3:  print(" extract from line %s " % node)
+                    tags = self.extract_from_line(node, tags)
+                    # if debug_level == 3:  print(" extract from line %d  ge " % len(tags))
+                    return tags
                 tags = self.extract_from_sibling(node, tags)
-            return tags
+                # if debug_level == 3: print(' ' * 2 * debug_level, "extract from sibling %d  ge " % len(tags), tags)
+                return tags
             
         # 再用 research or interests to find
         # then filter it by some rules
         result = soup.find_all(string=re.compile("(research|focuses on|Expertise)", re.I))
         nodes = self.filter_research_interests(result)
-        #print("only one has %d "%len(nodes))
-        #print tags
+        # if debug_level == 3: print(' ' * 2 * debug_level, "only one has %d at %s " % (len(nodes), website))
+        # print tags
 
         if len(nodes) == 1:
             # print nodes[0]
-            if len(nodes[0]) > 19:
+            if len(nodes[0]) > 35:
                 # print "by line",
-                research_tags = self.extract_from_line(result[0], tags)
+                research_tags = self.extract_from_line(nodes[0], tags)
                 if research_tags:
                     return research_tags
-            node = nodes[0].parent
-            # print node.next_sibling
-            tags = self.extract_from_sibling(node, tags)
-            
+
+            # if debug_level == 3: print(' ' * 2 * debug_level + "need to sibling")
+            tags = self.extract_from_sibling(nodes[0], tags)
             return tags
-        # else 搞不定了
+        elif len(nodes) < 4:
+            if website == '': 
+                for node in nodes:
+                    if node.parent.name == "a":
+                        continue
+                    if len(node) > 25:
+                        continue
+                    tags = self.extract_from_sibling(node, tags)
+            elif website:
+                for node in nodes:
+                    if node.parent.name != "a":
+                        continue
+                    research_link = format_url(node.parent.get("href"),
+                                               self.domain, website)
+                    if research_link == website:
+                        continue
+                    re_content, re_soup = self.open_page(research_link)
+                    tags = self.get_research_interests(re_soup, re_content,
+                                                       tags, research_link)
+
+
         
         if not len(tags):
             return [u"I'm so stupid to found it,我太蠢了找不到"]
@@ -348,13 +432,16 @@ class ResearchCrawler:
         faculty_link = faculty_ele.get("href")
         person = {'name': '', 'link': faculty_link, 'tags': None,
                 'position': False, 'term': ''}
+        # 搞名字
         name = faculty_ele.get_text()
         if name and not contain_keys(name, self.key_words['site_flag']):
             person['name'] = name
-
-        if not name:
-            # TODO: 还没能保证拿到名字
-            return person
+        if not person['name']:
+            # if debug_level == 1: print(' link is ' + faculty_link)
+            name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
+            # if debug_level == 1: print(' link the name is ' + name)
+            person['name'] = ' '.join(e.capitalize() for e in re.findall('(\w+)', name) if not contain_keys(e, self.key_words['notname']))
+        # if debug_level == 1: print(' name is ' + person['name'])
 
         if contain_keys(faculty_link.split('/')[-1], self.key_words['skip_file']):
             return person
@@ -363,25 +450,32 @@ class ResearchCrawler:
         if content.startswith('Error to load'):
             # print "Error!!!!!! at the link", faculty_link
             return person
-        
-        tags = self.get_research_interests(soup, content, [])
+
+        tags = self.get_research_interests(soup, content, [], "")
+        position, term = self.get_open_position(soup, content)
+        person['position'] = position
+        person['term'] = term
+        # if debug_level > 1: print("find tags %d ge " % len(tags) + str(tags))
         # print tags
         
         anchors = self.find_all_anchor(soup, self.domain, faculty_link)
         faculty_page, mail = self.get_personal_website(anchors, faculty_link)
 
         if faculty_page:
-            # print 'website page url: ',faculty_page
+            # if debug_level == 1: print 'website page url: ',faculty_page
             faculty_page = format_url(faculty_page, self.domain, faculty_link)
             page_c, page_soup = self.open_page(faculty_page)
             if page_c.startswith('Error to load'):
                 # print "Error!!!!!! at the page", faculty_page
                 pass
             else:
-                tags = self.get_research_interests(page_soup, page_c, tags)
+                tags = self.get_research_interests(page_soup, page_c, tags,
+                                                   faculty_page)
                 position, term = self.get_open_position(page_soup, page_c)
-                person['position'] = position
-                person['term'] = term
+                if position:
+                    person['position'] = position
+                if term:
+                    person['term'] = term
 
         if len(tags) > 1 and tags[0].startswith("I'm so stupid to"):
             tags = tags[1:]
@@ -391,37 +485,11 @@ class ResearchCrawler:
         person['website'] = faculty_page
         person['mail'] = mail
         person['tags'] = tags
+        if not person['name'] and mail.startswith("mailto:"):
+            person['name'] = mail[mail.find(':')+1: mail.find('@')].capitalize()
 
         return person
     
-    def get_personal_website(self, l, faculty_url):
-        potential_name = re.findall(r"([A-Z]?[a-z]+)", faculty_url) + ['personal']
-
-        potential_name = [e for e in potential_name if not contain_keys(e, self.key_words['keys'] + self.key_words[
-            'stop_word'] + self.key_words['notprof'] + ['people', self.university_name])]
-        faculty_page = ''
-        mail = ''
-
-        for a in l:
-            href = a.get('href')
-            
-            if not href or len(href) < 5:
-                continue
-                
-            suffix = href.split('.')[-1]
-            
-            if len(suffix) < 5 and contain_keys(suffix, self.key_words['skip_file']):
-                continue
-            
-            if contain_keys(href, potential_name, True) and href not in faculty_url and not onsocial(
-                    href):
-                if href.startswith('mailto:'):
-                    mail = href
-                else:
-                    faculty_page = href
-
-        return faculty_page, mail
-
 
 if __name__ == "__main__":
     # url = "http://cs.mines.edu/CS-Faculty"

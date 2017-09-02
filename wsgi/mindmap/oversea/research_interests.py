@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import os
+import re
 
 from flask import request, render_template, session, json, Blueprint
 from wtforms import StringField, validators
@@ -80,7 +81,7 @@ def process():
 def query_add_interests(tag, major):
     try:
         result = Interests.query.filter_by(name=tag, major=major).one_or_none()
-        if result is None:
+        if result is None and len(tag) < 50:
             result = Interests(tag, major)
             db.session.add(result)
             db.session.commit()
@@ -94,6 +95,9 @@ def query_add_professor(name, college_name, major):
         result = Professor.query.filter_by(name=name, school=college_name, 
                                            major=major).one_or_none()
         if result is None:
+            if name > 29:
+                words = re.findall("(\w+)", name)
+                name = words[0] + ' ' + words[-1]
             result = Professor(name, college_name, major)
             db.session.add(result)
             db.session.commit()
@@ -126,7 +130,7 @@ def submitted_research():
                 professor = query_add_professor(ele.get("name"), college_name, major)
             for tag in ele.get('tags', []):
                 tag_obj = query_add_interests(tag, major)
-                if professor:
+                if professor and tag_obj:
                     professor.interests.append(tag_obj)
             if professor:
                 professor.position = ele.get("position")

@@ -523,10 +523,9 @@ function submitRedirect(obj, type, url) {
                 $("#approveIt").val(1);
 
                 var list = data.list;
-                collegeList = data.list;
                 var table = $("<table class='table table-striped'></table>");
-                for (var i in collegeList) {
-                    var tr = fillResearchInformation(collegeList[i]);
+                for (var i in list) {
+                    var tr = fillResearchInformation(list[i]);
                     table.append(tr);
                 }
                 $("#crawlResult").append(table);

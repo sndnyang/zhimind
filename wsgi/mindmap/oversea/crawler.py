@@ -459,11 +459,12 @@ class ResearchCrawler:
         # 搞名字
         name = faculty_ele.get_text()
 
-        if name and not contain_keys(name, self.key_words['site_flag']):
+        if not name or contain_keys(name, self.key_words['site_flag']):
             name = ''
 
+        if debug_level == 1: print(' name is ' + name)
         if not name:
-            # if debug_level == 1: print(' link is ' + faculty_link)
+            if debug_level == 1: print(' link is ' + faculty_link)
             name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
             name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)',

@@ -116,7 +116,10 @@ class ResearchCrawler:
         self.url = directory_url
         self.university_name = re.search('(\w+).edu', self.url).group(1)
         self.domain = '/'.join(directory_url.split("/")[:3])
+        
+        # if debug_level == 1: print(' before stop word :' + str(self.key_words['stop_word']) + '  add url ' + directory_url)
         self.key_words['stop_word'] += re.findall("(\w+)", directory_url)
+        # if debug_level == 1: print(' after stop word :' + str(self.key_words['stop_word']))
         
         content, soup = self.open_page(directory_url)
         anchors = self.find_all_anchor(soup, self.domain, directory_url)
@@ -180,6 +183,7 @@ class ResearchCrawler:
     def get_personal_website(self, l, page_url):
         potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url) + ['personal']
 
+        # if debug_level == 1: print('stop word :' + str(self.key_words['stop_word']))
         potential_name = [e for e in potential_name if not contain_keys(e, self.key_words['keys'] + self.key_words[
             'stop_word'] + self.key_words['notprof'] + ['people', self.university_name])]
         # if debug_level == 1: print('potential name: ' + str(potential_name))
@@ -189,7 +193,6 @@ class ResearchCrawler:
 
         for a in l:
             href = a.get('href')
-            
             if not href or len(href) < 5:
                 continue
                 
@@ -197,13 +200,17 @@ class ResearchCrawler:
             
             if len(suffix) < 5 and contain_keys(suffix, self.key_words['skip_file']):
                 continue
-            # if debug_level == 1: print(' ' * 2 * debug_level + ' search href: ' + href)
+
+            if a.string:
+                name = ' '.join(e for e in re.findall("([A-Za-z]+)", a.string))
+                if name and contain_keys(name, self.key_words['interest_break']):
+                    continue
             
             if not faculty_page and href not in page_url and\
                     not onsocial(href) and (contain_keys(href, potential_name,
                         True) or contain_keys(a.string, potential_name, True)):
                 # if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
-                if href.startswith('mailto:'):
+                if href.find('@') > -1:
                     mail = href
                 else:
                     faculty_page = href
@@ -293,8 +300,8 @@ class ResearchCrawler:
         # if debug_level == 5: print(" " * 2 * debug_level + text)
         if contain_keys(text, self.key_words["open_position"], True):
             open_position = True
-        if contain_keys(text, self.key_words["open_term"], True):
-            open_term = "always"
+            if contain_keys(text, self.key_words["open_term"], True):
+                open_term = "always"
         return open_position, open_term
 
     def extract_from_line(self, line, tags):
@@ -334,7 +341,12 @@ class ResearchCrawler:
         while not node.next_sibling:
             node = node.parent
 
-        next_node = node.find_next_sibling()
+        # if debug_level == 4: print(" now node is " + str(node))
+        next_node = node.next_sibling 
+        # if debug_level == 4: print(" next node is " + str(next_node.string))
+        if not next_node or not next_node.string or not next_node.string.strip():
+            next_node = node.find_next_sibling()
+        # if debug_level == 4: print(" next node is " + str(next_node))
         if next_node and next_node.name == 'ul':
             for e in next_node.strings:
                 if e and e.strip():
@@ -343,6 +355,7 @@ class ResearchCrawler:
 
         if next_node and next_node.name != 'br' and next_node.string:
             tags = self.extract_from_line(next_node.string, tags)
+        # if debug_level == 4: print(" next node name is " + str(next_node.name))
 
         if not tags:
             node = node.parent
@@ -355,7 +368,7 @@ class ResearchCrawler:
         """
         
         """
-        # 先用 完整的 research interests 找
+        # 先用 完整的 research interest 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
         # if debug_level >= 2: print(' ' * 2 * debug_level+ "research interest has %d at %s" % (len(result), website))
         if len(result) == 1:
@@ -374,6 +387,7 @@ class ResearchCrawler:
         elif len(result) > 1:
             # 多个的情况太复杂，不处理了
             for node in result:
+                # if debug_level == 4: print node.name, node.parent.name
                 if node.parent.name == 'a':
                     continue
                 if len(node) > 30:
@@ -390,7 +404,7 @@ class ResearchCrawler:
         # then filter it by some rules
         result = soup.find_all(string=re.compile("(research|focuses on|Expertise)", re.I))
         nodes = self.filter_research_interests(result)
-        # if debug_level == 3: print(' ' * 2 * debug_level, "only one has %d at %s " % (len(nodes), website))
+        # if debug_level == 3: print(' ' * 2 * debug_level + "only one has %d at %s " % (len(nodes),  website))
         # print tags
 
         if len(nodes) == 1:
@@ -404,12 +418,14 @@ class ResearchCrawler:
             # if debug_level == 3: print(' ' * 2 * debug_level + "need to sibling")
             tags = self.extract_from_sibling(nodes[0], tags)
             return tags
-        elif len(nodes) < 4:
+        elif len(nodes) < 5:
             if website == '': 
                 for node in nodes:
-                    if node.parent.name == "a":
+                    if node.parent.name == "a" or re.search('\d', node):
                         continue
-                    if len(node) > 25:
+                    if len(node) > 35:
+                        # if debug_level == 4: print (" from the line " + node)
+                        tags = self.extract_from_line(node, tags)
                         continue
                     tags = self.extract_from_sibling(node, tags)
             elif website:
@@ -433,7 +449,7 @@ class ResearchCrawler:
     def dive_into_page(self, faculty_ele):
         faculty_link = faculty_ele.get("href")
         person = {'name': '', 'link': faculty_link, 'tags': None,
-                'position': False, 'term': ''}
+                'position': False, 'term': '', 'website': ''}
         # 搞名字
         name = faculty_ele.get_text()
 

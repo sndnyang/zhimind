@@ -21,6 +21,8 @@ app = Flask(__name__, static_folder= os.path.join(os.path.dirname(__file__), "..
 app.config.from_pyfile('flaskapp.cfg')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=360)
 
+
+# 日志
 log_file_name = os.path.join(
     os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
     'app.log')
@@ -35,17 +37,20 @@ handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.INFO)
 
+# sqlalchemy
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# Redis
 pool = redis.ConnectionPool(host=os.environ.get('OPENSHIFT_REDIS_HOST', 'localhost'),
                             port=int(os.environ.get('OPENSHIFT_REDIS_PORT', '16379')),
                             password=os.environ.get('REDIS_PASSWORD', None))
 
 app.redis = redis.StrictRedis(connection_pool=pool)
 
-# 定义常量
+
+# 百度大脑接口
 APP_ID = os.environ.get('BAIB_ID', None)
 API_KEY = os.environ.get('BAIB_KEY', None)
 SECRET_KEY = os.environ.get('BAIB_SECRET', None)
@@ -55,6 +60,7 @@ if APP_ID and API_KEY and SECRET_KEY:
     app.aipNlp = AipNlp(APP_ID, API_KEY, SECRET_KEY)
 else:
     app.aipNlp = None
+
 
 from views import *
 from user import user_page

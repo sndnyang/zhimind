@@ -436,13 +436,21 @@ class ResearchCrawler:
                 'position': False, 'term': ''}
         # 搞名字
         name = faculty_ele.get_text()
+
         if name and not contain_keys(name, self.key_words['site_flag']):
-            person['name'] = name
-        if not person['name']:
+            name = ''
+
+        if not name:
             # if debug_level == 1: print(' link is ' + faculty_link)
             name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
-            # if debug_level == 1: print(' link the name is ' + name)
-            person['name'] = ' '.join(e.capitalize() for e in re.findall('(\w+)', name) if not contain_keys(e, self.key_words['notname']))
+            name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
+            name = ' '.join(e.capitalize() for e in re.findall('(\w+)',
+                            name) if not contain_keys(e, self.key_words[
+                                'notname']))
+            person['name'] = name
+        else:
+            person['name'] = name
+
         # if debug_level == 1: print(' name is ' + person['name'])
 
         if contain_keys(faculty_link.split('/')[-1], self.key_words['skip_file']):

@@ -254,6 +254,8 @@ class ResearchCrawler:
                     e['href'] = faculty_link
                     faculty_list[i] = e
                 continue
+            if e.string and contain_keys(e.string, self.key_words['notprof']):
+                continue
             links.append(faculty_link)
             e['href'] = faculty_link
             faculty_list.append(e)

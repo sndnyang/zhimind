@@ -23,9 +23,9 @@
             {{ render_major() }}
             <hr>
             <label for="directory_url">教授目录主页</label>
-            <input type="url" name="directory_url" class="form-control">
+            <input type="url" id="directoryUrl" name="directory_url" class="form-control">
             <label for="professor_url">请提供第一个有个人主页的学者的链接</label>
-            <input type="url" name="professor_url" class="form-control">
+            <input type="url" id="professorUrl" name="professor_url" class="form-control">
 
             <p>示例</p>
             <div>伊利诺伊理工学院IIT计算机系教授目录页:
@@ -65,6 +65,7 @@
                 {% endif %}
             </div> 
             <button class="btn btn-info" type="submit" id="researchSubmit">提交</button>
+            <a class="btn btn-warning" href="javascript:void(0)" id="resetSubmit">重置</a>
         </form>
     </div>
 </div>
@@ -90,6 +91,14 @@ $(document).ready(function(){
 
     $("#research").submit(function() {
         return submitRedirect(this, "research", "{{url_for('research_page.research_index')}}");
+    });
+    $("#resetSubmit").click(function() {
+        $("#approveIt").val(0);
+        $("#crawlResult").html("");
+        $("#college_name").val("");
+        $("#directoryUrl").val("");
+        $("#professorUrl").val("");
+        $("#researchSubmit").val("提交");
     });
 });
 </script>

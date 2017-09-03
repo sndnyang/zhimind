@@ -371,7 +371,7 @@ function getDataList(name, n) {
             var data = result.sort(compare('name', true, false));
             if (name === "college")
                 data = data.sort(compare('Q.S.', false, true));
-            collegeList = result;
+            // collegeList = result;
             filterList = result;
             pageIt(data, name, n);
         }
@@ -467,18 +467,23 @@ function pageTemplate(data, name, n) {
 }
 
 function filterBy(v, t, col) {
-    filterList = filterCollege(collegeList, col, v);
-    pageIt(filterList, "college", 0);
+    var newList = filterCollege(filterList, col, v);
+    pageIt(newList, "college", 0);
 }
 
 function filterByName(obj, type) {
     var name = $(obj).val();
     if (!rankBy) rankBy = "Q.S.";
-    var filterList = filterCollege(collegeList, 'name', name); 
+    var newList = filterCollege(filterList, 'name', name);
+    if (type == "research") {
+        filterProfessors('school', name);
+        return;
+    }
+
     if (!name && type == "college")
         sortCollege(type, rankBy, true);
     else
-        pageIt(filterList, type, 0);
+        pageIt(newList, type, 0);
 }
 
 function filterByMajor(type) {
@@ -491,15 +496,15 @@ function filterByMajor(type) {
         evalue = $("#evalueName").val(),
         transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
-    filterList = filterCollege(filterCollege(
+    var newList = filterCollege(filterCollege(
         filterCollege(
             filterCollege(
-                filterCollege(collegeList, 'evalue', evalue),
+                filterCollege(filterList, 'evalue', evalue),
                  'input0', transcript),
             'degree', degree),
         'major',major),
     'rl', rl);
-    pageIt(filterList, "major", 0);
+    pageIt(newList, "major", 0);
 }
 
 function submitRedirect(obj, type, url) {
@@ -548,11 +553,22 @@ function submitRedirect(obj, type, url) {
 }
 
 $(document).ready(function () {
-    $("#addInfo").click(function () {
+    $("#addInfo").click(function() {
         return false;
     });
-    $("#college_name").keyup(function() {
-        var text = $("#college_name").val().toLowerCase();
+
+    $.ajax({
+        method: "get",
+        url : '/static/data/college.json',
+        contentType: 'application/json',
+        dataType: "json",
+        success : function (result){
+            collegeList = result.sort(compare('name', true, false));
+        }
+    });
+
+    $("#collegeName").keyup(function (event) {
+        var text = $("#collegeName").val().toLowerCase();
         if (text.length == 3 || (text.length == 2 &&
                     (text[0] == 'u' || text[0] == 'c' || text[1] == 'u' || text[1] == 'c'))) {
             $("#collegeNameList").html("");
@@ -573,6 +589,10 @@ $(document).ready(function () {
                     $("#collegeNameList").append(option);
                 }
             }
+        }
+        if(event.keyCode == "13" && document.URL.indexOf("research") > 0 && 
+                document.URL.indexOf("form") == -1) { 
+            getProfessorsList('school');
         }
     });
 });

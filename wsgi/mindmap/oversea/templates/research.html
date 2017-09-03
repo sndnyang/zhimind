@@ -16,7 +16,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>研究方向</h4>
-                    <select id="researchName" name="research" onchange="getProfessorByInterests()" class="form-control">
+                    <select id="researchName" name="research" onchange="getProfessorsList('interest')" class="form-control">
                         <option value="">不限</option>
                     </select>
                 </div>
@@ -24,7 +24,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     <h4>招生意向</h4>
-                    <select id="positionName" name="position" onchange="filterProfessorByPosition()"
+                    <select id="positionName" name="position" onchange="getProfessorsList('position')"
                             class="form-control">
                         <option value="">不限</option>
                         <option value="always">长期</option>
@@ -50,8 +50,10 @@
                   <span class="input-group-btn">
                       <button class="btn btn-default" type="button">查询!</button>
                   </span>
-                    <input type="text" class="form-control"
-                           placeholder="TODO: Search for University(not faculty) ">
+                    <input type="text" class="form-control" id="collegeName"
+                           list="collegeNameList"
+                           placeholder="Search by University(not faculty), then enter回车查询">
+                    <datalist id="collegeNameList"></datalist>
                 </div>
             </div>
             <table class="table table-striped">
@@ -77,9 +79,8 @@
     <script type="text/javascript" src="{{url_for('research_page.static', filename='js/research.js')}}"></script>
     <script type="text/javascript" src="{{url_for('research_page.static', filename='js/college.js')}}"></script>
     <script>
-getDataList("{{ url_for('research_page.research_index') }}", {{ temp }});
-getProperty();
-
+        getDataList("{{ url_for('research_page.research_index') }}", {{ temp }});
+        getProperty();
     </script>
 </div>
 {% endblock %}

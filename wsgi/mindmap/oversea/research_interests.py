@@ -45,10 +45,32 @@ def research_list_page():
     return json.dumps(research_set, ensure_ascii=False)
 
 
+@research_page.route('/getProfessorsList/<school>/<major>', methods=['POST'])
+def get_professor_list(school, major):
+    research_set = []
+    tag = request.json.get("tag", None)
+    position = request.json.get("position", None)
+    if tag:
+        result = Professor.query.filter(Professor.interests.any(name=tag))
+    else:
+        results = Professor.query.filter_by(major=major)
+    if school != '0':
+        results = results.filter_by(school=school)
+    if position:
+        results = results.filter_by(position=True)
+
+    for ele in results:        
+        tags = [tag.name for tag in ele.interests]
+        research_set.append({'name': ele.name, 'school': ele.school, 'major': ele.major,
+                             'link': ele.school_url, 'website': ele.home_page,
+                             'position': ele.position, 'term': ele.term, 'tags': tags})
+    return json.dumps({"list": research_set}, ensure_ascii=False)
+
+
 @research_page.route('/getProfessorByInterests/<major>/<interest>')
 def get_professor_by_interests(major, interest):
     research_set = []
-    results = Professor.query.filter(Professor.interests.any(name=interest)).all()
+    results = Professor.query.filter(Professor.interests.any(name=interest)).filter_by(major=major).all()
     for ele in results:        
         tags = [tag.name for tag in ele.interests]
         research_set.append({'name': ele.name, 'school': ele.school, 'major': ele.major,
@@ -156,14 +178,14 @@ def submitted_research():
             flag = is_exist_college(entity, college_set)
         if not flag:
             return json.dumps({'error': u'数据有误，不存在该学校，请确认校名或联系开发者'},
-                               ensure_ascii=False)
+                              ensure_ascii=False)
         task = CrawlTask.query.filter_by(school=college_name, major=major).one_or_none()
         if task:
             return json.dumps({'error': u'该校该专业爬取任务已存在，数据错误问题请联系开发者'},
-                               ensure_ascii=False)
+                              ensure_ascii=False)
     except MultipleResultsFound:
         return json.dumps({'error': u'数据有误，存在多所同名学校，请联系开发者'},
-                           ensure_ascii=False)
+                          ensure_ascii=False)
 
     app.logger.info(directory_url)
 

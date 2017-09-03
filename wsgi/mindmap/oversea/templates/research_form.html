@@ -79,16 +79,6 @@ function refresh(obj) {
 </script>
 <script>
 $(document).ready(function(){
-    $.ajax({
-        method: "get",
-        url : '/static/data/college.json',
-        contentType: 'application/json',
-        dataType: "json",
-        success : function (result){
-            collegeList = result.sort(compare('name', true, false));
-        }
-    });
-
     $("#research").submit(function() {
         return submitRedirect(this, "research", "{{url_for('research_page.research_index')}}");
     });

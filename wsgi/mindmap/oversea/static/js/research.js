@@ -1,24 +1,38 @@
 var timerId;
 
+function filterProfessors(col, value) {
+    var newList = [];
+    for (var i in filterList) {
+        if (!value) {
+            newList.push(filterList[i]);
+            continue;
+        }
+        if (col in filterList[i] && filterList[i][col].toLowerCase().indexOf(value) > -1) {
+            newList.push(filterList[i]);
+        }
+    }
+    pageIt(newList, "research", 0);
+}
+
 function filterProfessorByPosition() {
     var value = $("#positionName").val();
 
-    filterList = []
-    for (var i in collegeList) {
+    var newList = [];
+    for (var i in filterList) {
         if (!value) {
-            filterList.push(collegeList[i]);
+            newList.push(filterList[i]);
             continue;
         }
-        if (collegeList[i].position == true) {
+        if (filterList[i].position == true) {
             if (value == "always") {
-                if (collegeList[i].term == "always")
-                    filterList.push(collegeList[i]);
+                if (filterList[i].term == "always")
+                    newList.push(filterList[i]);
             } else {
-                filterList.push(collegeList[i]);
+                newList.push(filterList[i]);
             }
         }
     }
-    pageIt(filterList, "research", 0);
+    pageIt(newList, "research", 0);
 }
 
 function fillResearchInformation(item) {
@@ -67,6 +81,46 @@ function fillResearchInformation(item) {
     return tr;
 }
 
+function getProfessorsList(col) {
+    var major = parseInt($("#majorName").val()),
+        interest = $("#researchName").val(),
+        college = $("#collegeName").val(),
+        position = $("#positionName").val();
+    if (col == 'position' && !position) {
+        filterProfessorByPosition();
+        return;
+    }
+    if (col == 'interest' && !interest) {
+        filterProfessors('school', '');
+        return;
+    }
+    if (major == '0') {
+        alert("起码先选择专业");
+        return;
+    }
+    if (!college) {
+        college = 0;
+    }
+    var data = {'tag': interest, 'position': position};
+
+    $.ajax({
+        type: "post",//请求方式  
+        url: "getProfessorsList/{0}/{1}".format(college, major),
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify(data),
+        success: function(data) {  
+            var info = data.error;
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            filterList = data.list;
+            pageIt(data.list, "research", 0);
+        }
+    });
+}
+
 function getProfessorByInterests() {
     var major = parseInt($("#majorName").val()),
         interests = $("#researchName").val();
@@ -81,7 +135,6 @@ function getProfessorByInterests() {
                 alert(data.error);
                 return;
             }
-            collegeList = data.list;
             filterList = data.list;
             pageIt(data.list, "research", 0);
         }
@@ -209,4 +262,4 @@ function getProcess() {
             alert("请求出错");  
         }  
     });  
-}  
+}

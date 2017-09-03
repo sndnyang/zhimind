@@ -17,7 +17,7 @@
         <form method="post" action="{{ url_for('research_page.submitted_research') }}" id="research">
             <input type="hidden" name="id">
             <label for="college_name">学校:</label>
-            <input id="college_name" name="college_name" list="collegeNameList" class="form-control"/>
+            <input id="collegeName" name="college_name" list="collegeNameList" class="form-control"/>
             <datalist id="collegeNameList"></datalist>
             <label for="major">专业:</label>
             {{ render_major(types) }}

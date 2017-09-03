@@ -30,7 +30,8 @@ def research_index():
     meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
-    return render_template('research.html', meta=meta, temp=0)
+    return render_template('research.html', meta=meta, temp=0,
+                           types="research")
 
 
 @research_page.route('/researchList')
@@ -97,7 +98,8 @@ def research_form():
                                     validators=[validators.DataRequired(),
                                                 validators.Length
                                                 (4, 4, message=u'填写4位验证码')])
-    return render_template('research_form.html', veri=verification_code, meta=meta)
+    return render_template('research_form.html', veri=verification_code, meta=meta,
+                           types="research")
 
 
 @research_page.route('/getResearchProgress', methods=['POST'])
@@ -238,7 +240,8 @@ def interests_page():
     meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
-    return render_template('interests.html', meta=meta, temp=0)
+    return render_template('interests.html', meta=meta, temp=0,
+                           types="research")
 
 
 @research_page.route('/modifyInterests', methods=['POST'])

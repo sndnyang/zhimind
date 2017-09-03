@@ -20,7 +20,7 @@
             <input id="college_name" name="college_name" list="collegeNameList" class="form-control"/>
             <datalist id="collegeNameList"></datalist>
             <label for="major">专业:</label>
-            {{ render_major() }}
+            {{ render_major(types) }}
             <hr>
             <label for="directory_url">教授目录主页</label>
             <input type="url" id="directoryUrl" name="directory_url" class="form-control">

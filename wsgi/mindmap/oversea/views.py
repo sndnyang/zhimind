@@ -59,7 +59,8 @@ def major_page(temp=0):
         temp = 0
     return render_template('majorList.html', meta=meta, temp=temp,
                            cloudjs=random.random()
-                           if os.environ.get("LOAD_JS_CLOUD", 0) else 0)
+                           if os.environ.get("LOAD_JS_CLOUD", 0) else 0,
+                           types="major")
 
 
 def convert_dict(e):

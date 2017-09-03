@@ -10,7 +10,7 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>学位</h4>
-                    <select id="degreeName" name="degree" onchange="filterByMajor()" class="form-control">
+                    <select id="degreeName" name="degree" onchange="filterByMajor('major')" class="form-control">
                         <option value="0">不限</option>
                         <option value="1">本科</option>
                         <option value="2">硕士</option>
@@ -21,13 +21,13 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>专业</h4>
-                    {{ render_major() }}
+                    {{ render_major(types) }}
                 </div>
             </div>
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>推荐信</h4>
-                    <select id="rlName" name="rl" onchange="filterByMajor()" class="form-control">
+                    <select id="rlName" name="rl" onchange="filterByMajor('major')" class="form-control">
                         <option value="0">不限</option>
                         <option value="-1">可免</option>
                         <option value="1">1封</option>
@@ -40,7 +40,7 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>成绩单邮寄</h4>
-                    <select id="transcriptName" name="transcript" onchange="filterByMajor()" class="form-control">
+                    <select id="transcriptName" name="transcript" onchange="filterByMajor('major')" class="form-control">
                         <option value="">不限</option>
                         <option value="no">不用邮寄</option>
                         <option value="yes">需要邮寄</option>
@@ -50,7 +50,7 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>成绩单认证</h4>
-                    <select id="evalueName" name="evalue" onchange="filterByMajor()" class="form-control">
+                    <select id="evalueName" name="evalue" onchange="filterByMajor('major')" class="form-control">
                         <option value="">不限</option>
                         <option value="no">不用认证</option>
                         <option value="yes">需要认证</option>

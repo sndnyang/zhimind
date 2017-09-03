@@ -9,7 +9,7 @@
     "div_pass": ["nav", "navigation", "navbar", "foot", "footer", "head", "header", "menu", "about"],
     "interest_break": ["contact me", "admission", "financial aid", "more about", "Conference", "\"", "publications", "theoretical , practical", "More details", "has received", "years", "please send", "Professor", "spare time", "supported", "YouTube", "I have", "a member of", "impact in", "located", "scientist", "department", "the courses", "lab", "'visiting scholar"],
     "open_term": ["regularly", "always"],
-    "open_position": ["position available", "available for", "looking for [\\w\\s]*students", "Interested PhD", "recruiting", "accepting [\\w\\s]*students"],
+    "open_position": ["position available", "available for", "looking for [\\w\\s\\.]*students", "Interested PhD", "recruiting", "accepting [\\w\\s]*students"],
     "skip_file": ["pdf", "ps", "zip", "rar"],
     "prefix_major": ["bio", "geo"],
     "notname": ["college", "professor", "edu", "lecturer", "affiliate", "associate", "adjunct", "visiting", "assistant"]

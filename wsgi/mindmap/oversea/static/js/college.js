@@ -531,10 +531,15 @@ function submitRedirect(obj, type, url) {
             }
         }
     };
-    if ($("approveIt").val() == 0)
-        $("#crawlResult").html("")
+    if ($("#approveIt").val() == 0) {
+        $("#crawlResult").html("");
+        // timerId = window.setInterval(getProcess, 2000);  
+        // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位'.format(total, now))                    
+            //呈现loading效果
+        // $(".container-fluid").append(loadingDiv);
+    }
+
     $(obj).ajaxSubmit(options);
-    // timerId = window.setInterval(getProcess, 2000);  
     return false;
 }
 

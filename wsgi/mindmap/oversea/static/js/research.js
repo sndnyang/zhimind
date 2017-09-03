@@ -174,20 +174,28 @@ function getMajorInterestsList() {
     })
 }
 
-function getProcess() {  
-    //使用JQuery从后台获取JSON格式的数据  
+function getProcess() {
+    var url = $("#directoryUrl").val()
+    //使用JQuery从后台获取JSON格式的数据
     $.ajax({  
         type: "post",//请求方式  
         url: "getResearchProgress",//发送请求地址  
         timeout: 30000,//超时时间：30秒
-        dataType: "json",//设置返回数据的格式  
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({"url": url}),
         //请求成功后的回调函数 data为json格式  
-        success:function(data){  
+        success:function(data){
+            if (data.error) {
+                window.clearInterval(timerId);
+                alert(data.error);
+                return;
+            }
             var info = data.info, total = info.split(",")[0], now = info.split(',')[1];
             console.log(info);
             if (total == now) {
                 window.clearInterval(timerId);
-                $("#loadingDiv").remove();
+                // $("#loadingDiv").remove();
                 return;
             }
             $("#loadingDiv").remove();
@@ -196,8 +204,8 @@ function getProcess() {
             $(".container-fluid").append(loadingDiv);
         },  
         //请求出错的处理  
-        error:function(){  
-            window.clearInterval(timerId);  
+        error: function(){  
+            window.clearInterval(timerId);
             alert("请求出错");  
         }  
     });  

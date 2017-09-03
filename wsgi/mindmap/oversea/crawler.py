@@ -61,8 +61,11 @@ def get_and_store_page(page_url):
         except (ConnectionError, HTTPError), e:
             html = "Error at ", page_url
 
-        with open(file_name, 'w') as fp:
-            fp.write(html)
+        try:
+            with open(file_name, 'w') as fp:
+                fp.write(html)
+        except TypeError:
+            pass
     return html
 
 
@@ -123,9 +126,9 @@ class ResearchCrawler:
         
         content, soup = self.open_page(directory_url)
         anchors = self.find_all_anchor(soup, self.domain, directory_url)
-        # print directory_url, len(anchors)
+        # if debug_level == 1: print directory_url, len(anchors)
         index = self.find_example_index(anchors, example)
-        # print directory_url, len(anchors[index:]), 
+        # if debug_level == 1: print directory_url, len(anchors[index:]), 
 
         # 第一个教授主页的作用主要在这里——如果能再来一个更好
         # 求共同祖先
@@ -173,10 +176,13 @@ class ResearchCrawler:
         elif href and href.startswith('mailto:'):
             return True
         elif not href or len(href) < 5 or base_faculty_filter[0] not in href:
+            # if debug_level == 1: print " %s filter in base" % href
             return True
         elif contain_keys(href, self.key_words['notprof']):
+            # if debug_level == 1: print " %s filter in notprof" % href
             return True
         elif not contain_keys(href, self.key_words['keys']):
+            # if debug_level == 1: print " %s filter in keys" % href
             return True
         return False
 

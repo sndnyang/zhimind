@@ -507,6 +507,7 @@ function submitRedirect(obj, type, url) {
         dataType: 'json',
         success: function (data) {
             console.log(data);
+            $("#loadingDiv").remove();
             if (data.error) {
                 alert(data.error);
                 document.getElementById("vericode")
@@ -520,6 +521,7 @@ function submitRedirect(obj, type, url) {
             } else {
                 $("#researchSubmit").html("点击确认");
                 $("#approveIt").val(1);
+
                 var list = data.list;
                 collegeList = data.list;
                 var table = $("<table class='table table-striped'></table>");
@@ -534,9 +536,12 @@ function submitRedirect(obj, type, url) {
     if ($("#approveIt").val() == 0) {
         $("#crawlResult").html("");
         // timerId = window.setInterval(getProcess, 2000);  
-        // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位'.format(total, now))                    
-            //呈现loading效果
-        // $(".container-fluid").append(loadingDiv);
+        
+        //var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
+        var loadingDiv = createLoadingDiv('正在处理中，请稍等');
+        
+        // 呈现loading效果
+        $(".container-fluid").append(loadingDiv);
     }
 
     $(obj).ajaxSubmit(options);

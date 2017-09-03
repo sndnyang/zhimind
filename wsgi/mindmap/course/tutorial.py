@@ -28,7 +28,7 @@ tutorial_page = Blueprint('tutorial_page', __name__,
 search = Search(db=db, analyzer=ChineseAnalyzer())
 
 try:
-    if app.debug:
+    if not app.debug:
         search.init_app(app)
         search.create_index(update=True)
     pass

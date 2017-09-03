@@ -162,3 +162,20 @@ class Interests(db.Model):
     def __init__(self, name, major):
         self.name = name
         self.major = major
+
+
+class CrawlTask(db.Model):
+    __tablename__ = 'interests_task'
+    id = db.Column('task_id', db.String, primary_key=True, default=uuid_gen)
+    school = db.Column(db.String(70))
+    major = db.Column(db.String(4))
+    school_url = db.Column(db.String(150))
+    example = db.Column(db.String(150))
+    __table_args__ = (UniqueConstraint('school', 'major',
+                      name='_school_major_uniq'),)
+
+    def __init__(self, school, major, url, example):
+        self.school = school
+        self.major = major
+        self.school_url = url
+        self.example = example

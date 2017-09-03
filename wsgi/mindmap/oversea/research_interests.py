@@ -5,14 +5,17 @@ import re
 import traceback
 
 from flask import request, render_template, session, json, Blueprint
+from sqlalchemy.exc import InvalidRequestError
 from wtforms import StringField, validators
 from sqlalchemy import asc
+from sqlalchemy.orm.exc import MultipleResultsFound
 
 from ..validation import *
 from mindmap import app, db
 
 from models import *
 from crawler import ResearchCrawler
+from views import getCollegeRedis
 
 
 research_page = Blueprint('research_page', __name__,
@@ -69,7 +72,7 @@ def research_form():
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     verification_code = StringField(u'验证码', 
-                                    validators=[validators.Required(),
+                                    validators=[validators.DataRequired(),
                                                 validators.Length
                                                 (4, 4, message=u'填写4位验证码')])
     return render_template('research_form.html', veri=verification_code, meta=meta)
@@ -77,7 +80,11 @@ def research_form():
 
 @research_page.route('/getResearchProgress', methods=['POST'])
 def process():
-    return json.dumps({'info': session['research_process']}, ensure_ascii=False)
+    url = request.json.get("url", None)
+    if not url:
+        return json.dumps({'error': "%s not received" % url}, ensure_ascii=False)
+
+    return json.dumps({'info': session['research_process'+url]}, ensure_ascii=False)
 
 
 def query_add_interests(tag, major):
@@ -86,7 +93,6 @@ def query_add_interests(tag, major):
         if result is None and len(tag) < 50:
             result = Interests(tag, major)
             db.session.add(result)
-            db.session.commit()
         return result
     except:
         return None
@@ -97,15 +103,27 @@ def query_add_professor(name, college_name, major):
         result = Professor.query.filter_by(name=name, school=college_name, 
                                            major=major).one_or_none()
         if result is None:
+            # app.logger.info("%s not exists, create" % name)
             if name > 29:
                 words = re.findall("(\w+)", name)
                 name = words[0] + ' ' + words[-1]
+            if college_name > 59:
+                college_name = college_name[:57] + '..)'
             result = Professor(name, college_name, major)
             db.session.add(result)
-            db.session.commit()
+        else:
+            # app.logger.info("%s not exists, not create" % name)
+            pass
         return result
     except:
         return None
+
+
+def is_exist_college(c_list, name):
+    for c in c_list:
+        if c['name'] == name:
+            return True
+    return False
 
 
 @research_page.route('/research_submitted', methods=['POST'])
@@ -125,6 +143,27 @@ def submitted_research():
     if major == '0' or not college_name.strip() or not directory_url.strip() or\
         not professor_url.strip():
         return json.dumps({'error': u'信息不全'}, ensure_ascii=False)
+
+    task = None
+    try:
+        entity = app.redis.get('college')
+        if entity and eval(entity):
+            entity = eval(entity)
+            flag = is_exist_college(entity, college_name)
+        else:
+            college_set = getCollegeRedis()
+            app.redis.set('college', college_set)
+            flag = is_exist_college(entity, college_set)
+        if not flag:
+            return json.dumps({'error': u'数据有误，不存在该学校，请确认校名或联系开发者'},
+                               ensure_ascii=False)
+        task = CrawlTask.query.filter_by(school=college_name, major=major).one_or_none()
+        if task:
+            return json.dumps({'error': u'该校该专业爬取任务已存在，数据错误问题请联系开发者'},
+                               ensure_ascii=False)
+    except MultipleResultsFound:
+        return json.dumps({'error': u'数据有误，存在多所同名学校，请联系开发者'},
+                           ensure_ascii=False)
 
     app.logger.info(directory_url)
 
@@ -146,20 +185,27 @@ def submitted_research():
                 professor.term = ele.get("term")
                 professor.school_url = ele.get("link", "")
                 professor.home_page = ele.get("website", "")
-                db.session.commit()
+        if task is None:
+            task = CrawlTask(college_name, major, directory_url, professor_url)
+            db.session.add(task)
+        try:
+            db.session.commit()
+        except InvalidRequestError:
+            app.logger.info(traceback.print_exc())
+            return json.dumps({'error': u'成功'}, ensure_ascii=False)
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
     crawl = ResearchCrawler()
     count, faculty_list = crawl.crawl_faculty_list(directory_url, professor_url)
-    session['research_process'] = "%d,0" % count
-    app.logger.info(session['research_process'])
+    session['research_process'+directory_url] = "%d,0" % count
+    app.logger.info(session['research_process'+directory_url])
     link_list = []
     i = 0
     for f in faculty_list:
         link_list.append(crawl.dive_into_page(f))
         i += 1
-        session['research_process'] = "%d,%d" % (count, i)
-    app.logger.info(session['research_process'] + "finish")
+        session['research_process'+directory_url] = "%d,%d" % (count, i)
+    app.logger.info(session['research_process'+directory_url] + "finish")
     app.redis.set(directory_url, link_list)
 
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)

@@ -175,9 +175,9 @@ def validate_and_extract(request):
     directory_url = request.form['directory_url']
     professor_url = request.form['professor_url']
     
-    if major == '0' or not college_name.strip() or not directory_url.strip() or\
-       not professor_url.strip():
-        return u'Error at 信息不全', None, None, None
+   #if major == '0' or not college_name.strip() or not directory_url.strip() or\
+   #   not professor_url.strip():
+   #    return u'Error at 信息不全', None, None, None
 
     return college_name, major, directory_url, professor_url
 
@@ -239,21 +239,26 @@ def submit_professors(college_name, major, directory_url):
     return ""
 
 
-@research_page.route('/custom_crawler/<step>', methods=['POST'])
+@research_page.route('/custom_crawler/<int:step>', methods=['POST'])
 def custom_crawler_step(step):
     college, major, directory_url, prof_url = validate_and_extract(request)
-    key_words = request.json.get("key_words", None)
+    code_img, code_string = create_validate_code()
+    session['code_text'] = code_string
+    # key_words = request.json.get("key_words", None)
     task = query_and_create_task(college, major)
     crawl = ResearchCrawler()
-    if key_words:
-        crawl.key_words = key_words
-        temp = crawl.save_key()
-        if temp.startswith("Error"):
-            return json.dumps({'error': temp}, ensure_ascii=False)
+   #if key_words:
+   #    crawl.key_words = key_words
+   #    temp = crawl.save_key()
+   #    if temp.startswith("Error"):
+   #        return json.dumps({'error': temp}, ensure_ascii=False)
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
 
     if step == 1:
-        return json.dumps({'info': u'成功', "list": faculty_list, 'keywords': crawl.key_words},
+        link_list = []
+        for link in faculty_list:
+            link_list.append(link.get("href") + "|" + link.string)
+        return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 2:
         app.logger.info("%s %s total %d, start" % (directory_url, major, count))

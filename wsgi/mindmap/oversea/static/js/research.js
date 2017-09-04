@@ -263,3 +263,57 @@ function getProcess() {
         }
     });  
 }
+
+function showKeyWords() {
+    
+}
+
+function showCrawlerResult(data, step) {
+    var list = data.list, table = $("<table class='table table-striped'></table>");
+    console.log(data.list);
+    if (step == "1") {
+        var show_tags = ['该URL不可能是教员', '该名字可能是教授个人主页', '该URL可能是教员']
+        $("keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
+        console.log(data.keywords);
+        var json = data.keywords;
+        for (var e in json) {
+            var flag = false;
+            if (e == "frameset_pass") continue;
+            for (var i in show_tags) {
+                if (show_tags[i] == e) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag == false) continue;
+            var group = $('<div class="input-group input-group-sm"></div>');
+            var span = $("<span class='input-group-addon'>{0}: </span>".format(e));
+            var input = '<input type="url" name="{0}" value="{1}" class="form-control">'.format(e, json[e]);
+            group.append(span);
+            group.append(input);
+            $("#keyWords").append(group);
+        }
+    }
+    for (var i in list) {
+        var tr = $("<tr></tr>"), td = $("<td></td>"), toggle = null;
+        if (step == "1") {
+            var url = list[i].split("|")[0], name = list[i].split("|")[1];
+            td.append("<span>链接URL为：</span>");
+            td.append('<a href="{0}" target="_blank">{1}</a>'.format(url, url));
+            tr.append(td);
+            tr.append("<td>链接名字显示为：{0}</td>".format(name));
+        } else if (step == '2') {
+            tr = fillResearchInformation(list[i]);
+            var expand = $('<a data-toggle="collapse" aria-expanded="false" class="False collapsed btn btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a>'.format(i, i));
+            tr.append(expand);
+            toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false" style="height: 0px;"></div>'.format(i, i));
+            toggle = fillItemInfo(toggle, item)
+        }
+        table.append(tr);
+        if (toggle) {
+            table.append(toggle);
+        }
+    }
+    $("#crawlResult").append(table);
+}
+

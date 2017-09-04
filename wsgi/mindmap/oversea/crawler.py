@@ -121,7 +121,7 @@ class ResearchCrawler:
         self.university_name = re.search('(\w+).edu', self.url).group(1)
         self.domain = '/'.join(directory_url.split("/")[:3])
 
-        stop_word = u'不可能是名字的一部分'
+        stop_word = u'该词不可能是名字'
         
         # if debug_level == 1: print(' before stop word :' + str(self.key_words[stop_word]) + '  add url ' + directory_url)
         # 
@@ -194,27 +194,27 @@ class ResearchCrawler:
             return False
         if href and '~' in href:
             return False
-        elif name is not None and contain_keys(name, self.key_words[u'可能是教授个人主页的名字']):
+        elif name is not None and contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
             return False
         elif href and href.startswith('mailto:'):
             return True
         elif not href or len(href) < 5 or base_faculty_filter[0] not in href:
             # if debug_level == 1: print " %s filter in base" % href
             return True
-        elif contain_keys(href, self.key_words[u'不可能是教授主页链接']):
+        elif contain_keys(href, self.key_words[u'该URL不可能是教员']):
             # if debug_level == 1: print " %s filter in notprof" % href
             return True
-        elif not contain_keys(href, self.key_words[u'可能是教授的链接']):
+        elif not contain_keys(href, self.key_words[u'该URL可能是教员']):
             # if debug_level == 1: print " %s filter in keys" % href
             return True
         return False
 
     def get_personal_website(self, l, page_url):
-        stop_word = u'不可能是名字的一部分'
+        stop_word = u'该词不可能是名字'
         potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url) + ['personal']
 
         # if debug_level == 1: print('stop word :' + str(self.key_words[stop_word]))
-        potential_name = [e for e in potential_name if not contain_keys(e, self.key_words[u'可能是教授的链接'] + self.key_words[stop_word] + self.key_words[u'不可能是教授主页链接'] + ['people', self.university_name])]
+        potential_name = [e for e in potential_name if not contain_keys(e, self.key_words[u'该URL可能是教员'] + self.key_words[stop_word] + self.key_words[u'该URL不可能是教员'] + ['people', self.university_name])]
         # if debug_level == 1: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
@@ -277,7 +277,7 @@ class ResearchCrawler:
                     e['href'] = faculty_link
                     faculty_list[i] = e
                 continue
-            if e.string and contain_keys(e.string, self.key_words[u'不可能是教授主页链接']):
+            if e.string and contain_keys(e.string, self.key_words[u'该URL不可能是教员']):
                 continue
             links.append(faculty_link)
             e['href'] = faculty_link
@@ -486,7 +486,7 @@ class ResearchCrawler:
         # 搞名字
         name = faculty_ele.get_text()
 
-        if not name or contain_keys(name, self.key_words[u'可能是教授个人主页的名字']):
+        if not name or contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
             name = ''
 
         if debug_level == 1: print(' name is ' + name)
@@ -498,7 +498,7 @@ class ResearchCrawler:
         if name:
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)',
                             name) if not contain_keys(e, self.key_words[
-                                u'不可能是名字的一部分']))
+                                u'该词不可能是名字']))
             person['name'] = name
 
         # if debug_level == 1: print(' name is ' + person['name'])

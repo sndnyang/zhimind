@@ -46,10 +46,12 @@
                                 </span>
                             </div>
                         </div>
-                        <hr>
-                        <div id="crawlResult">
-                        </div>
-                        <div id="pagination-container"></div>
+                    </div>
+                    <hr>
+                    <div id="keyWords">
+                    </div>
+                    <hr>
+                    <div id="crawlResult">
                     </div>
                     <hr>
                     <div class="form-group">
@@ -87,18 +89,17 @@ function refresh(obj) {
 </script>
 <script>
 $(document).ready(function(){
-    $("#research").submit(function() {
-        return submitRedirect(this, "research", "{{url_for('research_page.research_index')}}");
-    });
     $("#step1").click(function() {
         $("#research").attr("action", "custom_crawler/1");
-        submitRedirect($("#research"), "research", "{{url_for('research_page.research_index')}}");
+        submitRedirect($("#research"), "crawler-1", "{{url_for('research_page.research_index')}}");
     });
     $("#step2").click(function() {
-        $("#research").attr("action", "custom_crawler/1");
+        $("#research").attr("action", "custom_crawler/2");
+        submitRedirect($("#research"), "crawler-2", "{{url_for('research_page.research_index')}}");
     });
-    $("#step2").click(function() {
+    $("#step3").click(function() {
         $("#research").attr("action", "custom_crawler/3");
+        submitRedirect($("#research"), "crawler-3", "{{url_for('research_page.research_index')}}");
     });
     $("#resetSubmit").click(function() {
         $("#approveIt").val(0);

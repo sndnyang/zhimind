@@ -52,7 +52,7 @@ def get_professor_list(school, major):
     tag = request.json.get("tag", None)
     position = request.json.get("position", None)
     if tag:
-        result = Professor.query.filter(Professor.interests.any(name=tag))
+        results = Professor.query.filter(Professor.interests.any(name=tag))
     else:
         results = Professor.query.filter_by(major=major)
     if school != '0':
@@ -139,7 +139,7 @@ def query_add_professor(name, college_name, major):
             # app.logger.info("%s not exists, not create" % name)
             pass
         return result
-    except:
+    except MultipleResultsFound:
         return None
 
 

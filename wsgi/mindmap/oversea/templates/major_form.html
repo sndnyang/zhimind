@@ -22,7 +22,7 @@
                 <option value="3">博士</option>
             </select>
             <label for="major">专业名:</label>
-            {{ render_major(types) }}
+            {{ render_major() }}
             <label for="program_name">项目名(默认空):</label>
             <input type="text" name="program_name"><hr />
             <label for="site_url">学校主页:</label>
@@ -91,16 +91,17 @@
                 <div class="info">
                     <div class="info-item">
                         <label for="label0">信息名称:</label>
-                        <input type="text" name="label0" value="申请时是不是要邮寄密封成绩单" style="width: 250px">
+                        <input type="text" name="label0" value="录取前是否要邮寄密封成绩单" style="width: 250px" readonly="true">
                         <label for="input0">内容:</label>
                         <select name="input0">
-                            <option value="">不知道</option>
-                            <option value="no">不需要</option>
+                            <option value="">不知道(将不显示)</option>
+                            <option value="no">不需要(将不显示)</option>
                             <option value="yes">需要寄</option>
                         </select>
                     </div> 
                 </div>
-                <button id="addInfo" class="btn-info" onclick="addOneInfo('', '', -1)">添加新内容</button>
+                <a id="addInfo" class="btn btn-info" onclick="addOneInfo('', '', -1)"
+                    href="javascript:void(0)">添加新内容</a>
             </div>
             <div class="form-group">
                 <label for="verification_code">验证码
@@ -117,7 +118,7 @@
                 </ul>
                 {% endif %}
             </div> 
-            <input type="submit" id="collegeSubmit">
+            <button type="submit" id="collegeSubmit" class="btn btn-info">提交</button>
         </form>
     </div>
 </div>

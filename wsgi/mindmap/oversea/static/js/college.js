@@ -549,6 +549,11 @@ function submitRedirect(obj, type, url) {
                 }
                 $("#crawlResult").append(table);
             }
+        },  
+        //请求出错的处理  
+        error: function(){  
+            $("#loadingDiv").remove();
+            alert("出错");  
         }
     };
     if ($("#approveIt").val() == 0) {

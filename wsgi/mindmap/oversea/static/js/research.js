@@ -260,6 +260,6 @@ function getProcess() {
         error: function(){  
             window.clearInterval(timerId);
             alert("请求出错");  
-        }  
+        }
     });  
 }

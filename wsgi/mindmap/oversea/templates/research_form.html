@@ -1,8 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 {% from "major_filter.html" import render_major %}
-<script src="//cdn.bootcss.com/paginationjs/2.0.8/pagination.min.js"></script>
-<link href="//cdn.bootcss.com/paginationjs/2.0.8/pagination.css" rel="stylesheet">
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <link href="/static/css/loader.css" rel="stylesheet" media="screen" type="text/css"/>
 <script type="text/javascript" src="{{url_for('research_page.static', filename='js/research.js')}}"></script>
@@ -65,7 +63,7 @@
                 {% endif %}
             </div> 
             <button class="btn btn-info" type="submit" id="researchSubmit">提交</button>
-            <a class="btn btn-warning" href="javascript:void(0)" id="resetSubmit">重置</a>
+            <a href="javascript:void(0)" class="btn btn-warning" id="resetSubmit">重置</a>
         </form>
     </div>
 </div>

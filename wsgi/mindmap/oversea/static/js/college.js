@@ -203,20 +203,28 @@ function fillInformation(item, i, n, backend) {
     return tr;
 }
 
+function removeExtra(obj) {
+    $(obj).parent().remove();
+    return false;
+}
+
 function addOneInfo(key, item, i) {
     if (i === -1) {
-        i = $(".info-item").length + 1;
+        i = $(".info-item").length;
     }
     var div = $('<div class="info-item"></div>');
     var label = $('<label for="label{0}">信息名称: </label>'.format(i));
     var input = $('<input type="text" name="label{0}" value="{1}">'.format(i, key));
     var label2 = $('<label for="input{0}">内容: </label>'.format(i));
     var input2 = $('<input type="text" name="input{0}" value="{1}">'.format(i, item));
+    var del_btn = $('<a href="javascript:void(0);" onclick="removeExtra(this)">删除</a>');
+    del_btn.attr("class", "btn btn-danger");
     
     div.append(label);
     div.append(input);
     div.append(label2);
     div.append(input2);
+    div.append(del_btn);
     $(".info").append(div);
 }
 
@@ -244,9 +252,11 @@ function fillItemInfo(toggle, item) {
         else if (e.substring(0, 5) === 'label') {
             var j = e.substring(5, e.length);
             var temp = item['input' + j];
-            if ("申请时是不是要邮寄密封成绩单" == item['label' + j]) {
-                if (temp == 'no') temp = '不需要';
-                else if (temp == 'yes') temp = '需要';
+            if (j == "0") {
+                if (temp == 'no' || temp == '')
+                    continue;
+                if (temp == 'yes')
+                    temp = '需要';
             }
             toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
                         temp)));
@@ -421,7 +431,7 @@ function sortDeadline(a, b) {
 }
 
 function sortCollege(name, col, ininfo) {
-    var data = [], temp = filterCollege(filterList, col, 0);
+    var data = [], temp = filterCollege(filterMajorByAll(), col, 0);
     if (col == "deadline") {
         col = "fall";
     }
@@ -486,11 +496,7 @@ function filterByName(obj, type) {
         pageIt(newList, type, 0);
 }
 
-function filterByMajor(type) {
-    if (type.indexOf("research") > -1) {
-        getMajorInterestsList();
-        return;
-    }
+function filterMajorByAll() {
     var degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val()),
         evalue = $("#evalueName").val(),
@@ -504,6 +510,14 @@ function filterByMajor(type) {
             'degree', degree),
         'major',major),
     'rl', rl);
+    return newList;
+}
+function filterByMajor(type) {
+    if (type.indexOf("research") > -1) {
+        getMajorInterestsList();
+        return;
+    }
+    var newList = filterMajorByAll();
     pageIt(newList, "major", 0);
 }
 

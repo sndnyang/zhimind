@@ -118,7 +118,7 @@ def query_add_interests(tag, major):
             result = Interests(tag, major)
             db.session.add(result)
         return result
-    except:
+    except MultipleResultsFound:
         return None
 
 
@@ -150,88 +150,156 @@ def is_exist_college(c_list, name):
     return False
 
 
-@research_page.route('/research_submitted', methods=['POST'])
-def submitted_research():
+@research_page.route('/custom_crawler.html')
+def custom_crawler():
+    verification_code = StringField(u'验证码', 
+                                    validators=[validators.DataRequired(),
+                                                validators.Length
+                                                (4, 4, message=u'填写4位验证码')])
+    meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
+            'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
+            'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
+    return render_template('custom_crawler.html', meta=meta, temp=0,
+                           veri=verification_code, types="research")
+
+
+def validate_and_extract(request):
     if not app.debug:
         verification_code = request.form['verification_code']
         code_text = session['code_text']
         if verification_code != code_text:
-            return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
+            return u'Error at 验证码错误', None, None, None
 
     major = request.form['major']
-    approve = request.form['approve']
     college_name = request.form['college_name']
     directory_url = request.form['directory_url']
     professor_url = request.form['professor_url']
     
     if major == '0' or not college_name.strip() or not directory_url.strip() or\
-        not professor_url.strip():
-        return json.dumps({'error': u'信息不全'}, ensure_ascii=False)
+       not professor_url.strip():
+        return u'Error at 信息不全', None, None, None
 
-    task = None
+    return college_name, major, directory_url, professor_url
+
+
+def query_and_create_task(college, major):
     try:
         entity = app.redis.get('college')
         if entity and eval(entity):
             entity = eval(entity)
-            flag = is_exist_college(entity, college_name)
+            flag = is_exist_college(entity, college)
         else:
             college_set = getCollegeRedis()
             app.redis.set('college', college_set)
             flag = is_exist_college(entity, college_set)
         if not flag:
-            return json.dumps({'error': u'数据有误，不存在该学校，请确认校名或联系开发者'},
-                              ensure_ascii=False)
-        task = CrawlTask.query.filter_by(school=college_name, major=major).one_or_none()
+            return u'Error at 数据有误，不存在该学校，请确认校名或联系开发者'
+        task = CrawlTask.query.filter_by(school=college, major=major).one_or_none()
         if task:
-            return json.dumps({'error': u'该校该专业爬取任务已存在，数据错误问题请联系开发者'},
-                              ensure_ascii=False)
+            return u'Error at 该校该专业爬取任务已存在，数据错误问题请联系开发者'
     except MultipleResultsFound:
-        return json.dumps({'error': u'数据有误，存在多所同名学校，请联系开发者'},
+        return u'Error at 数据有误，存在多所同名学校，请联系开发者'
+    return task
+
+
+def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
+    app.redis.set('process of %s %s' % (directory_url, major), "%d,0" % count)
+    i = 0
+    link_list = []
+    for link in faculty_list:
+        link_list.append(crawl.dive_into_page(link, flag))
+        i += 1
+        app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
+    app.logger.info('research process %s %s ' % (directory_url, major) + "  finish")
+    app.redis.set('%s-%s' % (directory_url, major), link_list)
+    return link_list
+
+
+def submit_professors(college_name, major, directory_url):
+    entity = eval(app.redis.get('%s-%s' % (directory_url, major)))
+    for ele in entity:
+        professor = None
+        if ele.get("name", None):
+            professor = query_add_professor(ele.get("name"), college_name, major)
+        if ele.get('tags'):
+            for tag in ele.get('tags', []):
+                tag_obj = query_add_interests(tag, major)
+                if professor and tag_obj:
+                    professor.interests.append(tag_obj)
+        if professor:
+            professor.position = ele.get("position")
+            professor.term = ele.get("term")
+            professor.school_url = ele.get("link", "")
+            professor.home_page = ele.get("website", "")
+    try:
+        db.session.commit()
+    except InvalidRequestError:
+        app.logger.info(traceback.print_exc())
+        return "Error at 我也不知道提交出了什么错"
+    return ""
+
+
+@research_page.route('/custom_crawler/<step>', methods=['POST'])
+def custom_crawler_step(step):
+    college, major, directory_url, prof_url = validate_and_extract(request)
+    key_words = request.json.get("key_words", None)
+    task = query_and_create_task(college, major)
+    crawl = ResearchCrawler()
+    if key_words:
+        crawl.key_words = key_words
+        temp = crawl.save_key()
+        if temp.startswith("Error"):
+            return json.dumps({'error': temp}, ensure_ascii=False)
+    count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
+
+    if step == 1:
+        return json.dumps({'info': u'成功', "list": faculty_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
+    elif step == 2:
+        app.logger.info("%s %s total %d, start" % (directory_url, major, count))
+        link_list = crawl_directory(crawl, faculty_list, major, directory_url, count, True)
+        app.logger.info("%s %s total %d, finish" % (directory_url, major, count))
+        return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
+    elif step == 3:
+        code_img, code_string = create_validate_code()
+        session['code_text'] = code_string
+        if task is None:
+            task = CrawlTask(college, major, directory_url, prof_url)
+            db.session.add(task)
+        result = submit_professors(college, major, directory_url)
+        if result.startswith("Error"):
+            return json.dumps({'error': result}, ensure_ascii=False)
+        return json.dumps({'info': u'成功'}, ensure_ascii=False)
+
+    return json.dumps("Error , step 4 ?")
+        
+
+@research_page.route('/research_submitted', methods=['POST'])
+def submitted_research():
+    college, major, directory_url, prof_url = validate_and_extract(request)
+    task = query_and_create_task(college, major)
+    if isinstance(task, (str, unicode)):
+        return json.dumps({'error': task}, ensure_ascii=False)
 
     app.logger.info(directory_url)
 
+    approve = request.form['approve']
     if approve == '1':
-        entity = eval(app.redis.get(directory_url))
         code_img, code_string = create_validate_code()
         session['code_text'] = code_string
-        for ele in entity:
-            professor = None
-            if ele.get("name", None):
-                professor = query_add_professor(ele.get("name"), college_name, major)
-            if ele.get('tags'):
-                for tag in ele.get('tags', []):
-                    tag_obj = query_add_interests(tag, major)
-                    if professor and tag_obj:
-                        professor.interests.append(tag_obj)
-            if professor:
-                professor.position = ele.get("position")
-                professor.term = ele.get("term")
-                professor.school_url = ele.get("link", "")
-                professor.home_page = ele.get("website", "")
         if task is None:
-            task = CrawlTask(college_name, major, directory_url, professor_url)
+            task = CrawlTask(college, major, directory_url, prof_url)
             db.session.add(task)
-        try:
-            db.session.commit()
-        except InvalidRequestError:
-            app.logger.info(traceback.print_exc())
-            return json.dumps({'error': u'成功'}, ensure_ascii=False)
+        result = submit_professors(college, major, directory_url)
+        if result.startswith("Error"):
+            return json.dumps({'error': result}, ensure_ascii=False)
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
     crawl = ResearchCrawler()
-    count, faculty_list = crawl.crawl_faculty_list(directory_url, professor_url)
-    session['research_process'+directory_url] = "%d,0" % count
-    app.logger.info(session['research_process'+directory_url])
-    link_list = []
-    i = 0
-    for f in faculty_list:
-        link_list.append(crawl.dive_into_page(f))
-        i += 1
-        session['research_process'+directory_url] = "%d,%d" % (count, i)
-    app.logger.info(session['research_process'+directory_url] + "finish")
-    app.redis.set(directory_url, link_list)
-
+    count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
+    app.logger.info("%s %s total %d, start" % (directory_url, major, count))
+    link_list = crawl_directory(crawl, faculty_list, major,  directory_url, count, False)
+    app.logger.info("%s %s total %d, finish" % (directory_url, major, count))
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
 
 
@@ -257,6 +325,9 @@ def modify_interests():
         interest = Interests.query.filter_by(name=name).one_or_none()
         if action == "1":
             if interest:
+                results = Professor.query.filter(Professor.interests.any(name=name)).all()
+                for ele in results:
+                    ele.interests.remove(interest)
                 db.session.delete(interest)
             else:
                 return json.dumps({'error': 'not find' + name}, ensure_ascii=False)

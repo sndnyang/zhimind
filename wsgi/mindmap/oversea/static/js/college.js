@@ -466,7 +466,7 @@ function pageTemplate(data, name, n) {
             row = fillInformation(item, i, n, name);
             toggle = fillExtraInfo(item, i);
         } else if (name.indexOf('research') > -1) {
-            row = fillResearchInformation(item);
+            row = fillResearchInformation(item, true);
         }
         list.push(row);
         if (toggle) {
@@ -536,6 +536,7 @@ function submitRedirect(obj, type, url) {
             if (type.indexOf("crawler") > -1) {
                 if (type.split("-")[1] != '3') {
                     var list = data.list;
+                    filterList = data;
                     showCrawlerResult(data, type.split("-")[1]);
                     return;
                 }
@@ -554,7 +555,7 @@ function submitRedirect(obj, type, url) {
                 var list = data.list;
                 var table = $("<table class='table table-striped'></table>");
                 for (var i in list) {
-                    var tr = fillResearchInformation(list[i]);
+                    var tr = fillResearchInformation(list[i], false);
                     table.append(tr);
                 }
                 $("#crawlResult").append(table);

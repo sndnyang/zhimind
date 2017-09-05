@@ -239,19 +239,33 @@ def submit_professors(college_name, major, directory_url):
     return ""
 
 
+def update_key_words(form, crawl):
+    key_words = crawl.key_words
+    flag = False
+    for k in key_words:
+        if k not in form:
+            continue
+        if ','.join(key_words[k]) == form[k]:
+            continue
+        key_words[k] = form[k].split(',')
+        flag = True
+
+    return flag, key_words
+
 @research_page.route('/custom_crawler/<int:step>', methods=['POST'])
 def custom_crawler_step(step):
     college, major, directory_url, prof_url = validate_and_extract(request)
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
-    # key_words = request.json.get("key_words", None)
     task = query_and_create_task(college, major)
-    crawl = ResearchCrawler()
-   #if key_words:
-   #    crawl.key_words = key_words
-   #    temp = crawl.save_key()
-   #    if temp.startswith("Error"):
-   #        return json.dumps({'error': temp}, ensure_ascii=False)
+    crawl = ResearchCrawler(directory_url, prof_url)
+    flag, key_words = update_key_words(request.form, crawl)
+    if flag:
+        crawl.key_words = key_words
+        temp = crawl.save_key()
+        if temp and temp.startswith("Error"):
+            return json.dumps({'error': temp}, ensure_ascii=False)
+
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
 
     if step == 1:
@@ -264,7 +278,8 @@ def custom_crawler_step(step):
         app.logger.info("%s %s total %d, start" % (directory_url, major, count))
         link_list = crawl_directory(crawl, faculty_list, major, directory_url, count, True)
         app.logger.info("%s %s total %d, finish" % (directory_url, major, count))
-        return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
+        return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
+                          ensure_ascii=False)
     elif step == 3:
         code_img, code_string = create_validate_code()
         session['code_text'] = code_string
@@ -300,7 +315,7 @@ def submitted_research():
             return json.dumps({'error': result}, ensure_ascii=False)
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
-    crawl = ResearchCrawler()
+    crawl = ResearchCrawler(directory_url, prof_url)
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
     app.logger.info("%s %s total %d, start" % (directory_url, major, count))
     link_list = crawl_directory(crawl, faculty_list, major,  directory_url, count, False)

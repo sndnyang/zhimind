@@ -345,18 +345,24 @@ function fillResearchInformationByGrid(item) {
 }
 
 function fillSourceInfo(toggle, item) {
-    var key = ['source_name/目录页链接名字', 'source_name/目录页链接',
-        'source_website/个人主页名字', 'source_website/个人主页链接',
-        'source_position', 'source_term', 'source_interest'],
+    var key = ['source_name/目录页链接名字', 'source_name/链接URL',
+        'source_website/个人主页名字', 'source_website/个人主页链接URL',
+        'source_position', 'source_interest'],
         p_tmp = '<p>{0} : {1}</p>';
     for (var i in key) {
-        var e = item[i];
+        var e = key[i];
         if (!(e in item)) {
             continue;
         }
         if (e.indexOf("/") > -1) {
             var head = e.split("/")[0], tail = e.split("/")[1];
+            if (!(head in item && tail in item[head])) {
+                continue;
+            }
             toggle.append($(p_tmp.format(tail, item[head][tail])));
+            continue;
+        }
+        if (!(e in item)) {
             continue;
         }
         toggle.append($(p_tmp.format(e, item[e])));

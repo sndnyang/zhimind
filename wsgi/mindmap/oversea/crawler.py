@@ -82,11 +82,14 @@ class ResearchCrawler:
     如研究兴趣、招生机会
     """
 
-    def __init__(self):
-        self.url = ""
-        self.university_name = ""
-        self.domain = ""
-        self.example = ""
+    def __init__(self, directory_url, example):
+        self.config = ""
+        self.example = example
+        self.url = directory_url
+        self.university_name = re.search('(\w+).edu', self.url).group(1)
+        self.domain = '/'.join(directory_url.split("/")[:3])
+        print self.url, self.domain, self.university_name
+
         self.key_words = None
         self.load_key()
 
@@ -95,6 +98,7 @@ class ResearchCrawler:
 
         """
         try:
+            # if debug_level == 5: print "open url", page_url
             html = get_and_store_page(page_url)
             if html.startswith("Error at "):
                 return "Error to load", None
@@ -108,6 +112,7 @@ class ResearchCrawler:
                     # if debug_level == 4: print(' ' * 2 * debug_level, "from frameset import ", e.get("src"))
                     page_url = page_url + e.get("src") if page_url[-1] == '/' else page_url + '/' + e.get("src") 
                     html = get_and_store_page(page_url)
+                    # if debug_level == 5: print "open url", page_url
                     soup = BeautifulSoup(html, 'html.parser')
             return html, soup
         except Exception, e:
@@ -115,12 +120,6 @@ class ResearchCrawler:
             return "Error to load", None
 
     def crawl_faculty_list(self, directory_url, example):
-        self.config = ''
-        self.example = example
-        self.url = directory_url
-        self.university_name = re.search('(\w+).edu', self.url).group(1)
-        self.domain = '/'.join(directory_url.split("/")[:3])
-
         stop_word = u'该词不可能是名字'
         
         # if debug_level == 1: print(' before stop word :' + str(self.key_words[stop_word]) + '  add url ' + directory_url)
@@ -130,9 +129,9 @@ class ResearchCrawler:
         
         content, soup = self.open_page(directory_url)
         anchors = self.find_all_anchor(soup, self.domain, directory_url)
-        if debug_level == "list": print directory_url, len(anchors)
+        # if debug_level == "list": print directory_url, len(anchors)
         index = self.find_example_index(anchors, example, directory_url)
-        if debug_level == "list": print directory_url, len(anchors[index:]), 
+        # if debug_level == "list": print directory_url, len(anchors[index:]), 
 
         # 第一个教授主页的作用主要在这里——如果能再来一个更好
         # 求共同祖先
@@ -148,14 +147,16 @@ class ResearchCrawler:
         # assert count >= url_check[url]
         result = []
         for one in faculty_list:
-            person = self.dive_into_page(one)
+            person = self.dive_into_page(one, False)
             result.append(person)
         return result
 
     def load_key(self):
 
-        self.config = os.path.join(os.path.dirname(__file__), 'crawler', 
-                              self.university_name, 'key.json')
+        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name)
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+        self.config = os.path.join(dir_path, 'key.json')
         if os.path.isfile(self.config):
             with open(self.config) as fp:
                 self.key_words = json.loads(fp.read(), strict=False)
@@ -187,26 +188,23 @@ class ResearchCrawler:
     def filter_list(self, e):
         name = e.string
         href = e.get('href')
-        base_faculty_filter = [e for e in self.example.split('/')
-                               if e and not e.startswith('http') and not e.endswith('.edu')]
 
-        if name and "&" in name:
-            return False
-        if href and '~' in href:
-            return False
-        elif name is not None and contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
-            return False
-        elif href and href.startswith('mailto:'):
+        if not href or len(href) < 5:
             return True
-        elif not href or len(href) < 5 or base_faculty_filter[0] not in href:
-            # if debug_level == 1: print " %s filter in base" % href
-            return True
-        elif contain_keys(href, self.key_words[u'该URL不可能是教员']):
-            # if debug_level == 1: print " %s filter in notprof" % href
-            return True
-        elif not contain_keys(href, self.key_words[u'该URL可能是教员']):
-            # if debug_level == 1: print " %s filter in keys" % href
-            return True
+        if href:
+            if href.startswith('mailto:'):
+                return True
+            if contain_keys(href, self.key_words[u'该URL不可能是教员']):
+                # if debug_level == 1: print " %s filter in notprof" % href
+                return True
+            if not contain_keys(href, self.key_words[u'该URL可能是教员']):
+                # if debug_level == 1: print " %s filter in keys" % href
+                return True
+
+       #if name is not None and contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
+       #    return False
+       #if href and '~' in href:
+       #    return False
         return False
 
     def get_personal_website(self, l, page_url):
@@ -226,7 +224,6 @@ class ResearchCrawler:
                 continue
                 
             suffix = href.split('.')[-1]
-            
             if len(suffix) < 5 and contain_keys(suffix, self.key_words[u'文件而不是网页']):
                 continue
 
@@ -291,7 +288,7 @@ class ResearchCrawler:
             if not href:
                 continue
             href = format_url(l[i].get("href"), self.domain, index)
-            if debug_level == "list": print href, a
+            # if debug_level == "list": print href, a
             if href == a:
                 return i
         return -1
@@ -485,17 +482,20 @@ class ResearchCrawler:
                 'position': False, 'term': '', 'website': ''}
         # 搞名字
         name = faculty_ele.get_text()
+        if flag:
+            person['source_name'] = {u'目录页链接名字': name, 
+                                     u'链接URL': faculty_link}
 
         if not name or contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
             name = ''
 
-        if debug_level == 1: print(' name is ' + name)
+        # if debug_level == 1: print(' name is ' + name)
         if not name:
-            if debug_level == 1: print(' link is ' + faculty_link)
+            # if debug_level == 1: print(' link is ' + faculty_link)
             name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
-            name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
 
         if name:
+            name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)',
                             name) if not contain_keys(e, self.key_words[
                                 u'该词不可能是名字']))
@@ -563,6 +563,11 @@ if __name__ == "__main__":
             'http://computerscience.engineering.unt.edu/content/faculty',
             'https://www.odu.edu/compsci/research',
             'http://www.cs.ucf.edu/people/index.php',
+            'https://www.binghamton.edu/cs/people/faculty-and-staff.html',
+            'http://www.lsu.edu/eng/ece/people/index.php',
+        'http://www.uwyo.edu/cosc/cosc-directory/',
+        'http://www.cs.siu.edu/faculty-staff/continuing_faculty.php',
+        'https://www.uml.edu/Sciences/computer-science/faculty/',
             ]
     examples = ['https://inside.mines.edu/CS-Faculty-and-Staff/TracyCamp',
                 'http://science.iit.edu/people/faculty/eunice-santos',
@@ -573,6 +578,11 @@ if __name__ == "__main__":
                 'http://www.cse.unt.edu/~rakl',
                 'https://www.odu.edu/directory/people/a/achernik',
                 'http://www.cs.ucf.edu/~bagci',
+                'https://www.binghamton.edu/cs/people/kchiu.html',
+                'http://www.lsu.edu/eng/ece/people/Faculty/brown.php',
+                'http://www.uwyo.edu/cosc/cosc-directory/jlc/index.html',
+                'http://www.cs.siu.edu/~abosu',
+                'https://www.uml.edu/Sciences/computer-science/faculty/levkowitz-haim.aspx'
                 ]
 
     url_check = {'http://cs.mines.edu/CS-Faculty': 15,
@@ -584,14 +594,19 @@ if __name__ == "__main__":
                  'http://computerscience.engineering.unt.edu/content/faculty': 34,
                  'https://www.odu.edu/compsci/research': 15,
                  'http://www.cs.ucf.edu/people/index.php': 54,
+                 'https://www.binghamton.edu/cs/people/faculty-and-staff.html': 33,
+                 'http://www.lsu.edu/eng/ece/people/index.php': 34,
+                 'http://www.uwyo.edu/cosc/cosc-directory/': 11,
+                 'http://www.cs.siu.edu/faculty-staff/continuing_faculty.php': 10,
+                 'https://www.uml.edu/Sciences/computer-science/faculty/': 18,
+                 
                  }
-
     import cProfile
-    crawler = ResearchCrawler()
-    for url in urls[1:2]:
+    for url in urls[13:14]:
         print url
 
-        cProfile.run("crawler.crawl_from_directory(url, examples[urls.index(url)])", "my_prof")
+        crawler = ResearchCrawler(url, examples[urls.index(url)])
+        cProfile.run("crawler.crawl_from_directory(url, examples[urls.index(url)], False)")
 
         # i = 1
         # directory_url = urls[i]

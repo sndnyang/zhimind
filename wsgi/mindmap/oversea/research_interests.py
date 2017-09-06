@@ -220,17 +220,17 @@ def submit_professors(college_name, major, directory_url):
     entity = eval(app.redis.get('%s-%s' % (directory_url, major)))
     for ele in entity:
         professor = None
-        if ele.get("name", None):
-            professor = query_add_professor(ele.get("name"), college_name, major)
-        if ele.get('tags'):
-            for tag in ele.get('tags', []):
-                try:
-                    tag_obj = query_add_interests(tag, major)
-                    if professor and tag_obj:
-                        professor.interests.append(tag_obj)
-                        db.session.flush()
-                except IntegrityError:
-                    db.session.rollback()
+        try:
+            if ele.get("name", None):
+                professor = query_add_professor(ele.get("name"), college_name, major)
+            if ele.get('tags'):
+                for tag in ele.get('tags', []):
+                        tag_obj = query_add_interests(tag, major)
+                        if professor and tag_obj:
+                            professor.interests.append(tag_obj)
+                            db.session.flush()
+        except IntegrityError:
+            db.session.rollback()
         if professor:
             professor.position = ele.get("position")
             professor.term = ele.get("term")

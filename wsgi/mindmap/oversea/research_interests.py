@@ -252,7 +252,6 @@ def update_key_words(form, crawl):
             continue
         if ','.join(key_words[k]) == form[k]:
             continue
-        app.logger.info(','.join(key_words[k]) + "  " + form[k])
         key_words[k] = form[k].split(',')
         flag = True
 

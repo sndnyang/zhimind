@@ -17,6 +17,7 @@ from jieba.analyse import ChineseAnalyzer
 from mindmap import app, db
 from utility import *
 from models import *
+from ..models import User
 from ..mindmappage.models import MindMap
 from qa_parser import *
 from AnswerChecker import *
@@ -28,11 +29,9 @@ tutorial_page = Blueprint('tutorial_page', __name__,
 search = Search(db=db, analyzer=ChineseAnalyzer())
 
 try:
-    if not app.debug:
-        search.init_app(app)
-        search.create_index(update=True)
-    pass
-except LockError, e:
+    search.init_app(app)
+    search.create_index(update=True)
+except LockError:
     pass
 
 
@@ -172,43 +171,45 @@ def create_tutorial():
     return json.dumps(ret, ensure_ascii=False)
 
 
-@tutorial_page.route('/save_tutorial', methods=['POST'])
-@login_required
-def save_tutorial():
+def save_content(json_data, user):
     now = datetime.now()
-    if not g.user.check_frequence(now):
-        return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
-                          ensure_ascii=False)
-
-    tutorial_id = request.json.get('id')
-    content = request.json.get('content')
+    tutorial_id = json_data.get('id')
+    content = json_data.get('content')
 
     ret = {'error': u'重复数据异常'}
 
     try:
         tutorial = Tutorial.query.filter_by(id=tutorial_id,
-                                            user_id=g.user.get_id()).one_or_none()
+                                            user_id=user.get_id()).one_or_none()
         if not tutorial and tutorial_id:
-            return json.dumps({'error': tutorial_id + ' not exists'})
+            return {'error': tutorial_id + ' not exists'}
     except MultipleResultsFound:
-        return json.dumps(ret, ensure_ascii=False)
+        return ret
 
     title, tags, summary, slug, article_type = meta_parse(content)
     if tutorial is None:
         slug_tutor = Tutorial.query.filter_by(slug=slug,
-                                              user_id=g.user.get_id()
+                                              user_id=user.get_id()
                                               ).one_or_none()
         if slug_tutor:
-            return json.dumps({'error': slug + u' 已存在exists'}, ensure_ascii=False)
-        tutorial = Tutorial(title, '', name=article_type)
-        tutorial.user_id = g.user.get_id()
-        db.session.add(tutorial)
-        g.user.last_edit = now
-        update_content(tutorial, content, slug, article_type)
-        db.session.commit()
-        ret['id'] = tutorial.get_id()
+            if slug_tutor.title != title:
+                return {'error': slug + u'已存在, 且标题不同，"%s"' % slug_tutor.title}
+            else:
+                user.last_edit = now
+                slug_tutor.title = title
+                update_content(slug_tutor, content, slug, article_type)
+                tutorial = slug_tutor
+                ret['id'] = tutorial.get_id()
+        else:
+            tutorial = Tutorial(title, '', name=article_type)
+            tutorial.user_id = user.get_id()
+            db.session.add(tutorial)
+            user.last_edit = now
+            update_content(tutorial, content, slug, article_type)
+            db.session.commit()
+            ret['id'] = tutorial.get_id()
     else:
-        g.user.last_edit = now
+        user.last_edit = now
         tutorial.title = title
         update_content(tutorial, content, slug, article_type)
 
@@ -217,6 +218,18 @@ def save_tutorial():
     session[tutorial_id] = {'answer': response['answer'],
                             'comment': response['comment']}
     ret['error'] = 'success'
+    return ret
+
+
+@tutorial_page.route('/save_tutorial', methods=['POST'])
+@login_required
+def save_tutorial():
+    now = datetime.now()
+    if not g.user.check_frequence(now):
+        return json.dumps({'error': u'用户上次操作在一分钟之内，太过频繁'},
+                          ensure_ascii=False)
+
+    ret = save_content(request.json, g.user)
     return json.dumps(ret, ensure_ascii=False)
 
 
@@ -397,9 +410,26 @@ def search_page():
 @tutorial_page.route('/tipuesearch_content.json')
 def search_q():
     query = [{'title': e.title, 'url': '/' + e.type + '/'+e.id,
-                  'text': qa_parse(e.content)[0]['response'], 'tags': ''}
+              'text': qa_parse(e.content)[0]['response'], 'tags': ''}
              for e in db.session.query(Tutorial) if e.content]
     return json.dumps({'pages': query}, ensure_ascii=False)
+
+
+@app.route('/uploadCodeBlock', methods=['POST'])
+@jwt_required
+def uploadCodeBlock():
+    user_id = get_jwt_identity()
+    app.logger.info(user_id)
+    current_user = User.query.get(user_id)
+    now = datetime.now()
+    response = {'status': False, "error": u'用户操作太过频繁,请稍候再试',
+                "msg": u'用户操作太过频繁,请稍候再试',
+                "err_code": 1}
+    if not current_user.check_frequence(now):
+        return json.dumps(response, ensure_ascii=False)
+    current_user.last_edit = now
+    ret = save_content(request.json, current_user)
+    return json.dumps(ret, ensure_ascii=False)
 
 
 @app.route('/codeBlock', methods=['GET'])
@@ -407,11 +437,12 @@ def codeBlock():
     # @jwt_required
     # current_user = get_jwt_identity()
     # now = datetime.now()
-    # response = {'status': False, "error": u'用户操作太过频繁,请稍候再试', 
-    #            "msg": u'用户操作太过频繁,请稍候再试',
-    #            "err_code": 1}
-    # if not current_user.check_frequence(now):
+    # response = {'status': False, "error": u'用户操作太过频繁,请稍候再试',
+    #             "msg": u'用户操作太过频繁,请稍候再试',
+    #             "err_code": 1}
+    # if not g.user.check_frequence(now):
     #     return json.dumps(response, ensure_ascii=False)
+    # g.user.last_edit = now
     keyword = request.args.get('keyword', "神经,网络")
     keyword = ','.join(keyword.split())
     tutors = Tutorial.query.msearch(keyword, fields=['title'], limit=20).all()

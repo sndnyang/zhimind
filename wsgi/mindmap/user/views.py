@@ -89,8 +89,8 @@ def logout():
 
 
 @login_manager.user_loader
-def load_user(id):
-    return User.query.get(id)
+def load_user(uid):
+    return User.query.get(uid)
 
 
 @app.route("/developer/token.html", methods=['GET', 'POST'])

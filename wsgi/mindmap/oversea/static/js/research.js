@@ -231,7 +231,8 @@ function getMajorInterestsList() {
 }
 
 function getProcess() {
-    var url = $("#directoryUrl").val()
+    var url = $("#directoryUrl").val(), 
+        major = $("#majorName").val();
     //使用JQuery从后台获取JSON格式的数据
     $.ajax({  
         type: "post",//请求方式  
@@ -239,7 +240,7 @@ function getProcess() {
         timeout: 30000,//超时时间：30秒
         contentType: 'application/json',
         dataType: "json",
-        data: JSON.stringify({"url": url}),
+        data: JSON.stringify({"url": url, "major": major}),
         //请求成功后的回调函数 data为json格式  
         success:function(data){
             if (data.error) {
@@ -268,20 +269,22 @@ function getProcess() {
 }
 
 function showKeyWords(data, step) {
+    $("#keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
     if (step == "1") {
         showTags = ['该URL可能是教员', '该URL不可能是教员'];
-        console.log(keyWords);
+        $("#keyWords").append("<p>先根据关键词选出所有可能的URL,再过滤不可能的URL</p>");
     }
     else if (step == "2") {
-        showTags = ['该词不可能是名字', '该名字可能是教授个人主页',
+        showTags = ['该名字不可能是个人主页', '该名字可能是教授个人主页',
                 '文件而不是网页', '有些方向的前缀', '其他可能的研究兴趣标语',
-                    '这个标题不是研究兴趣', '一段研究兴趣的起始词', '研究兴趣需要替换的词',
-                    '该句开始不再是研究兴趣', '招生意向关键词', '长期招生关键词']
+                '其他可能的研究兴趣单词', '这个标题不是研究兴趣', 
+                '一段研究兴趣的起始词', '非研究兴趣的词', '该句开始不再是研究兴趣', 
+                '招生意向关键词', '长期招生关键词']
+        $("#keyWords").append("<p>先根据关键词过滤不可能的名字和URL,再选择可能的</p>");
     }
     keyWords = data.keywords;
     var json = keyWords;
-    $("#keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
-    $("#keyWords").append("<p>描述指：带该关键词的就 如何如何， 名字指显示链接显示文本， URL指实际链接地址</p>")
+    
     for (var i in showTags) {
         var e = showTags[i];
         var group = $('<div class="input-group input-group-sm"></div>');
@@ -318,9 +321,9 @@ function fillResearchInformationByGrid(item) {
             temp += parts[i] + ' ';
         }
     }
-    tr.append($(td_tmp.format(2, temp)));
-    var anchor = "<a href='{0}'>教员目录页</a>".format(item.link);
-    tr.append($(td_tmp.format(2, anchor)));
+    tr.append($(td_tmp.format(3, temp)));
+    var anchor = "<a href='{0}'>索引页</a>".format(item.link);
+    tr.append($(td_tmp.format(1, anchor)));
     if (item.website) {
         anchor = "<a href='{0}'>个人页</a>".format(item.website);
         tr.append($(td_tmp.format(1, anchor)));
@@ -345,29 +348,62 @@ function fillResearchInformationByGrid(item) {
 }
 
 function fillSourceInfo(toggle, item) {
-    var key = ['source_name/目录页链接名字', 'source_name/链接URL',
+    var side = $("<div class='col-xs-1 col-md-1 col-lg-1'></div>"),
+        main = $("<div class='col-xs-10 col-md-10 col-lg-10'></div>"),
+        key = ['source_name/目录页链接名字', 'source_name/链接URL',
         'source_website/个人主页名字', 'source_website/个人主页链接URL',
-        'source_position', 'source_interest'],
+        '招生意向说明部分原文', '研究方向部分原文'],
         p_tmp = '<p>{0} : {1}</p>';
     for (var i in key) {
-        var e = key[i];
-        if (!(e in item)) {
-            continue;
-        }
+        var e = key[i];        
         if (e.indexOf("/") > -1) {
             var head = e.split("/")[0], tail = e.split("/")[1];
             if (!(head in item && tail in item[head])) {
                 continue;
             }
-            toggle.append($(p_tmp.format(tail, item[head][tail])));
+            main.append($(p_tmp.format(tail, item[head][tail])));
             continue;
         }
         if (!(e in item)) {
             continue;
         }
-        toggle.append($(p_tmp.format(e, item[e])));
+        main.append($(p_tmp.format(e, item[e])));
     }
+    toggle.append(side);
+    toggle.append(main);
     return toggle;
+}
+
+function recrawl(obj, i) {
+    var url = $("#directoryUrl").val(),
+        major = parseInt($("#majorName").val()),
+        prof = parseInt($("#professorUrl").val()),
+        college = $("#collegeName").val();
+    var data = {'directory_url': url, 'major': major, 'college_name': college,
+                'professor_url': prof, 'no': i};
+
+    $.ajax({  
+        type: "post", //请求方式  
+        url: "recrawlaFaculty", //发送请求地址  
+        timeout: 30000,//超时时间：30秒
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify(data),
+        //请求成功后的回调函数 data为json格式  
+        success:function(data){
+            if (data.error) {
+                window.clearInterval(timerId);
+                alert(data.error);
+                return;
+            }
+            
+        },  
+        //请求出错的处理  
+        error: function(){  
+            window.clearInterval(timerId);
+            alert("请求出错");  
+        }
+    }); 
 }
 
 function showCrawlerResult(data, step) {
@@ -385,6 +421,9 @@ function showCrawlerResult(data, step) {
         tr = fillResearchInformationByGrid(head);
         var expand = $('<div class="col-md-1">展开</div>');
         tr.append(expand);  
+
+        // var td_tmp = '<div class="col-md-{0}">{1}</div>';
+        // tr.append($(td_tmp.format(1, "重新爬")));
         table.append(tr);
     }
     for (var i in list) {
@@ -401,6 +440,9 @@ function showCrawlerResult(data, step) {
             var expand = $('<div class="col-md-1"></div>');
             expand.append(anchor);
             tr.append(expand);
+
+            //var recrawl = $('<a href="javascript:void(0)" class="btn btn-danger">重新爬</a>');
+            //recrawl.attr("onclick", "recrawl(this, {0})".format(i));
             toggle = $('<div class="panel-collapse collapse" data-expanded="false" role="tabpanel" id="collapse{0}" aria-labelledby="heading{1}" aria-expanded="false""></div>'.format(i, i));
             toggle = fillSourceInfo(toggle, list[i])
         }

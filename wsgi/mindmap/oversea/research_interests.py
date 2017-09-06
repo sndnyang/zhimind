@@ -9,6 +9,7 @@ from sqlalchemy.exc import InvalidRequestError
 from wtforms import StringField, validators
 from sqlalchemy import asc
 from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.exc import IntegrityError
 
 from ..validation import *
 from mindmap import app, db
@@ -163,21 +164,21 @@ def custom_crawler():
                            veri=verification_code, types="research")
 
 
-def validate_and_extract(request):
+def validate_and_extract(form):
     if not app.debug:
         verification_code = request.form['verification_code']
         code_text = session['code_text']
         if verification_code != code_text:
             return u'Error at 验证码错误', None, None, None
 
-    major = request.form['major']
-    college_name = request.form['college_name']
-    directory_url = request.form['directory_url']
-    professor_url = request.form['professor_url']
+    major = form['major']
+    college_name = form['college_name']
+    directory_url = form['directory_url']
+    professor_url = form['professor_url']
     
-   #if major == '0' or not college_name.strip() or not directory_url.strip() or\
-   #   not professor_url.strip():
-   #    return u'Error at 信息不全', None, None, None
+    # if major == '0' or not college_name.strip() or not directory_url.strip() or\
+    #     not professor_url.strip():
+    #     return u'Error at 信息不全', None, None, None
 
     return college_name, major, directory_url, professor_url
 
@@ -223,9 +224,13 @@ def submit_professors(college_name, major, directory_url):
             professor = query_add_professor(ele.get("name"), college_name, major)
         if ele.get('tags'):
             for tag in ele.get('tags', []):
-                tag_obj = query_add_interests(tag, major)
-                if professor and tag_obj:
-                    professor.interests.append(tag_obj)
+                try:
+                    tag_obj = query_add_interests(tag, major)
+                    if professor and tag_obj:
+                        professor.interests.append(tag_obj)
+                        db.session.flush()
+                except IntegrityError:
+                    db.session.rollback()
         if professor:
             professor.position = ele.get("position")
             professor.term = ele.get("term")
@@ -247,24 +252,28 @@ def update_key_words(form, crawl):
             continue
         if ','.join(key_words[k]) == form[k]:
             continue
+        app.logger.info(','.join(key_words[k]) + "  " + form[k])
         key_words[k] = form[k].split(',')
         flag = True
 
-    return flag, key_words
-
-@research_page.route('/custom_crawler/<int:step>', methods=['POST'])
-def custom_crawler_step(step):
-    college, major, directory_url, prof_url = validate_and_extract(request)
-    code_img, code_string = create_validate_code()
-    session['code_text'] = code_string
-    task = query_and_create_task(college, major)
-    crawl = ResearchCrawler(directory_url, prof_url)
-    flag, key_words = update_key_words(request.form, crawl)
     if flag:
         crawl.key_words = key_words
         temp = crawl.save_key()
         if temp and temp.startswith("Error"):
-            return json.dumps({'error': temp}, ensure_ascii=False)
+            return temp
+    return None
+
+
+@research_page.route('/custom_crawler/<int:step>', methods=['POST'])
+def custom_crawler_step(step):
+    college, major, directory_url, prof_url = validate_and_extract(request.form)
+    code_img, code_string = create_validate_code()
+    session['code_text'] = code_string
+    task = query_and_create_task(college, major)
+    crawl = ResearchCrawler(directory_url, prof_url)
+    flag = update_key_words(request.form, crawl)
+    if flag:
+        return json.dumps({'error': flag}, ensure_ascii=False)
 
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
 
@@ -296,7 +305,7 @@ def custom_crawler_step(step):
 
 @research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
-    college, major, directory_url, prof_url = validate_and_extract(request)
+    college, major, directory_url, prof_url = validate_and_extract(request.form)
     task = query_and_create_task(college, major)
     if isinstance(task, (str, unicode)):
         return json.dumps({'error': task}, ensure_ascii=False)
@@ -359,6 +368,6 @@ def modify_interests():
                 interest.category_name = request.json.get('category', None)
         db.session.commit()
         return json.dumps({'info': 'success'}, ensure_ascii=False)
-    except Exception, e:
+    except Exception:
         app.logger.info(traceback.print_exc())
     return json.dumps({'error': 'not find'}, ensure_ascii=False)

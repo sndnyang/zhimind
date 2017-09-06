@@ -183,7 +183,7 @@ class ResearchCrawler:
         return None
 
     def save_key(self):
-        if not self.config or os.path.isfile(self.config):
+        if not self.config or not os.path.isfile(self.config):
             return u"Error at 爬虫关键词文件路径错误"
 
         try:
@@ -223,7 +223,7 @@ class ResearchCrawler:
                                               re.findall("(\w+)", self.url)
                                               )
                           ]
-        # if debug_level == 1: print('potential name: ' + str(potential_name))
+        # if debug_level == "website": print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -363,12 +363,12 @@ class ResearchCrawler:
         temp_sent = ''
         for sent in line.split('.'):
             temp_sent += sent
-            if debug_level == "extract": print(" sentence %s" % sent)
+            # if debug_level == "extract": print(" sentence %s" % sent)
             if contain_keys(sent, self.key_words[u'该句开始不再是研究兴趣'], True):
                 break
             sent = self.select_line_part(re.sub("\s+", " ", sent))
             sent = self.replace_words(sent)
-            if debug_level == "extract": print("convert to %s" % sent)
+            # if debug_level == "extract": print("convert to %s" % sent)
             for x in re.split("[,:;?]", sent):
                 if not x or not x.strip():
                     continue
@@ -380,7 +380,7 @@ class ResearchCrawler:
                                             and_tags[i - 1].endswith('al')):
                         and_tags[i - 1] = "%s and %s" % (and_tags[i - 1], and_tags[i])
                 and_tags = sorted(and_tags)
-                if debug_level == 'interests': print(tag + ' ' + str(and_tags))
+                # if debug_level == 'interests': print(tag + ' ' + str(and_tags))
                 for i in range(len(and_tags)):
                     tag = ' '.join(w if w.isupper() else w.lower()
                                    for w in and_tags[i].replace('-', ' ').split())
@@ -427,13 +427,13 @@ class ResearchCrawler:
 
     def find_paragraph_interests(self, result, tags, tag_text, words):
         if len(result) == 1:
-            if debug_level == 'interests': print('search the words %s ' % words)
+            # if debug_level == 'interests': print('search the words %s ' % words)
             r = re.search(words, result[0], re.I).group(1).lower()
             if len(result[0]) > result[0].lower().find(r) + len(r) + 15:
                 line = self.select_line_part(re.sub("\n", ".", result[0]))
-                if debug_level == 'interests': print('from the line %s ' % line)
+                # if debug_level == 'interests': print('from the line %s ' % line)
                 tags = self.extract_from_line(line, tags, tag_text)
-                if debug_level == 'interests': print("line %d ge" % len(tags))
+                # if debug_level == 'interests': print("line %d ge" % len(tags))
                 if tags:
                     return tags, tag_text
             node = result[0]
@@ -465,7 +465,7 @@ class ResearchCrawler:
         """
         # 先用 完整的 research interest 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
-        if debug_level == 'interests': print("re in has %d at %s" % (len(result), website))
+        # if debug_level == 'interests': print("re in has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, "(interest)")
         if tags:
             return tags, tag_text
@@ -473,7 +473,7 @@ class ResearchCrawler:
         # 再用 current research|interests 找
         words = "(%s)" % '|'.join(e for e in self.key_words[u'其他可能的研究兴趣短语'])
         result = soup.find_all(string=re.compile(words, re.I))
-        if debug_level == 'interests': print("other has %d at %s" % (len(result), website))
+        # if debug_level == 'interests': print("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
         if tags:
             return tags, tag_text

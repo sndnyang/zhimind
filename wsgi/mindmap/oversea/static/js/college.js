@@ -530,7 +530,7 @@ function submitRedirect(obj, type, url) {
                 alert(data.error);
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
-                //$("#loadingDiv").remove();
+                $("#loadingDiv").remove();
                 return;
             }
             console.log(data.info);

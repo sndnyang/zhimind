@@ -166,7 +166,7 @@ def custom_crawler():
 
 def validate_and_extract(form):
     if not app.debug:
-        verification_code = request.form['verification_code']
+        verification_code = form['verification_code']
         code_text = session['code_text']
         if verification_code != code_text:
             return u'Error at 验证码错误', None, None, None
@@ -176,9 +176,9 @@ def validate_and_extract(form):
     directory_url = form['directory_url']
     professor_url = form['professor_url']
     
-    # if major == '0' or not college_name.strip() or not directory_url.strip() or\
-    #     not professor_url.strip():
-    #     return u'Error at 信息不全', None, None, None
+    if major == '0' or not college_name.strip() or not directory_url.strip()\
+       or not professor_url.strip():
+        return u'Error at 信息不全', None, None, None
 
     return college_name, major, directory_url, professor_url
 
@@ -267,6 +267,8 @@ def update_key_words(form, crawl):
 @research_page.route('/custom_crawler/<int:step>', methods=['POST'])
 def custom_crawler_step(step):
     college, major, directory_url, prof_url = validate_and_extract(request.form)
+    if major is None:
+        return json.dumps({'error': college}, ensure_ascii=False)
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
     task = query_and_create_task(college, major)
@@ -306,6 +308,8 @@ def custom_crawler_step(step):
 @research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
     college, major, directory_url, prof_url = validate_and_extract(request.form)
+    if major is None:
+        return json.dumps({'error': college}, ensure_ascii=False)
     task = query_and_create_task(college, major)
     if isinstance(task, (str, unicode)):
         return json.dumps({'error': task}, ensure_ascii=False)

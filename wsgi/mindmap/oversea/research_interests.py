@@ -269,8 +269,6 @@ def custom_crawler_step(step):
     college, major, directory_url, prof_url = validate_and_extract(request.form)
     if major is None:
         return json.dumps({'error': college}, ensure_ascii=False)
-    code_img, code_string = create_validate_code()
-    session['code_text'] = code_string
     task = query_and_create_task(college, major)
     crawl = ResearchCrawler(directory_url, prof_url)
     flag = update_key_words(request.form, crawl)
@@ -292,8 +290,6 @@ def custom_crawler_step(step):
         return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 3:
-        code_img, code_string = create_validate_code()
-        session['code_text'] = code_string
         if task is None:
             task = CrawlTask(college, major, directory_url, prof_url)
             db.session.add(task)

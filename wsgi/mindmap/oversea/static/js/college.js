@@ -540,6 +540,8 @@ function submitRedirect(obj, type, url) {
                     var list = data.list;
                     filterList = data;
                     showCrawlerResult(data, type.split("-")[1]);
+                    document.getElementById("vericode")
+                        .setAttribute('src','/verifycode?random='+Math.random());
                     return;
                 }
                 window.location.href = "{0}.html".format(url);
@@ -569,6 +571,8 @@ function submitRedirect(obj, type, url) {
         error: function(){  
             $("#loadingDiv").remove();
             alert("出错");  
+            document.getElementById("vericode")
+                .setAttribute('src','/verifycode?random='+Math.random());
             $("#loadingDiv").remove();
         }
     };

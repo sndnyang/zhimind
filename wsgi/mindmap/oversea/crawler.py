@@ -107,11 +107,14 @@ class ResearchCrawler:
     """
 
     def __init__(self, directory_url, example):
-        self.config = ""
         self.example = example
         self.url = directory_url
         self.university_name = re.search('(\w+).edu', self.url).group(1)
         self.domain = '/'.join(directory_url.split("/")[:3])
+        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name)
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+        self.config = os.path.join(dir_path, 'key.json')
 
         self.key_words = None
         self.load_key()
@@ -168,10 +171,6 @@ class ResearchCrawler:
 
     def load_key(self):
 
-        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name)
-        if not os.path.isdir(dir_path):
-            os.makedirs(dir_path)
-        self.config = os.path.join(dir_path, 'key.json')
         if os.path.isfile(self.config):
             with open(self.config) as fp:
                 self.key_words = json.loads(fp.read(), strict=False)

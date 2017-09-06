@@ -525,15 +525,17 @@ function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
         success: function (data) {
-            console.log(data);
             $("#loadingDiv").remove();
             if (data.error) {
                 alert(data.error);
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
+                //$("#loadingDiv").remove();
                 return;
             }
+            console.log(data.info);
             if (type.indexOf("crawler") > -1) {
+                $("#loadingDiv").remove();
                 if (type.split("-")[1] != '3') {
                     var list = data.list;
                     filterList = data;
@@ -544,6 +546,7 @@ function submitRedirect(obj, type, url) {
                 return;
             }
 
+            $("#loadingDiv").remove();
             if (type.indexOf("research") == -1 || (type.indexOf("research") > -1 && $("#approveIt").val() == 1)) {
             // if (type != "research") {
                 alert('请等待审核，准备跳转...');
@@ -559,20 +562,22 @@ function submitRedirect(obj, type, url) {
                     table.append(tr);
                 }
                 $("#crawlResult").append(table);
+                $("#loadingDiv").remove();
             }
         },  
         //请求出错的处理  
         error: function(){  
             $("#loadingDiv").remove();
             alert("出错");  
+            $("#loadingDiv").remove();
         }
     };
-    if ($("#approveIt").val() == 0) {
+    if ($("#approveIt").val() == 0 || type.indexOf("crawler") > -1) {
         $("#crawlResult").html("");
         // timerId = window.setInterval(getProcess, 2000);  
         
-        //var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
-        var loadingDiv = createLoadingDiv('正在处理中，请稍等');
+        // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
+        var loadingDiv = createLoadingDiv('正在处理中，估计需要几分钟~~~没开发进度监视');
         
         // 呈现loading效果
         $(".container-fluid").append(loadingDiv);

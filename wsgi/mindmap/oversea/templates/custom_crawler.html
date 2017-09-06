@@ -10,6 +10,7 @@
         <div class="col-md-10 col-md-offset-1">
             <div class="pagetitle">
                 <h1>提交学校目录信息</h1>
+                <a href="research_form.html" class="btn btn-info">返回默认爬虫</a>
             </div>
             <div id="main">
                 <form method="post" action="{{ url_for('research_page.custom_crawler') }}" id="research">
@@ -49,9 +50,6 @@
                     <div id="keyWords">
                     </div>
                     <hr>
-                    <div id="crawlResult">
-                    </div>
-                    <hr>
                     <div class="form-group">
                         <label for="verification_code">验证码
                             <a href="javascript:void(0)">
@@ -73,6 +71,9 @@
 
                     <a class="btn btn-warning" href="javascript:void(0)" id="resetSubmit">重置</a>
                 </form>
+                <hr>
+                <div id="crawlResult">
+                </div>
             </div>
         </div>
     </div>

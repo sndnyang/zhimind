@@ -85,4 +85,4 @@ lib64/
 share/
 *.conf
 
-crawl/
+crawler/

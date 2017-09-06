@@ -182,7 +182,7 @@ class ResearchCrawler:
         return None
 
     def save_key(self):
-        if not self.config or not os.path.isfile(self.config):
+        if not self.config:
             return u"Error at 爬虫关键词文件路径错误"
 
         try:

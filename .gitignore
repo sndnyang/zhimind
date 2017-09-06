@@ -84,3 +84,5 @@ include/
 lib64/
 share/
 *.conf
+
+crawl/

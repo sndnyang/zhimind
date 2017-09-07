@@ -125,14 +125,15 @@ def query_add_interests(tag, major):
 
 def query_add_professor(name, college_name, major):
     try:
+        app.logger.info(len(college_name))
         result = Professor.query.filter_by(name=name, school=college_name, 
                                            major=major).one_or_none()
         if result is None:
             # app.logger.info("%s not exists, create" % name)
-            if name > 29:
+            if len(name) > 29:
                 words = re.findall("(\w+)", name)
                 name = words[0] + ' ' + words[-1]
-            if college_name > 59:
+            if len(college_name) > 59:
                 college_name = college_name[:57] + '..)'
             result = Professor(name, college_name, major)
             db.session.add(result)

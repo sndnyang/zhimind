@@ -180,12 +180,11 @@ class ResearchCrawler:
 
     def load_key(self):
 
+        with open(os.path.join(os.path.dirname(__file__), 'key.json')) as fp:
+            self.key_words = json.loads(fp.read(), strict=False)
         if os.path.isfile(self.config):
             with open(self.config) as fp:
-                self.key_words = json.loads(fp.read(), strict=False)
-        else:
-            with open(os.path.join(os.path.dirname(__file__), 'key.json')) as fp:
-                self.key_words = json.loads(fp.read(), strict=False)
+                self.key_words.update(json.loads(fp.read(), strict=False))
         if self.key_words is None:
             return u"Error at 爬虫关键词文件读取错误"
         return None
@@ -380,13 +379,13 @@ class ResearchCrawler:
             for x in re.split("[,:;?]", sent):
                 if not x or not x.strip():
                     continue
-                if debug_level == 'interests': print("get a tag %s" % tag)
                 tag = re.sub("[+.*_]", '', x.strip()).replace("&"," and ")
-                and_tags = [e.strip() for e in tag.replace(" and ", ",").split(",")]
+                and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",")]
                 for i in range(1, len(and_tags)):
-                    if and_tags[i] and and_tags[i - 1] and ' ' not in \
-                       and_tags[i - 1] and (len(and_tags[i - 1]) < 9 or 
-                                            and_tags[i - 1].endswith('al')):
+                    if not and_tags[i] or not and_tags[i-1]:
+                        continue
+                    if ' ' not in and_tags[i - 1] and (len(and_tags[i - 1]) < 9
+                            or and_tags[i - 1].endswith('al')):
                         and_tags[i - 1] = "%s and %s" % (and_tags[i - 1], and_tags[i])
                 and_tags = sorted(and_tags)
                 # if debug_level == 'interests': print(str(tags) + ' ' + str(and_tags))
@@ -408,10 +407,10 @@ class ResearchCrawler:
 
         slog = node.string
         node = node.parent
-        while node.get_text() == slog:
+        while node.get_text().strip() == slog:
             node = node.parent
 
-        # if debug_level == "sibling": print(" now node is " + node.get_text())
+        # if debug_level == "sibling": print(" now is '%s' '%s'" % (node.get_text(), slog))
 
         text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node))
         # if debug_level == "sibling": print(" now text is " + text)
@@ -538,7 +537,7 @@ class ResearchCrawler:
             name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)', name)
                             if not contain_keys(e, self.key_words[
-                                                u'该名字不可能是个人主页']+
+                                                u'这个词不可能是人名']+
                                                 [self.university_name]))
             person['name'] = name
 

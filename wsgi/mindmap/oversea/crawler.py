@@ -87,9 +87,9 @@ def get_and_store_page(page_url):
                        "https": "http://127.0.0.1:1081",
                       }
             if os.environ.get("DEBUG_MODE"):
-                r = requests.get(page_url, proxies=proxies)
+                r = requests.get(page_url, proxies=proxies, verify=False)
             else:
-                r = requests.get(page_url)
+                r = requests.get(page_url, verify=False)
             html = r.content
         except (ConnectionError, HTTPError):
             html = "Error at " + page_url

@@ -12,6 +12,13 @@ from requests import ConnectionError, HTTPError
 
 debug_level = 0
 
+def replace_html(s):
+    s = s.replace('&quot;','"')
+    s = s.replace('&amp;','&')
+    s = s.replace('&lt;','<')
+    s = s.replace('&gt;','>')
+    s = s.replace('&nbsp;',' ')
+    return s
 
 def contain_keys(href, keys, is_name=False, return_obj=False):
     """
@@ -367,14 +374,14 @@ class ResearchCrawler:
             # if debug_level == "extract": print(" sentence %s" % sent)
             if contain_keys(sent, self.key_words[u'该句开始不再是研究兴趣'], True):
                 break
-            sent = self.select_line_part(re.sub("\s+", " ", sent))
+            sent = replace_html(self.select_line_part(re.sub("\s+", " ", sent)))
             sent = self.replace_words(sent)
             # if debug_level == "extract": print("convert to %s" % sent)
             for x in re.split("[,:;?]", sent):
                 if not x or not x.strip():
                     continue
-                tag = re.sub("[+.*_]", '', x.strip())
-                # if debug_level == 'line': print("get a tag %s" % tag)
+                if debug_level == 'interests': print("get a tag %s" % tag)
+                tag = re.sub("[+.*_]", '', x.strip()).replace("&"," and ")
                 and_tags = [e.strip() for e in tag.replace("and", ",").split(",")]
                 for i in range(1, len(and_tags)):
                     if and_tags[i] and and_tags[i - 1] and ' ' not in \

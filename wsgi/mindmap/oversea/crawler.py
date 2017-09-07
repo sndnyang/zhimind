@@ -241,13 +241,14 @@ class ResearchCrawler:
 
     def get_personal_website(self, l, page_url, name):
         stop_word = u'该名字不可能是个人主页'
-        potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url) + ['personal']
+        potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url)
         if name:
             potential_name += [e[:5] for e in name.split()]
         key_words = self.key_words
+        potential_name += key_words[u'该URL可能是个人主页']
 
-        potential_name = [e for e in potential_name
-                          if not contain_keys(e,
+        potential_name = [e for e in potential_name if len(e) > 2 and 
+                          not contain_keys(e,
                                               key_words[u'该URL可能是教员'] +
                                               key_words[stop_word] +
                                               key_words[u'该URL不可能是教员'] +
@@ -603,7 +604,8 @@ class ResearchCrawler:
             person[u'招生意向说明部分原文'] = position_text
 
         anchors = find_all_anchor(soup)
-        faculty_page, mail, page_name = self.get_personal_website(anchors, faculty_link, person['name'])
+        faculty_page, mail, page_name = self.get_personal_website(anchors, 
+                faculty_link, person['name'])
         if flag:
             person['source_website'] = {u'个人主页名字': page_name,
                                         u'个人主页链接URL': faculty_page}

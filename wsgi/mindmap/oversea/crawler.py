@@ -382,7 +382,7 @@ class ResearchCrawler:
                     continue
                 if debug_level == 'interests': print("get a tag %s" % tag)
                 tag = re.sub("[+.*_]", '', x.strip()).replace("&"," and ")
-                and_tags = [e.strip() for e in tag.replace("and", ",").split(",")]
+                and_tags = [e.strip() for e in tag.replace(" and ", ",").split(",")]
                 for i in range(1, len(and_tags)):
                     if and_tags[i] and and_tags[i - 1] and ' ' not in \
                        and_tags[i - 1] and (len(and_tags[i - 1]) < 9 or 

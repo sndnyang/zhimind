@@ -67,6 +67,7 @@ def get_and_store_page(page_url):
 
     :rtype: string
     """
+    # if debug_level == "open": print("now open page url %s" % page_url)
     parts = page_url.split("/")[2].split(".")
     university_name = parts[-2]
     dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name)
@@ -81,7 +82,14 @@ def get_and_store_page(page_url):
             html = fp.read()
     else:
         try:
-            r = requests.get(page_url)
+            proxies = {
+                       "http": "http://127.0.0.1:1081",
+                       "https": "http://127.0.0.1:1081",
+                      }
+            if os.environ.get("DEBUG_MODE"):
+                r = requests.get(page_url, proxies=proxies)
+            else:
+                r = requests.get(page_url)
             html = r.content
         except (ConnectionError, HTTPError):
             html = "Error at " + page_url
@@ -137,8 +145,14 @@ class ResearchCrawler:
         if html.startswith("Error at "):
             return "Error to load", None
         soup = BeautifulSoup(html, 'html.parser')
-
-        if soup.find("frameset") and not soup.find("body"):
+        redirect = soup.find(attrs={"http-equiv": "refresh"})
+        if redirect:
+            page_url = redirect['content'].split("=")[1]
+            # if debug_level == "open": print("now refres %s" % page_url)
+            html = get_and_store_page(page_url)
+            # if debug_level == 5: print "open url", page_url
+            soup = BeautifulSoup(html, 'html.parser')
+        elif soup.find("frameset") and not soup.find("body"):
             frames = soup.find_all("frame")
             for e in frames[1:]:
                 if contain_keys(e.get("src"), self.key_words["frameset_pass"]):
@@ -147,9 +161,18 @@ class ResearchCrawler:
                 page_url = '%s%s' % (page_url, e.get("src"))\
                            if page_url[-1] == '/' else \
                            '%s/%s' % (page_url, e.get("src"))
+                # if debug_level == "open": print("now frameset %s" % page_url)
                 html = get_and_store_page(page_url)
                 # if debug_level == 5: print "open url", page_url
                 soup = BeautifulSoup(html, 'html.parser')
+        elif soup.find("iframe") and (not soup.find("body") or 
+                                      len([e for e in soup.body.contents 
+                                          if e and str(e).strip()]) == 1):
+            e = soup.find("iframe")
+            page_url = e.get("src")
+            # if debug_level == "open": print("now iframe %s" % page_url)
+            html = get_and_store_page(page_url)
+            soup = BeautifulSoup(html, 'html.parser')
         return html, soup
 
     def crawl_faculty_list(self, directory_url, example):
@@ -368,9 +391,12 @@ class ResearchCrawler:
     def extract_from_line(self, line, tags, tag_text):
         pref = self.key_words[u'有些方向的前缀']
         temp_sent = ''
+        # if debug_level == "extract": print(" line %s" % unicode(line.split('.')))
         for sent in line.split('.'):
+            # if debug_level == "extract": print(" sentence '%s'" % sent.strip())
+            if not sent.strip():
+                continue
             temp_sent += sent + "<br>"
-            # if debug_level == "extract": print(" sentence %s" % sent)
             if contain_keys(sent, self.key_words[u'该句开始不再是研究兴趣'], True):
                 break
             sent = replace_html(self.select_line_part(re.sub("\s+", " ", sent)))
@@ -405,20 +431,22 @@ class ResearchCrawler:
 
     def extract_from_sibling(self, node, tags, tag_text):
 
-        slog = node.string
+        slog = node.string.strip()
         node = node.parent
         while node.get_text().strip() == slog:
             node = node.parent
 
-        # if debug_level == "sibling": print(" now is '%s' '%s'" % (node.get_text(), slog))
+        # if debug_level == "sibling": print(" now is '%s' '%s'" % (node.get_text().strip(), slog))
 
         text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node))
         # if debug_level == "sibling": print(" now text is " + text)
 
         line = text[text.find(slog) + len(slog):]
         # if debug_level == "sibling": print(" now line is " + line)
+        # if debug_level == "interests": print(" now line is " + line)
 
         tags = self.extract_from_line(line, tags, tag_text)
+        # if debug_level == "interests": print(" now tags is " + str(tags))
 
         return tags
 
@@ -434,6 +462,7 @@ class ResearchCrawler:
                 if tags:
                     return tags, tag_text
             node = result[0]
+            # if debug_level == 'interests': print(' to find sibling %s ' % str(node))
             tags = self.extract_from_sibling(node, tags, tag_text)
             return tags, tag_text
         elif len(result) > 1:
@@ -471,12 +500,14 @@ class ResearchCrawler:
         result = soup.find_all(string=re.compile(words, re.I))
         # if debug_level == 'interests': print("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
+        # if debug_level == 'interests': print("get tags %s" % str(tags))
         if tags:
             return tags, tag_text
 
         # 再用 research or interests等标语 to find then filter it by some rules
         words = "(%s)" % '|'.join(e for e in self.key_words[u'其他可能的研究兴趣单词'])
         result = soup.find_all(string=re.compile(words, re.I))
+        # if debug_level == 'interests': print("singleword has %d at %s" % (len(result), website))
         nodes = self.filter_research_interests(result)
         # if debug_level == 3: print(' ' * 2 * debug_level + "only one has %d at %s " % (len(nodes),  website))
 

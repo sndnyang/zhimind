@@ -1,5 +1,5 @@
 {
-    "该URL可能是教员": ["faculty", "professor", "lecturer", "affiliate", "people","~"],
+    "该URL可能是教员": ["faculty", "professor", "lecturer", "affiliate", "people","~","profile"],
     "该URL不可能是教员": ["CONTACT", "ADMINISTRATION", "qa", "ADVISORY", "BOARD", "OPENINGS", "INSTITUTE", "international", "admision", "assistants", "students*", "Updated", "Organizations", "Advisor", "Welcome", "Password", "login", "sign", "register"],
     "该名字可能是教授个人主页": ["website", "personal", "homepage", "home", "Home page", "Personal Web site"],
     "该名字不可能是个人主页": ["com", "lab", "calendar", "staff", "publications", "military", "international", "teaching", "people", "faculty", "student", "college", "professor", "lecturer", "affiliate", "associate", "adjunct", "visiting", "assistant", "questions?", "aspx", "html"],
@@ -11,7 +11,7 @@
     "长期招生关键词": ["regularly", "always"],
     "招生意向关键词": ["position available", "available for", "looking for [\\w\\s\\.-]*students", "Interested PhD", "recruiting", "accepting [\\w\\s]*students"],
     "文件而不是网页": ["pdf", "ps", "zip", "rar"],
-    "有些方向的前缀": ["bio", "geo"],
+    "有些方向的前缀": ["bio", "geo", "algorithm"],
     "其他可能的研究兴趣短语": ["focuses on", "current Intertests"],
     "其他可能的研究兴趣单词": ["research", "Expertise"]
 }

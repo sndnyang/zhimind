@@ -212,11 +212,13 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
         i += 1
         # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
     app.logger.info('research process %s %s ' % (directory_url, major) + "  finish")
-    # app.redis.set('%s-%s' % (directory_url, major), link_list)
+    app.redis.set('%s-%s' % (directory_url, major), link_list)
     return link_list
 
 
 def submit_professors(college_name, major, directory_url):
+    app.logger.info(directory_url + ' ' + major)
+    app.logger.info(app.redis.get('%s-%s' % (directory_url, major)))
     entity = eval(app.redis.get('%s-%s' % (directory_url, major)))
     for ele in entity:
         professor = None
@@ -250,6 +252,8 @@ def update_key_words(form, crawl):
     for k in key_words:
         if k not in form:
             continue
+        if form[k].strip()[-1] == ',':
+            return u"Error at %s 的最后一个符号是逗号" % k
         if ','.join(key_words[k]) == form[k]:
             continue
         key_words[k] = form[k].split(',')
@@ -279,7 +283,7 @@ def custom_crawler_step(step):
     if step == 1:
         link_list = []
         for link in faculty_list:
-            link_list.append(link.get("href") + "|" + link.string)
+            link_list.append(link.get("href") + "|" + str(link.get_text()))
         return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 2:

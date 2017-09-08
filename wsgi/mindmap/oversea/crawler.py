@@ -452,7 +452,8 @@ class ResearchCrawler:
 
         # if debug_level.find("sibling") > 0: print(" now is '%s' '%s'" % (node.get_text().strip(), slog))
 
-        text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node).strip(), re.M)
+        text = re.sub("(\n|\r)", ".", unicode(node.get_text()).strip())
+        # text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node).strip(), re.M)
         # if debug_level.find("sibling") > 0: print(" now text is " + text)
 
         line = text[text.find(slog) + len(slog):]

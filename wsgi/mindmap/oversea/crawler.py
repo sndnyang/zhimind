@@ -26,6 +26,9 @@ def contain_keys(href, keys, is_name=False, return_obj=False):
     """
     if not href or not keys:
         return False
+    if '~' in keys and '~' in href:
+        return True
+        
     words = "(%s)" % '|'.join(e for e in keys)
     if is_name:
         r = re.search('%s' % words, href, re.I)
@@ -38,7 +41,12 @@ def contain_keys(href, keys, is_name=False, return_obj=False):
         if return_obj:
             return r
         return True
-    r = re.search(r'_?%s_?' % words, href, re.I)
+    r = re.search(r'_%s' % words, href, re.I)
+    if r:
+        if return_obj:
+            return r
+        return True
+    r = re.search(r'%s_' % words, href, re.I)
     if r:
         if return_obj:
             return r
@@ -256,7 +264,7 @@ class ResearchCrawler:
                                               re.findall("(\w+)", self.url)
                                               )
                           ]
-        # if debug_level == "website": print('potential name: ' + str(potential_name))
+        if debug_level == "website": print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -271,8 +279,8 @@ class ResearchCrawler:
             if len(suffix) < 5 and contain_keys(suffix, self.key_words[u'文件而不是网页']):
                 continue
 
-            if a.string:
-                name = ' '.join(e for e in re.findall("([A-Za-z]+)", a.string))
+            if a.get_text():
+                name = ' '.join(e for e in re.findall("([A-Za-z]+)", a.get_text()))
                 if name and contain_keys(name, self.key_words[u'该名字不可能是个人主页']):
                     continue
 
@@ -283,13 +291,13 @@ class ResearchCrawler:
                 continue
 
             if contain_keys(href, potential_name, True) or \
-                    contain_keys(a.string, potential_name, True):
-                # if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
+                    contain_keys(a.get_text(), potential_name, True):
+                if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
                 if href.find('@') > -1:
                     mail = href
                 else:
                     faculty_page = href
-                    page_name = a.string
+                    page_name = a.get_text()
 
         # if debug_level == 1: print(' ' * 2 * debug_level + ' final link: ' + faculty_page)
         return faculty_page, mail, page_name
@@ -406,7 +414,8 @@ class ResearchCrawler:
             for x in re.split("[,:;?]", sent):
                 if not x or not x.strip():
                     continue
-                tag = re.sub("[+.*_{}\[\]]", '', x.strip()).replace("&"," and ")
+                tag = x.strip().replace("&"," and ")
+                tag = ' '.join(re.findall(r'(\w+)', tag))
                 and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",")]
                 for i in range(1, len(and_tags)):
                     if not and_tags[i] or not and_tags[i-1]:
@@ -553,24 +562,29 @@ class ResearchCrawler:
         # 搞名字
         faculty_link = faculty_ele.get("href")
         name = faculty_ele.get_text()
+        if debug_level == 'name': print(' name is ' + name)
         if flag:
             person['source_name'] = {u'目录页链接名字': name,
                                      u'链接URL': faculty_link}
 
-        if not name or contain_keys(name, self.key_words[u'该名字可能是教授个人主页']):
+        if not name:
             name = ''
 
-        # if debug_level == 1: print(' name is ' + name)
+        if debug_level == 'name': print(' name is ' + name)
         if not name:
-            # if debug_level == 1: print(' link is ' + faculty_link)
+            if debug_level == 'name': print(' link is ' + faculty_link)
             name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
 
+        if debug_level == 'name': print(' name is ' + name)
         if name:
             name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
+            if debug_level == 'name': print(' words is ' + str(self.key_words[
+                                                u'这个词不可能是人名']))
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)', name)
                             if not contain_keys(e, self.key_words[
                                                 u'这个词不可能是人名']+
                                                 [self.university_name]))
+            if debug_level == 'name': print(' name is ' + name)
             person['name'] = name
 
         return person

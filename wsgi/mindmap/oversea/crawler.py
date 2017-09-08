@@ -86,10 +86,10 @@ def get_and_store_page(page_url):
                        "http": "http://127.0.0.1:1081",
                        "https": "http://127.0.0.1:1081",
                       }
-            if os.environ.get("DEBUG_MODE"):
-                r = requests.get(page_url, proxies=proxies, verify=False)
-            else:
-                r = requests.get(page_url, verify=False)
+            # if os.environ.get("DEBUG_MODE"):
+            #     r = requests.get(page_url, proxies=proxies, verify=False)
+            # else:
+            r = requests.get(page_url, verify=False)
             html = r.content
         except (ConnectionError, HTTPError):
             html = "Error at " + page_url
@@ -406,7 +406,7 @@ class ResearchCrawler:
             for x in re.split("[,:;?]", sent):
                 if not x or not x.strip():
                     continue
-                tag = re.sub("[+.*_]", '', x.strip()).replace("&"," and ")
+                tag = re.sub("[+.*_{}\[\]]", '', x.strip()).replace("&"," and ")
                 and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",")]
                 for i in range(1, len(and_tags)):
                     if not and_tags[i] or not and_tags[i-1]:
@@ -439,7 +439,7 @@ class ResearchCrawler:
 
         # if debug_level == "sibling": print(" now is '%s' '%s'" % (node.get_text().strip(), slog))
 
-        text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node))
+        text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node.get_text().strip()))
         # if debug_level == "sibling": print(" now text is " + text)
 
         line = text[text.find(slog) + len(slog):]

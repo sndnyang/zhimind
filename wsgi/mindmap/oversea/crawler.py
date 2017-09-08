@@ -89,10 +89,17 @@ def get_and_store_page(page_url):
     dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name)
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
-    file_name = re.sub("[?%=]", "", dir_name + '/' + (
-                page_url.split('/')[-1] if page_url[-1] != '/' else
-                page_url.split('/')[-2]) + '.html')
 
+    fname = page_url.split('/')[-1]
+    if fname == '':
+        fname = page_url.split('/')[-2]
+
+    if fname.find("index") > -1:
+        fname = '_'.join(page_url.split('/')[3:])
+    
+    file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
+
+    if debug_level.find("save") > 0: print("now open page url %s" % file_name)
     if os.path.isfile(file_name):
         with open(file_name) as fp:
             html = fp.read()

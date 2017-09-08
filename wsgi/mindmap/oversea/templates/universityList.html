@@ -9,7 +9,7 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>国家</h4>
-                    <select id="degreeName" name="degree" onchange=filterBy(this.options[this.options.selectedIndex].value, true, '国家', "{{ url_for('uni_major_page.college_page') }}") class="form-control">
+                    <select id="degreeName" name="degree" onchange='filterBy(this.options[this.options.selectedIndex].value, true, "国家", "{{ url_for('uni_major_page.college_page') }}")' class="form-control">
                         <option value="">不限</option>
                     </select>
                 </div>
@@ -17,7 +17,7 @@
             <div class="col-sm-2">
                 <div class="form-group">
                     <h4>排名</h4>
-                    <select id="sortName" onchange=sortCollege("{{ url_for('uni_major_page.college_page') }}", this.options[this.options.selectedIndex].value, true) class="form-control">
+                    <select id="sortName" onchange='sortCollege("{{ url_for('uni_major_page.college_page') }}", this.options[this.options.selectedIndex].value, true)' class="form-control">
                     </select>
                 </div>
             </div>

@@ -88,7 +88,9 @@ function getProfessorsList(col) {
     var major = parseInt($("#majorName").val()),
         interest = $("#researchName").val(),
         college = $("#collegeName").val(),
-        position = $("#positionName").val();
+        position = $("#positionName").val(),
+        param = "";
+
     if (col == 'position' && !position) {
         filterProfessorByPosition();
         return;
@@ -101,6 +103,16 @@ function getProfessorsList(col) {
         alert("起码先选择专业");
         return;
     }
+    if (college)
+        param = "学校={0}".format(college);
+    param = "专业={0}".format(major);
+    if (interest)
+        param = "研究方向={0}".format(interest);
+    if (position)
+        param = "招生={0}".format(position);
+
+    window.location.href = "{0}#{1}".format(document.URL.split("#")[0], param);
+
     if (!college) {
         college = 0;
     }

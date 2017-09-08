@@ -448,6 +448,14 @@ function sortCollege(name, col, ininfo) {
     }
     if (col == 'fall') col = 'deadline';
     data.sort(compare(col, false, ininfo));
+    var params = getSharpParam();
+    if (params)
+        params['sortBy'] = col;
+    else {
+        params = {'sortBy': col};
+    }
+    var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
+    window.location.href = temp;
     pageIt(data, name, 0);
 }
 
@@ -478,6 +486,16 @@ function pageTemplate(data, name, n) {
 
 function filterBy(v, t, col) {
     var newList = filterCollege(filterList, col, v);
+    var params = getSharpParam();
+    if (params)
+        params['filterBy'+col] = v;
+    else {
+        params = {};
+        params['filterBy'+col] = v;
+    }
+    
+    var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
+    window.location.href = temp;
     pageIt(newList, "college", 0);
 }
 
@@ -485,11 +503,19 @@ function filterByName(obj, type) {
     var name = $(obj).val();
     if (!rankBy) rankBy = "Q.S.";
     var newList = filterCollege(filterList, 'name', name);
+    var params = getSharpParam();
+    if (params)
+        params['filterByName'] = name;
+    else {
+        params = {'filterByName': name};
+    }
+    var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
+    window.location.href = temp;
+    
     if (type == "research") {
         filterProfessors('school', name);
         return;
     }
-
     if (!name && type == "college")
         sortCollege(type, rankBy, true);
     else
@@ -502,6 +528,15 @@ function filterMajorByAll() {
         evalue = $("#evalueName").val(),
         transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
+    var params = getSharpParam();
+    if (params)
+        params['filterByName'] = name;
+    else {
+        params = {'filterByName': name};
+    }
+    var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
+    window.location.href = temp;
+
     var newList = filterCollege(filterCollege(
         filterCollege(
             filterCollege(

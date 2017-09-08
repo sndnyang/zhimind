@@ -42,6 +42,32 @@ function getRequest() {
    return theRequest;
 }
 
+function getSharpParam() {
+   var url = document.URL;
+   var theRequest = new Object();
+   if (url.indexOf("#") != -1) {
+      var str = url.split("#")[1];
+      strs = str.split("&");
+      for(var i = 0; i < strs.length; i ++) {
+          if (!strs[i].split("=")[0] || strs[i].split("=")[0] === '')
+              continue
+          theRequest[strs[i].split("=")[0]] = decodeURI(strs[i].split("=")[1]);
+      }
+   }
+   else {
+       return null;
+   }
+   return theRequest;
+}
+
+function jsonToSharpParam(json) {
+    var temp = ""
+    for (var e in json) {
+        temp += "{0}={1}&".format(e, json[e]);
+    }
+    return temp;
+}
+
 /**
  * 回到顶部
  */

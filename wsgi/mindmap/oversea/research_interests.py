@@ -4,7 +4,7 @@ import os
 import re
 import traceback
 
-from flask import request, render_template, session, json, Blueprint
+from flask import request, render_template, session, json, Blueprint, g
 from sqlalchemy.exc import InvalidRequestError
 from wtforms import StringField, validators
 from sqlalchemy import asc
@@ -166,7 +166,8 @@ def custom_crawler():
 
 
 def validate_and_extract(form):
-    if not app.debug:
+    if not (g.user and g.user.is_authenticated and 
+            g.user.get_name() == 'sndnyang'):
         verification_code = form['verification_code']
         code_text = session['code_text']
         if verification_code != code_text:

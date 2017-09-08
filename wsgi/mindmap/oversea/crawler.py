@@ -576,7 +576,6 @@ class ResearchCrawler:
 
         # if debug_level == 'name': print(' name is ' + name)
         # if debug_level == 'name': print(' words is ' + str(self.key_words[
-                                            u'这个词不可能是人名']))
         if name:
             name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)', name)

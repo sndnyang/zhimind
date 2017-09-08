@@ -54,19 +54,26 @@ def contain_keys(href, keys, is_name=False, return_obj=False):
     return False
 
 
-def format_url(href, domain, index=''):
+def format_url(href, source_url):
+    base = '/'.join(source_url.split('/')[:3])
+    domain = source_url.split('/')[2]
+
     if href.startswith('http'):
         full_url = href
     elif href.startswith('//'):
         full_url = 'http:' + href
     elif href[0] == '/' and (len(href) == 1 or href[1] != '/'):
-        full_url = domain + href
+        full_url = base + href
     elif href.find(domain) > -1:
         full_url = 'http://' + href
-    elif index:
-        full_url = index + href if index[-1] == '/' else index + '/' + href
     else:
-        full_url = domain + '/' + href
+        last = source_url.split('/')[-1]
+        if '.' in last:
+            full_url = '/'.join(source_url.split('/')[:-1]) + '/' + href
+        elif last == '':
+            full_url = source_url + href
+        else:
+            full_url = source_url + '/' + href
     return full_url
 
 
@@ -316,7 +323,7 @@ class ResearchCrawler:
                 continue
 
             href = e.get('href')
-            faculty_link = format_url(href, self.domain)
+            faculty_link = format_url(href, self.url)
 
             if faculty_link == faculty_url:
                 continue
@@ -343,7 +350,7 @@ class ResearchCrawler:
             href = l[i].get("href")
             if not href:
                 continue
-            href = format_url(l[i].get("href"), self.domain, index)
+            href = format_url(l[i].get("href"), index)
             if debug_level.find("list") > 0: print href, a
             if href == a:
                 return i
@@ -550,8 +557,7 @@ class ResearchCrawler:
                 for node in nodes:
                     if node.parent.name != "a":
                         continue
-                    research_link = format_url(node.parent.get("href"),
-                                               self.domain, website)
+                    research_link = format_url(node.parent.get("href"),website)
                     if research_link == website:
                         continue
                     re_content, re_soup = self.open_page(research_link)
@@ -638,7 +644,7 @@ class ResearchCrawler:
 
         if faculty_page:
             if debug_level.find("website") > 0: print 'website page url: ',faculty_page
-            faculty_page = format_url(faculty_page, self.domain, faculty_link)
+            faculty_page = format_url(faculty_page, faculty_link)
             if debug_level.find("website") > 0: print 'website page url: ',faculty_page
             page_c, page_soup = self.open_page(faculty_page)
             if page_c.startswith('Error to load'):

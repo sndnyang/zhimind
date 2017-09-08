@@ -210,6 +210,7 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
     i = 0
     link_list = []
     for link in faculty_list:
+        app.logger.info(link.get("href"))
         link_list.append(crawl.dive_into_page(link, flag))
         i += 1
         # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
@@ -253,7 +254,7 @@ def update_key_words(form, crawl):
     for k in key_words:
         if k not in form:
             continue
-        if form[k].strip()[-1] == ',':
+        if form[k].strip() and form[k].strip()[-1] == ',':
             return u"Error at %s 的最后一个符号是逗号" % k
         if ','.join(key_words[k]) == form[k]:
             continue

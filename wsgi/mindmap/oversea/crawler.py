@@ -264,7 +264,7 @@ class ResearchCrawler:
                                               re.findall("(\w+)", self.url)
                                               )
                           ]
-        if debug_level == "website": print('potential name: ' + str(potential_name))
+        # if debug_level == "website": print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -292,7 +292,7 @@ class ResearchCrawler:
 
             if contain_keys(href, potential_name, True) or \
                     contain_keys(a.get_text(), potential_name, True):
-                if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
+                # if debug_level == 1: print(' ' * 2 * debug_level + ' search it ok : ' + href)
                 if href.find('@') > -1:
                     mail = href
                 else:
@@ -411,12 +411,16 @@ class ResearchCrawler:
             sent = replace_html(self.select_line_part(re.sub("\s+", " ", sent)))
             sent = self.replace_words(sent)
             # if debug_level == "extract": print("convert to %s" % sent)
-            for x in re.split("[,:;?]", sent):
+            for x in re.split("[,:;?!]", sent):
                 if not x or not x.strip():
                     continue
                 tag = x.strip().replace("&"," and ")
-                tag = ' '.join(re.findall(r'(\w+)', tag))
-                and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",")]
+                tag = re.sub(r"[+.*#_]", ' ', tag)
+                tag = re.sub(r"[{}\[\]%&'=\"]", ',', tag)
+                tag = re.sub(r"[-]", ' ', tag)
+                tag = re.sub(r"[/\\|]", '/', tag)
+                tag = re.sub(r"(\s+)", " ", tag)
+                and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",") if e]
                 for i in range(1, len(and_tags)):
                     if not and_tags[i] or not and_tags[i-1]:
                         continue
@@ -562,7 +566,7 @@ class ResearchCrawler:
         # 搞名字
         faculty_link = faculty_ele.get("href")
         name = faculty_ele.get_text()
-        if debug_level == 'name': print(' name is ' + name)
+        # if debug_level == 'name': print(' name is ' + name)
         if flag:
             person['source_name'] = {u'目录页链接名字': name,
                                      u'链接URL': faculty_link}
@@ -570,21 +574,28 @@ class ResearchCrawler:
         if not name:
             name = ''
 
-        if debug_level == 'name': print(' name is ' + name)
-        if not name:
-            if debug_level == 'name': print(' link is ' + faculty_link)
-            name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
-
-        if debug_level == 'name': print(' name is ' + name)
+        # if debug_level == 'name': print(' name is ' + name)
+        # if debug_level == 'name': print(' words is ' + str(self.key_words[
+                                            u'这个词不可能是人名']))
         if name:
             name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
-            if debug_level == 'name': print(' words is ' + str(self.key_words[
-                                                u'这个词不可能是人名']))
             name = ' '.join(e.capitalize() for e in re.findall('(\w+)', name)
                             if not contain_keys(e, self.key_words[
                                                 u'这个词不可能是人名']+
                                                 [self.university_name]))
-            if debug_level == 'name': print(' name is ' + name)
+
+        if not name:
+            # if debug_level == 'name': print(' link is ' + faculty_link)
+            name = faculty_link.split('/')[-1] if faculty_link.strip()[-1] != '/' else faculty_link.split('/')[-2]
+
+        # if debug_level == 'name': print(' name is ' + name)
+        if name:
+            name = re.sub("(Ph\.?D|M\.?S)", "", name, re.I)
+            name = ' '.join(e.capitalize() for e in re.findall('(\w+)', name)
+                            if not contain_keys(e, self.key_words[
+                                                u'这个词不可能是人名']+
+                                                [self.university_name]))
+            # if debug_level == 'name': print(' name is ' + name)
             person['name'] = name
 
         return person

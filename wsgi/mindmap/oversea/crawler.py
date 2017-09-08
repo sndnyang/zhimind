@@ -566,7 +566,10 @@ class ResearchCrawler:
     def extract_name_from_node(self, faculty_ele, person, flag):
         # 搞名字
         faculty_link = faculty_ele.get("href")
-        name = faculty_ele.get_text()
+        for e in faculty_ele.get_text("#", strip=True).split("#"):
+            if e:
+                name = e
+                break
         # if debug_level.find('name') > 0: print(' name is ' + name)
         if flag:
             person['source_name'] = {u'目录页链接名字': name,

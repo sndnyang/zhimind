@@ -658,7 +658,7 @@ $(document).ready(function () {
             $("#collegeNameList").html("");
             for (var i in collegeList) {
                 var item = collegeList[i].name;
-                if (item.toLowerCase().indexOf(text) > 0) {
+                if (item.toLowerCase().indexOf(text) >= 0) {
                     var option = $('<option value="{0}">{1}</option>'.format(item, item));
                     $("#collegeNameList").append(option);
                 }

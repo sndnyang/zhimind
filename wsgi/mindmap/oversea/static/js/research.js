@@ -66,9 +66,9 @@ function fillResearchInformation(item, showSchool) {
         tr.append($("<td>{0}</td>".format(temp)));
         tr.append($("<td>{0}</td>".format(item.major)));
     }
-    tr.append($("<td><a href='{0}'>主页</a></td>".format(item.link)));
+    tr.append($("<td><a href='{0}' target='_blank'>主页</a></td>".format(item.link)));
     if (item.website)
-        tr.append($("<td><a href='{0}'>个人页</a></td>".format(item.website)));
+        tr.append($("<td><a href='{0}' target='_blank'>个人页</a></td>".format(item.website)));
     else {
         tr.append($("<td></td>"));
         
@@ -283,17 +283,17 @@ function getProcess() {
 function showKeyWords(data, step) {
     $("#keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
     if (step == "1") {
-        showTags = ['该URL可能是教员', '该URL不可能是教员'];
+        showTags = ['教员URL可能包含', '教员URL不可能包含'];
         $("#keyWords").append("<p>先根据关键词选出所有可能的URL,再过滤不可能的URL</p>");
     }
     else if (step == "2") {
-        showTags = ['该名字不可能是个人主页', '该名字可能是教授个人主页',
-                '该URL可能是个人主页', '这个词不可能是人名', '文件而不是网页', 
+        showTags = ['个人主页URL不可能包含', '个人主页URL可能包含', 
+                '教授个人主页可能显示为', '文件而不是网页', "人名不可能是",
                 '有些方向的前缀', '其他可能的研究兴趣短语',
                 '其他可能的研究兴趣单词', '这个标题不是研究兴趣', 
                 '一段研究兴趣的起始词', '非研究兴趣的词', '该句开始不再是研究兴趣', 
                 '招生意向关键词', '长期招生关键词']
-        $("#keyWords").append("<p>先根据关键词过滤不可能的名字和URL,再选择可能的</p>");
+        $("#keyWords").append("<p>先根据关键词过滤不可能的URL,再选择可能的</p>");
     }
     keyWords = data.keywords;
     var json = keyWords;

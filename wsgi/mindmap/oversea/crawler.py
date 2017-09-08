@@ -58,6 +58,9 @@ def format_url(href, source_url):
     base = '/'.join(source_url.split('/')[:3])
     domain = source_url.split('/')[2]
 
+    if not href:
+        return source_url
+
     if href.startswith('http'):
         full_url = href
     elif href.startswith('//'):
@@ -323,8 +326,6 @@ class ResearchCrawler:
         faculty_list = []
         # names = find_name_in_emails(l)
         # print names
-        print self.key_words[u'教员URL不可能包含']
-        print self.key_words[u'教员URL可能包含']
         for e in l:
             if self.filter_list(e):
                 continue

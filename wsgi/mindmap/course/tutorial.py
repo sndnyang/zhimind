@@ -176,6 +176,8 @@ def create_tutorial():
 
 def save_content(json_data, user):
     now = datetime.now()
+    if not isinstance(json_data, dict):
+        return {'error': u'数据格式不正确'}
     tutorial_id = json_data.get('id')
     content = json_data.get('content')
 
@@ -190,6 +192,9 @@ def save_content(json_data, user):
         return ret
 
     title, tags, summary, slug, article_type = meta_parse(content)
+    if not title or not slug or not article_type:
+        return {'error': u'内容格式错误'}
+
     if tutorial is None:
         slug_tutor = Tutorial.query.filter_by(slug=slug,
                                               user_id=user.get_id()

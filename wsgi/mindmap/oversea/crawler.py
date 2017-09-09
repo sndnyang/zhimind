@@ -277,7 +277,7 @@ class ResearchCrawler:
         return False
 
     def get_personal_website(self, l, page_url, name):
-        potential_name = re.findall(r"([A-Z]?[a-z]+)", page_url)
+        potential_name = []
         if name:
             potential_name += [e[:5] for e in name.split()]
             potential_name += [e for e in name.split()]
@@ -366,19 +366,19 @@ class ResearchCrawler:
         return count, faculty_list
 
     def find_example_index(self, l, a, index):
-        logger.info("diff '%s'    with" % a)
+        # logger.info("diff '%s'    with" % a)
         a = a.strip()
         for i in range(len(l)):
             href = l[i].get("href")
             if not href:
                 continue
             href = format_url(l[i].get("href"), index)
-            logger.info("diff '%s' " % href)
+            # logger.info("diff '%s' " % href)
             if debug_level.find("list") > 0: print href, a
             if href.strip() == a:
-                logger.info("find %s at %d" % (href, i))
+                # logger.info("find %s at %d" % (href, i))
                 return i
-        logger.info("find it at %d" % i)
+        # logger.info("find it at %d" % i)
         return -1
 
     def filter_research_interests(self, alist):
@@ -769,7 +769,7 @@ if __name__ == "__main__":
                  }
     import cProfile
 
-    for url in urls[13:14]:
+    for url in urls[8:9]:
         print url
 
         crawler = ResearchCrawler(url, examples[urls.index(url)])

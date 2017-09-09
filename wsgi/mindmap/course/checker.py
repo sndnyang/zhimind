@@ -22,6 +22,7 @@ hdlr = logging.FileHandler(log_file_name, mode='a')
 hdlr.setLevel(logging.INFO)
 hdlr.setFormatter(fmt=fmter)
 logger.addHandler(hdlr=hdlr)
+logger.setLevel(logging.INFO)
 
 @answer_checker.route('/checkChoice', methods=["POST"])
 def checkChoice():

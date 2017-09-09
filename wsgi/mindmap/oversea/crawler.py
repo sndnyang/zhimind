@@ -366,13 +366,16 @@ class ResearchCrawler:
         return count, faculty_list
 
     def find_example_index(self, l, a, index):
+        logger.info("diff '%s'    with" % a)
+        a = a.strip()
         for i in range(len(l)):
             href = l[i].get("href")
             if not href:
                 continue
             href = format_url(l[i].get("href"), index)
+            logger.info("diff '%s' " % href)
             if debug_level.find("list") > 0: print href, a
-            if href == a:
+            if href.strip() == a:
                 logger.info("find %s at %d" % (href, i))
                 return i
         logger.info("find it at %d" % i)

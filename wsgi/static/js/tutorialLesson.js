@@ -39,7 +39,7 @@ function updateLesson(no) {
     }
 
     $('.lesson' + no).show();
-    $("body").animate({
+    $("html,body").animate({
         scrollTop: $('.lesson' + no).offset().top - $(".navbar").height() - 150
     }, 500);
 }

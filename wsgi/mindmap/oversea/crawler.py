@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import logging
 
 import requests
 from bs4.element import Comment
@@ -11,6 +12,17 @@ from bs4 import BeautifulSoup
 from requests import ConnectionError, HTTPError
 
 debug_level = ""
+
+logger = logging.getLogger('crawler')
+fmter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S')
+log_file_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
+                             'crawl.log')
+hdlr = logging.FileHandler(log_file_name, mode='a')
+hdlr.setLevel(logging.INFO)
+hdlr.setFormatter(fmter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
+
 
 def replace_html(s):
     s = s.replace('&quot;','"')
@@ -361,7 +373,9 @@ class ResearchCrawler:
             href = format_url(l[i].get("href"), index)
             if debug_level.find("list") > 0: print href, a
             if href == a:
+                logger.info("find %s at %d" % (href, i))
                 return i
+        logger.info("find it at %d" % i)
         return -1
 
     def filter_research_interests(self, alist):

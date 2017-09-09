@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import logging
 
 from flask import request, g, session, json, Blueprint
 
@@ -13,6 +14,14 @@ answer_checker = Blueprint('answer_checker', __name__,
                            template_folder=os.path.join(
                                os.path.dirname(__file__), 'templates'))
 
+logger = logging.getLogger('checker')
+fmter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S')
+log_file_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
+                             'answers.log')
+hdlr = logging.FileHandler(log_file_name, mode='a')
+hdlr.setLevel(logging.INFO)
+hdlr.setFormatter(fmt=fmter)
+logger.addHandler(hdlr=hdlr)
 
 @answer_checker.route('/checkChoice', methods=["POST"])
 def checkChoice():
@@ -33,14 +42,14 @@ def checkChoice():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" %
+    logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" %
                     (user, tid, name, no, expression, '@'.join(answers)))
 
     if len(answers) == 1 and not answers[0]:
         response['status'] = True
         response['comment'] = '有自己的判断就好了，不是吗？'
         return json.dumps(response, ensure_ascii=False)
-    # app.logger.debug(answers)
+    # logger.debug(answers)
     s1 = set(user_choose)
     s2 = set(answers)
 
@@ -95,7 +104,7 @@ def checkAnswer():
     temp = '@'.join(answers)
     if not temp:
         temp = "empty"
-    app.logger.info("text\t%s\t%s:%s\t%s\t%s\t%s" %
+    logger.info("text\t%s\t%s:%s\t%s\t%s\t%s" %
                     (user, tid, name, no, '@'.join(expression), temp))
 
     if not answers or len(answers) != len(expression):
@@ -111,7 +120,7 @@ def checkAnswer():
                 response['comment'] = comments[0][r]
         else:
             t = app.aipNlp.simnet(user, answers[i])['output']['score']
-            app.logger.info("similar score\t%s\t%s\t%s" %
+            logger.info("similar score\t%s\t%s\t%s" %
                             (user, '@'.join(expression), str(t)))
             f = t > 0.6
 
@@ -148,7 +157,7 @@ def cmp_math():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" %
+    logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" %
                     (user, tid, name, no, '@'.join(expression), '@'.join(answers)))
 
     if not answers or len(answers) != len(expression):
@@ -186,7 +195,7 @@ def checkProcess():
         user = request.remote_addr
     else:
         user = g.user.get_name()
-    app.logger.info("proc\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(l)))
+    logger.info("proc\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(l)))
 
     result = check_process(l, answers, comments)
     response['status'] = result[0]

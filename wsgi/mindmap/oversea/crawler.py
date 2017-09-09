@@ -10,6 +10,7 @@ from bs4.element import Comment
 from bs4 import BeautifulSoup
 
 from requests import ConnectionError, HTTPError
+import nltk
 
 debug_level = ""
 
@@ -403,7 +404,7 @@ class ResearchCrawler:
     def replace_words(self, line):
         line = re.sub("\s+", " ", line)
         line = line.replace("(", "").replace(")", "")
-        for x in self.key_words[u'非研究兴趣的词']:
+        for x in self.key_words[u'非研究兴趣的词'] + nltk.corpus.stopwords.words('english'):
             line = re.sub(r'\b%s\b' % x, ',', line)
         return line
 

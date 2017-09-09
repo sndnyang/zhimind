@@ -528,12 +528,21 @@ function filterMajorByAll() {
         evalue = $("#evalueName").val(),
         transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
-    var params = getSharpParam();
-    if (params)
-        params['filterByName'] = name;
-    else {
-        params = {'filterByName': name};
+
+    var params = getSharpParam() || {};
+    if (degree != "") {
+        params["学历"] = degree;
     }
+    if (major != 0) {
+        params["专业"] = major;
+    }
+    if (evalue != "") {
+        params["成绩单认证"] = degree;
+    }
+    if (rl != "0") {
+        params["推荐信"] = degree;
+    }
+
     var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
     window.location.href = temp;
 

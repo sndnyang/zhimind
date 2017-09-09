@@ -151,16 +151,16 @@ function getProfessorsList(col) {
     }
     var params = getSharpParam() || {};
     if (college.length > 4) {
-        params["学校"] = degree;
+        params["学校"] = college;
     }
     if (major != 0) {
         params["专业"] = major;
     }
     if (interest != "") {
-        params["研究方向"] = degree;
+        params["研究方向"] = interest;
     }
     if (position != "") {
-        params["招生意向"] = degree;
+        params["招生意向"] = position;
     }
     var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
     window.location.href = temp;

@@ -398,10 +398,10 @@ function fillResearchInformationByGrid(item) {
         }
     }
     tr.append($(td_tmp.format(3, temp)));
-    var anchor = "<a href='{0}'>索引页</a>".format(item.link);
+    var anchor = "<a href='{0}' target='_blank'>索引页</a>".format(item.link);
     tr.append($(td_tmp.format(1, anchor)));
     if (item.website) {
-        anchor = "<a href='{0}'>个人页</a>".format(item.website);
+        anchor = "<a href='{0}' target='_blank'>个人页</a>".format(item.website);
         tr.append($(td_tmp.format(1, anchor)));
     }
     else {

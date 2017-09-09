@@ -76,12 +76,58 @@ function fillResearchInformation(item, showSchool) {
     var td = $("<td></td>").append(select)
     tr.append(td);
     temp = item.position;
-    if (temp) temp = "在招";
-    else temp = "";
+    var btn = $('<a class="btn btn-success"></a>');
+    btn.attr("onclick", "togglePosition(this, '{0}')");
+    if (temp) {
+        temp = "在招";
+        btn.html("招满");
+    }
+    else {
+        temp = "";
+        btn.html("来招");
+    }
+
     tr.append($("<td>{0}</td>".format(temp)));
     tr.append($("<td>{0}</td>".format(item.term || "")));
-
+    // tr.append($("<td></td>").append(btn));
     return tr;
+}
+
+function togglePosition(obj, pid) {
+    $.ajax({  
+        type: "post", //请求方式  
+        url: "togglePosition", //发送请求地址  
+        timeout: 30000,//超时时间：30秒
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({"pid": pid}),
+        //请求成功后的回调函数 data为json格式  
+        success:function(data){
+            if (data.error) {
+                window.clearInterval(timerId);
+                alert(data.error);
+                return;
+            }
+            if (data.status) {
+                var text = $($(obj).parent().parent().children()[6]).html().trim();
+                if (text == "招生中") {
+                    text = "";
+                    $(obj).html("来招");
+                } else {
+                    text = "招生中";
+                    $(obj).html("招满");
+                }
+                $($(obj).parent().parent().children()[6]).html(text);
+            } else {
+                alert("未能在教授的两个页面上搜到招生关键字");
+            }
+        },  
+        //请求出错的处理  
+        error: function(){  
+            alert("请求出错");  
+        }
+    });  
+
 }
 
 function getProfessorsList(col) {
@@ -103,6 +149,21 @@ function getProfessorsList(col) {
         alert("起码先选择专业");
         return;
     }
+    var params = getSharpParam() || {};
+    if (college.length > 4) {
+        params["学校"] = degree;
+    }
+    if (major != 0) {
+        params["专业"] = major;
+    }
+    if (interest != "") {
+        params["研究方向"] = degree;
+    }
+    if (position != "") {
+        params["招生意向"] = degree;
+    }
+    var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
+    window.location.href = temp;
     if (college)
         param = "学校={0}".format(college);
     param = "专业={0}".format(major);

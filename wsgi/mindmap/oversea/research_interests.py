@@ -35,15 +35,21 @@ def research_index():
                            types="research")
 
 
+def convertToDict(ele, tags):
+    data = {'id': ele.id, 'name': ele.name, 'school': ele.school, 
+            'major': ele.major,
+            'link': ele.school_url, 'website': ele.home_page,
+            'position': ele.position, 'term': ele.term, 'tags': tags}
+    return data
+
+
 @research_page.route('/researchList')
 def research_list_page():
     research_set = []
-    results = Professor.query.limit(20)
+    results = Professor.query.filter_by(position=True).limit(20)
     for ele in results:        
         tags = [tag.name for tag in ele.interests]
-        research_set.append({'name': ele.name, 'school': ele.school, 'major': ele.major,
-                             'link': ele.school_url, 'website': ele.home_page,
-                             'position': ele.position, 'term': ele.term, 'tags': tags})
+        research_set.append(convertToDict(ele, tags))
     return json.dumps(research_set, ensure_ascii=False)
 
 
@@ -63,9 +69,7 @@ def get_professor_list(school, major):
 
     for ele in results:        
         tags = [tag.name for tag in ele.interests]
-        research_set.append({'name': ele.name, 'school': ele.school, 'major': ele.major,
-                             'link': ele.school_url, 'website': ele.home_page,
-                             'position': ele.position, 'term': ele.term, 'tags': tags})
+        research_set.append(convertToDict(ele, tags))
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -75,9 +79,7 @@ def get_professor_by_interests(major, interest):
     results = Professor.query.filter(Professor.interests.any(name=interest)).filter_by(major=major).all()
     for ele in results:        
         tags = [tag.name for tag in ele.interests]
-        research_set.append({'name': ele.name, 'school': ele.school, 'major': ele.major,
-                             'link': ele.school_url, 'website': ele.home_page,
-                             'position': ele.position, 'term': ele.term, 'tags': tags})
+        research_set.append(convertToDict(ele, tags))
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -125,11 +127,9 @@ def query_add_interests(tag, major):
 
 def query_add_professor(name, college_name, major):
     try:
-        app.logger.info(len(college_name))
         result = Professor.query.filter_by(name=name, school=college_name, 
                                            major=major).one_or_none()
         if result is None:
-            # app.logger.info("%s not exists, create" % name)
             if len(name) > 29:
                 words = re.findall("(\w+)", name)
                 name = words[0] + ' ' + words[-1]
@@ -210,7 +210,6 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
     i = 0
     link_list = []
     for link in faculty_list:
-        app.logger.info(link.get("href"))
         link_list.append(crawl.dive_into_page(link, flag))
         i += 1
         # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
@@ -315,8 +314,6 @@ def submitted_research():
     if isinstance(task, (str, unicode)):
         return json.dumps({'error': task}, ensure_ascii=False)
 
-    app.logger.info(directory_url)
-
     approve = request.form['approve']
     if approve == '1':
         code_img, code_string = create_validate_code()
@@ -344,6 +341,15 @@ def interests_page():
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     return render_template('interests.html', meta=meta, temp=0,
                            types="research")
+
+
+@research_page.route('/togglePosition', methods=['POST'])
+def query_position():
+    pid = request.json.get("pid")
+    if not pid:
+        return json.dumps({'error': 'pid %s not right' % (pid)}, ensure_ascii=False)
+
+    return json.dumps({'status': True}, ensure_ascii=False)
 
 
 @research_page.route('/modifyInterests', methods=['POST'])

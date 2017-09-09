@@ -80,7 +80,7 @@ def format_url(href, source_url):
     return full_url
 
 
-def get_and_store_page(page_url):
+def get_and_store_page(page_url, force=False):
     """
 
     :rtype: string
@@ -103,7 +103,7 @@ def get_and_store_page(page_url):
     file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
 
     if debug_level.find("save") > 0: print("now open page url %s" % file_name)
-    if os.path.isfile(file_name):
+    if os.path.isfile(file_name) and not force:
         with open(file_name) as fp:
             html = fp.read()
     else:
@@ -162,12 +162,12 @@ class ResearchCrawler:
         self.key_words = None
         self.load_key()
 
-    def open_page(self, page_url):
+    def open_page(self, page_url, force=False):
         """
 
         """
         if debug_level.find("debug") > 0: print "open url", page_url
-        html = get_and_store_page(page_url)
+        html = get_and_store_page(page_url, force)
         if html.startswith("Error at "):
             return "Error to load", None
         soup = BeautifulSoup(html, 'html.parser')
@@ -176,7 +176,7 @@ class ResearchCrawler:
             redir = redirect['content'].split("=")[1]
             page_url = format_url(redir, page_url)
             if debug_level.find("open") > 0: print("now refres %s" % page_url)
-            html = get_and_store_page(page_url)
+            html = get_and_store_page(page_url, force)
             if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
         elif soup.find("frameset") and not soup.find("body"):
@@ -613,6 +613,17 @@ class ResearchCrawler:
             person['name'] = name
 
         return person
+
+    def query_position_status(self, faculty_link, faculty_page):
+        content, soup = self.open_page(faculty_link, True)
+        if content.startswith('Error to load'):
+            # print "Error!!!!!! at the link", faculty_link
+            return "Error"
+        position, term, position_text = self.get_open_position(soup)
+        if not position:
+            page_c, page_soup = self.open_page(faculty_page, True)
+            position, term, position_text = self.get_open_position(page_soup)
+        return position
 
     def dive_into_page(self, faculty_ele, flag):
         faculty_link = faculty_ele.get("href")

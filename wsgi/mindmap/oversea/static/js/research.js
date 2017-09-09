@@ -254,6 +254,8 @@ function getMajorInterestsList() {
         $("#researchName").html("<option value=''>不限</option>");
         return;
     }
+    var temp = "{0}#专业={1}".format(document.URL.split("#")[0], major);
+    window.location.href = temp;
     $.ajax({
         type: "get",//请求方式  
         url: "getMajorInterestsList/" + major,//发送请求地址  

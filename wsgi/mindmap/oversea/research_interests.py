@@ -390,7 +390,8 @@ def modify_interests():
                 results = Professor.query.filter(Professor.interests.any(name=old_interest.name)).all()
                 for ele in results:
                     ele.interests.remove(old_interest)
-                    if not ele.query.filter(Professor.interests.any(name=name)).one_or_none():
+                    if not Professor.query.filter(Professor.interests.any(name=name))\
+                       .filter_by(id=ele.id).one_or_none():
                         ele.interests.append(new_interest)
                 zh = request.json.get('zh')
                 if zh and new_interest.zh_name is None:

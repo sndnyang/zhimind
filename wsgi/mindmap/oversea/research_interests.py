@@ -379,7 +379,9 @@ def modify_interests():
             
             if old_interest.name != name and new_interest is None:
                 old_interest.name = name
-                old_interest.zh_name = request.json.get('zh', None)
+                zh = request.json.get('zh')
+                if zh:
+                    old_interest.zh_name = zh
                 old_interest.category_name = request.json.get('category', None)
             elif old_interest.name == name:
                 old_interest.zh_name = request.json.get('zh', None)
@@ -390,6 +392,9 @@ def modify_interests():
                     ele.interests.remove(old_interest)
                     if not ele.query.filter(Professor.interests.any(name=name)).one_or_none():
                         ele.interests.append(new_interest)
+                zh = request.json.get('zh')
+                if zh and new_interest.zh_name is None:
+                    new_interest.zh_name = zh
                 db.session.delete(old_interest)
         db.session.commit()
         return json.dumps({'info': 'success'}, ensure_ascii=False)

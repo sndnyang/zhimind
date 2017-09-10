@@ -217,16 +217,16 @@ function getProfessorByInterests() {
     });
 }
 
-function interests_modify(obj, val) {
+function interests_modify(obj, id, val) {
     var data = {}, tr = $(obj).parent().parent(),
-            name = $(tr.children("td")[0]).html();
+            name = $($(tr.children("td")[0]).children("input")).val();
     if (val == 1) {
         // 删除
-        data = {'name': name, 'type': 1};
+        data = {'id': id, 'name': name, 'type': 1};
     } else {
         var zh = $($(tr.children("td")[1]).children("input")).val(),
             category = $($(tr.children("td")[2]).children("input")).val();
-        data = {'name': name, 'zh': zh, 'category': category, 'type': 0};
+        data = {'id': id, 'name': name, 'zh': zh, 'category': category, 'type': 0};
     }
     console.log(data);
     $.ajax({
@@ -279,12 +279,16 @@ function getMajorInterestsList() {
                 console.log(data.list);
                 for (var i in data.list) {
                     var tr = $("<tr></tr>");
+                    var btn_update = $('<a href="javascript:void(0)" class="btn btn-success">更新</a>');
+                    var btn_delete = $('<a href="javascript:void(0)" class="btn btn-danger">删除</a>');
+                    btn_update.attr("onclick", 'interests_modify(this, "{0}", 0)'.format(data.list[i].id));
+                    btn_delete.attr("onclick", 'interests_modify(this, "{0}", 1)'.format(data.list[i].id));
 
-                    tr.append($("<td>{0}</td>".format(data.list[i].name)));
+                    tr.append($("<td><input type='text' value='{0}' class='form-control'/></td>".format(data.list[i].name)));
                     tr.append($("<td><input type='text' value='{0}' class='form-control'/></td>".format(data.list[i].zh || '')));
                     tr.append($("<td><input type='text' value='{0}' class='form-control'/></td>".format(data.list[i].category_name || '')));
-                    var pass = $('<td><a href="javascript:void(0);" onclick="interests_modify(this, 0)" class="btn btn-success">更新</a></td>');
-                    var del = $('<td><a href="javascript:void(0);" onclick="interests_modify(this, 1)" class="btn btn-danger">删除</a></td>');
+                    var pass = $('<td></td>').append(btn_update);
+                    var del = $('<td></td>').append(btn_delete);
                     tr.append(pass);
                     tr.append(del);
                     $("#collegeList").append(tr);

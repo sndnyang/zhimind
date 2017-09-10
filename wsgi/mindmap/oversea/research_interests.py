@@ -88,7 +88,8 @@ def get_major_interests_list(major):
     research_set = []
     results = Interests.query.filter_by(major=major).order_by(asc(Interests.name)).all()
     for ele in results:
-        research_set.append({'name': ele.name, 'zh': ele.zh_name, 'category_name': ele.category_name})
+        research_set.append({'id': ele.id, 'name': ele.name, 'zh': ele.zh_name, 
+                            'category_name': ele.category_name})
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -355,6 +356,7 @@ def query_position():
 @research_page.route('/modifyInterests', methods=['POST'])
 def modify_interests():
 
+    tid = request.json.get('id', None)
     name = request.json.get('name', None)
 
     action = str(request.json.get('type', None))
@@ -362,21 +364,33 @@ def modify_interests():
         return json.dumps({'error': '%s %s not right' % (name, action)}, ensure_ascii=False)
 
     try:
-        interest = Interests.query.filter_by(name=name).one_or_none()
+        old_interest = Interests.query.get(tid)
+        new_interest = Interests.query.filter_by(name=name).one_or_none()
         if action == "1":
-            if interest:
-                results = Professor.query.filter(Professor.interests.any(name=name)).all()
-                for ele in results:
-                    ele.interests.remove(interest)
-                db.session.delete(interest)
-            else:
-                return json.dumps({'error': 'not find' + name}, ensure_ascii=False)
+            if old_interest is None:
+                return json.dumps({'error': 'not find id %s name %s'%(tid,name)}, ensure_ascii=False)
+            results = Professor.query.filter(Professor.interests.any(name=old_interest.name)).all()
+            for ele in results:
+                ele.interests.remove(old_interest)
+            db.session.delete(old_interest)
         else:
-            if interest is None:
-                return json.dumps({'error': 'not find' + name}, ensure_ascii=False)
-            else:
-                interest.zh_name = request.json.get('zh', None)
-                interest.category_name = request.json.get('category', None)
+            if old_interest is None:
+                return json.dumps({'error': 'not find id %s name %s'%(tid,name)}, ensure_ascii=False)
+            
+            if old_interest.name != name and new_interest is None:
+                old_interest.name = name
+                old_interest.zh_name = request.json.get('zh', None)
+                old_interest.category_name = request.json.get('category', None)
+            elif old_interest.name == name:
+                old_interest.zh_name = request.json.get('zh', None)
+                old_interest.category_name = request.json.get('category', None)
+            elif old_interest.name != name and new_interest is not None:
+                results = Professor.query.filter(Professor.interests.any(name=old_interest.name)).all()
+                for ele in results:
+                    ele.interests.remove(old_interest)
+                    if not ele.query.filter(Professor.interests.any(name=name)).one_or_none():
+                        ele.interests.append(new_interest)
+                db.session.delete(old_interest)
         db.session.commit()
         return json.dumps({'info': 'success'}, ensure_ascii=False)
     except Exception:

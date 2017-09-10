@@ -324,7 +324,7 @@ class ResearchCrawler:
                                            re.findall("([A-Z]*[a-z]+)", self.url)
                                            )
                           ]
-        # if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
+        if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -419,8 +419,8 @@ class ResearchCrawler:
         open_position = False
         open_term = ""
         position_text = ""
-        text = soup.get_text()
-        # if debug_level.find("debug") > 0: print(" " * 2 * debug_level + text)
+        text = re.sub("[,\s]+", " ", soup.get_text(" ", strip=True))
+        if debug_level.find("position") > 0: print(text)
         search_obj = contain_keys(text, self.key_words[u'招生意向关键词'], True, True)
         if search_obj:
             open_position = True
@@ -676,13 +676,12 @@ class ResearchCrawler:
         anchors = find_all_anchor(soup)
         faculty_page, mail, page_name = self.get_personal_website(anchors,
                                                                   faculty_link, person['name'])
-        # if debug_level.find("website") > 0: print 'website page url: ',faculty_page
         if flag:
             person['source_website'] = {u'个人主页名字': page_name,
                                         u'个人主页链接URL': faculty_page}
 
         if faculty_page:
-            # if debug_level.find("website") > 0: print 'website page url: ',faculty_page
+            if debug_level.find("website") > 0: print 'website page url: ',faculty_page
             faculty_page = format_url(faculty_page, faculty_link)
             # if debug_level.find("website") > 0: print 'website page url: ',faculty_page
             page_c, page_soup = self.open_page(faculty_page)

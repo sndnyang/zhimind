@@ -539,18 +539,28 @@ class ResearchCrawler:
         """
         # 先用 完整的 research interest 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
-        # if debug_level.find('interests') > 0: print("re in has %d at %s" % (len(result), website))
+        if debug_level.find('interests') > 0: print("re in has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, "(interest)")
-        if tags:
+        if result and tags:
             return tags, tag_text
 
         # 再用 current research|interests 找
         words = "(%s)" % '|'.join(e for e in self.key_words[u'其他可能的研究兴趣短语'])
         result = soup.find_all(string=re.compile(words, re.I))
-        # if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
+        if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
+        logger.info("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
+        print("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
-        # if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
-        if tags:
+        if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
+        if result and tags:
             return tags, tag_text
 
         # 再用 research or interests等标语 to find then filter it by some rules

@@ -376,7 +376,7 @@ function showKeyWords(data, step) {
     }
 }
 
-function fillResearchInformationByGrid(item) {
+function fillResearchInformationByGrid(no, item) {
     var tr = $('<div class="row-fluid"></div>'), 
         td_tmp = '<div class="col-md-{0}">{1}</div>',
         select = $("<select></select>"),
@@ -401,7 +401,8 @@ function fillResearchInformationByGrid(item) {
             temp += parts[i] + ' ';
         }
     }
-    tr.append($(td_tmp.format(3, temp)));
+    tr.append($(td_tmp.format(1, no)));
+    tr.append($(td_tmp.format(2, temp)));
     var anchor = "<a href='{0}' target='_blank'>索引页</a>".format(item.link);
     tr.append($(td_tmp.format(1, anchor)));
     if (item.website) {
@@ -498,7 +499,7 @@ function showCrawlerResult(data, step) {
     if (step == "2") {
         var head = {'name': '名字', 'link': '学校页', 'website': '个人页', 
                     'tags': '研究方向', 'position': '招生意向', 'term': '招生期'}
-        tr = fillResearchInformationByGrid(head);
+        tr = fillResearchInformationByGrid('', head);
         var expand = $('<div class="col-md-1">展开</div>');
         tr.append(expand);  
 
@@ -515,7 +516,7 @@ function showCrawlerResult(data, step) {
             tr.append(td);
             tr.append("<td>链接名字显示为：{0}</td>".format(name));
         } else if (step == '2') {
-            tr = fillResearchInformationByGrid(list[i]);
+            tr = fillResearchInformationByGrid(i, list[i]);
             var anchor = '<a data-toggle="collapse" aria-expanded="false" class="False collapsed btn btn-success" href="#collapse{0}" aria-controls="collapse{1}">展开</a>'.format(i, i)
             var expand = $('<div class="col-md-1"></div>');
             expand.append(anchor);

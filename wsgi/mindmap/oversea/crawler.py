@@ -399,7 +399,7 @@ class ResearchCrawler:
             if e.string and contain_keys(e.string, self.key_words[u'教员URL不可能包含']):
                 continue
             links.append(faculty_link)
-            e['href'] = faculty_link
+            e['href'] = faculty_link.strip()
             faculty_list.append(e)
             count += 1
         return count, faculty_list

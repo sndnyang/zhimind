@@ -381,7 +381,7 @@ class ResearchCrawler:
             if self.filter_list(e):
                 continue
 
-            href = e.get('href')
+            href = e.get('href').strip()
             faculty_link = format_url(href, self.url)
 
             if faculty_link == faculty_url:

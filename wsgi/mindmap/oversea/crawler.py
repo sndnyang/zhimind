@@ -101,8 +101,12 @@ def get_and_store_page(page_url, force=False):
     """
     # if debug_level.find("open") > 0: print("now open page url %s" % page_url)
     page_url = page_url.split("&")[0]
-    parts = page_url.split("/")[2].split(".")
-    university_name = parts[-2]
+    try:
+        parts = page_url.split("/")[2].split(".")
+        university_name = parts[-2]
+    except IndexError:
+        return "Error at %s " % page_url
+
     dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name)
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
@@ -212,7 +216,7 @@ class ResearchCrawler:
         # if debug_level.find("debug") > 0: print "open url", page_url
         html = get_and_store_page(page_url, force)
         if html.startswith("Error at "):
-            return "Error to load", None
+            return "Error to load %s " % html, None
         soup = BeautifulSoup(html, 'html.parser')
         redirect = soup.find(attrs={"http-equiv": "refresh"})
         if redirect:
@@ -351,8 +355,12 @@ class ResearchCrawler:
             if contain_keys(href, potential_name, True) or \
                     contain_keys(a.get_text(), potential_name, True):
                 # if debug_level.find("debug") > 0: print(' search it ok : ' + href)
-                if href.find('@') > -1:
+                if href.find('@') > -1 or href.find("mailto"):
                     mail = href
+                    if '.' not in mail:
+                        mail = re.sub("DOT", ".", mail)
+                    if '@' not in mail:
+                        mail = re.sub("AT", "@", mail)
                 else:
                     faculty_page = href
                     page_name = a.get_text()
@@ -648,10 +656,12 @@ class ResearchCrawler:
         content, soup = self.open_page(faculty_link, True)
         if content.startswith('Error to load'):
             # print "Error!!!!!! at the link", faculty_link
-            return "Error"
+            return "Error %s " % content
         position, term, position_text = self.get_open_position(soup)
         if not position:
             page_c, page_soup = self.open_page(faculty_page, True)
+            if page_c.startswith('Error to load'):
+                return "Error %s " % page_c
             position, term, position_text = self.get_open_position(page_soup)
         return position
 

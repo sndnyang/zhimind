@@ -105,12 +105,6 @@ def getCollegeRedis():
         for e in uni_major_page:
             college_set.append({'id': e.id, 'name': e.name, 'info': e.info})
             name_list.append(e.name)
-        for e in data:
-            if e['name'] in name_list:
-                i = name_list.index(e['name'])
-                college_set[i].update(e)
-                continue
-            college_set.append(e)
     except Exception, e:
         app.logger.debug(traceback.print_exc())
     return college_set
@@ -228,15 +222,17 @@ def major_form(name):
 def submitted_college():
     verification_code = request.form['verification_code']
     code_text = session['code_text']
-    if verification_code != code_text:
+    if verification_code != code_text and not (g.user and 
+       g.user.is_authenticated and g.user.get_name() == 'sndnyang'):
         return json.dumps({'error': u'验证码错误'}, ensure_ascii=False)
     code_img, code_string = create_validate_code()
     session['code_text'] = code_string
     try:
         name = request.form['name']
         info = {u'city': request.form.get('cityinput', '')}
-        l = len(request.form.keys()) / 2 - 1
-        for i in range(1, l):
+        for i in range(len(request.form.keys())/2):
+            if 'label%d' % (i+1) not in request.form:
+                break
             info['label%d' % (i+1)] = request.form['label%d' % (i+1)]
             info['input%d' % (i+1)] = request.form['input%d' % (i+1)]
 

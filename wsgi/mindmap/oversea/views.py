@@ -246,7 +246,11 @@ def submitted_college():
                 college = TempUniversity(name, info)
         else:
             college = result
-            college.info = info
+            import copy
+            new_info = copy.deepcopy(college.info)
+            for e in info:
+                new_info[e] = info[e]
+            college.info = new_info
 
         if result is None:
             db.session.add(college)

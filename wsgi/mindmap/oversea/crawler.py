@@ -121,10 +121,11 @@ def get_and_store_page(page_url, force=False):
     file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
 
     # if debug_level.find("save") > 0: print("now open page url %s" % file_name)
+    html = ""
     if os.path.isfile(file_name) and not force:
         with open(file_name) as fp:
             html = fp.read()
-    else:
+    if not html or html.startswith("Error at"):
         try:
             # proxies = {
             #     "http": "http://127.0.0.1:1081",
@@ -250,6 +251,8 @@ class ResearchCrawler:
     def crawl_faculty_list(self, directory_url, example):
 
         content, soup = self.open_page(directory_url)
+        if content.startswith("Error at "):
+            return 0, "Error to load %s " % content
         anchors = find_all_anchor(soup)
         # if debug_level.find("list") > 0: print directory_url, len(anchors)
         index = find_example_index(anchors, example, directory_url)
@@ -557,15 +560,6 @@ class ResearchCrawler:
         result = soup.find_all(string=re.compile(words, re.I))
         if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
         logger.info("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
-        print("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
         if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
         if result and tags:

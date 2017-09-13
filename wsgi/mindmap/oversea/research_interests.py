@@ -139,10 +139,10 @@ def query_add_professor(name, college_name, major):
             result = Professor(name, college_name, major)
             db.session.add(result)
         else:
-            # app.logger.info("%s not exists, not create" % name)
             pass
         return result
     except MultipleResultsFound:
+        app.logger.info("%s find multi" % name)
         return None
 
 
@@ -227,19 +227,21 @@ def submit_professors(college_name, major, directory_url):
         try:
             if ele.get("name", None):
                 professor = query_add_professor(ele.get("name"), college_name, major)
+                if professor:
+                    professor.position = ele.get("position")
+                    professor.term = ele.get("term")
+                    professor.school_url = ele.get("link", "")
+                    professor.home_page = ele.get("website", "")
+                    db.session.commit()
             if ele.get('tags'):
                 for tag in ele.get('tags', []):
-                        tag_obj = query_add_interests(tag, major)
-                        if professor and tag_obj:
-                            professor.interests.append(tag_obj)
-                            db.session.flush()
+                    tag_obj = query_add_interests(tag, major)
+                    if professor and tag_obj:
+                        professor.interests.append(tag_obj)
+                        db.session.flush()
         except IntegrityError:
+            app.logger.info(" professor %s roll back" % ele.get("name"))
             db.session.rollback()
-        if professor:
-            professor.position = ele.get("position")
-            professor.term = ele.get("term")
-            professor.school_url = ele.get("link", "")
-            professor.home_page = ele.get("website", "")
     try:
         db.session.commit()
     except InvalidRequestError:
@@ -329,9 +331,7 @@ def submitted_research():
 
     crawl = ResearchCrawler(directory_url, prof_url)
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
-    app.logger.info("%s %s total %d, start" % (directory_url, major, count))
     link_list = crawl_directory(crawl, faculty_list, major,  directory_url, count, False)
-    app.logger.info("%s %s total %d, finish" % (directory_url, major, count))
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
 
 

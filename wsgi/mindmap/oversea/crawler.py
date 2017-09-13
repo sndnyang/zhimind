@@ -123,11 +123,10 @@ def get_and_store_page(page_url, force=False):
     file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
 
     # if debug_level.find("save") > 0: print("now open page url %s" % file_name)
-    html = ""
     if os.path.isfile(file_name) and not force:
         with open(file_name) as fp:
             html = fp.read()
-    if not html or html.startswith("Error at"):
+    else:
         try:
             # proxies = {
             #     "http": "http://127.0.0.1:1081",

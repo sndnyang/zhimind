@@ -4,6 +4,8 @@ import os
 import re
 import json
 import logging
+import urllib2
+import HTMLParser
 
 import requests
 from bs4.element import Comment
@@ -331,7 +333,7 @@ class ResearchCrawler:
                                            re.findall("([A-Z]*[a-z]+)", self.url)
                                            )
                           ]
-        if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
+        # if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -341,24 +343,29 @@ class ResearchCrawler:
             href = a.get('href')
             if not href or len(href) < 5:
                 continue
+            href = urllib2.unquote(href)
+            # if debug_level.find("website") > 0: print(' href: ' + str(href))
 
             suffix = href.split('.')[-1]
             if len(suffix) < 5 and contain_keys(suffix, self.key_words[u'文件而不是网页']):
+                # if debug_level.find("website") > 0: print(' is a file')
                 continue
 
             if faculty_page and mail:
                 break
 
             if href in page_url or onsocial(href):
+                # if debug_level.find("website") > 0: print(' is social network')
                 continue
 
             if contain_keys(href, self.key_words[u'个人主页URL不可能包含']):
+                # if debug_level.find("website") > 0: print(' wont contain')
                 continue
 
             if contain_keys(href, potential_name, True) or \
                     contain_keys(a.get_text(), potential_name, True):
-                # if debug_level.find("debug") > 0: print(' search it ok : ' + href)
-                if href.find('@') > -1 or href.find("mailto"):
+                # if debug_level.find("website") > 0: print(' search it ok : ' + href)
+                if href.find('@') > -1 or href.find("mailto") > 0:
                     mail = href
                     if '.' not in mail:
                         mail = re.sub("DOT", ".", mail)
@@ -368,7 +375,7 @@ class ResearchCrawler:
                     faculty_page = href
                     page_name = a.get_text()
 
-        # if debug_level.find("debug") > 0: print(' ' * 2 * debug_level + ' final link: ' + faculty_page)
+        # if debug_level.find("website") > 0: print(' final link: ' + faculty_page)
         return faculty_page, mail, page_name
 
     def find_faculty_list(self, l, faculty_url):
@@ -431,7 +438,7 @@ class ResearchCrawler:
         open_term = ""
         position_text = ""
         text = re.sub("[,\s]+", " ", soup.get_text(" ", strip=True))
-        if debug_level.find("position") > 0: print(text)
+        # if debug_level.find("position") > 0: print(text)
         search_obj = contain_keys(text, self.key_words[u'招生意向关键词'], True, True)
         if search_obj:
             open_position = True
@@ -550,7 +557,7 @@ class ResearchCrawler:
         """
         # 先用 完整的 research interest 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
-        if debug_level.find('interests') > 0: print("re in has %d at %s" % (len(result), website))
+        # if debug_level.find('interests') > 0: print("re in has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, "(interest)")
         if result and tags:
             return tags, tag_text
@@ -558,10 +565,10 @@ class ResearchCrawler:
         # 再用 current research|interests 找
         words = "(%s)" % '|'.join(e for e in self.key_words[u'其他可能的研究兴趣短语'])
         result = soup.find_all(string=re.compile(words, re.I))
-        if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
+        # if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
         logger.info("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
-        if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
+        # if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
         if result and tags:
             return tags, tag_text
 
@@ -695,7 +702,7 @@ class ResearchCrawler:
                                         u'个人主页链接URL': faculty_page}
 
         if faculty_page:
-            if debug_level.find("website") > 0: print 'website page url: ',faculty_page
+            # if debug_level.find("website") > 0: print 'website page url: ',faculty_page
             faculty_page = format_url(faculty_page, faculty_link)
             # if debug_level.find("website") > 0: print 'website page url: ',faculty_page
             page_c, page_soup = self.open_page(faculty_page)

@@ -224,7 +224,7 @@ class ResearchCrawler:
         if redirect:
             redir = redirect['content'].split("=")[1]
             page_url = format_url(redir, page_url)
-            # if debug_level.find("open") > 0: print("now refres %s" % page_url)
+            if debug_level.find("open") > 0: print("now refres %s" % page_url)
             html = get_and_store_page(page_url, force)
             # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
@@ -565,7 +565,7 @@ class ResearchCrawler:
         words = "(%s)" % '|'.join(e for e in self.key_words[u'其他可能的研究兴趣短语'])
         result = soup.find_all(string=re.compile(words, re.I))
         # if debug_level.find('interests') > 0: print("other has %d at %s" % (len(result), website))
-        logger.info("other has %d at %s" % (len(result), website))
+        # logger.info("other has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, words)
         # if debug_level.find('interests') > 0: print("get tags %s" % str(tags))
         if result and tags:
@@ -756,6 +756,7 @@ if __name__ == "__main__":
             'http://www.uwyo.edu/cosc/cosc-directory/',
             'http://www.cs.siu.edu/faculty-staff/continuing_faculty.php',
             'https://www.uml.edu/Sciences/computer-science/faculty/',
+            'http://cs.gmu.edu/directory/by-category/faculty/',
             ]
     examples = ['https://inside.mines.edu/CS-Faculty-and-Staff/TracyCamp',
                 'http://science.iit.edu/people/faculty/eunice-santos',
@@ -770,7 +771,8 @@ if __name__ == "__main__":
                 'http://www.lsu.edu/eng/ece/people/Faculty/brown.php',
                 'http://www.uwyo.edu/cosc/cosc-directory/jlc/index.html',
                 'http://www.cs.siu.edu/~abosu',
-                'https://www.uml.edu/Sciences/computer-science/faculty/levkowitz-haim.aspx'
+                'https://www.uml.edu/Sciences/computer-science/faculty/levkowitz-haim.aspx',
+                'http://cs.gmu.edu/~jallbeck/',
                 ]
 
     url_check = {'http://cs.mines.edu/CS-Faculty': 15,
@@ -787,15 +789,16 @@ if __name__ == "__main__":
                  'http://www.uwyo.edu/cosc/cosc-directory/': 11,
                  'http://www.cs.siu.edu/faculty-staff/continuing_faculty.php': 10,
                  'https://www.uml.edu/Sciences/computer-science/faculty/': 18,
+                 'http://cs.gmu.edu/directory/by-category/faculty/': 43
 
                  }
     import cProfile
 
-    for url in urls[8:9]:
+    for url in urls[14:15]:
         print url
 
         crawler = ResearchCrawler(url, examples[urls.index(url)])
-        cProfile.run("crawler.crawl_from_directory(url, examples[urls.index(url)], False)", "prof.log")
+        cProfile.run("crawler.crawl_from_directory(url, examples[urls.index(url)])", "prof.log")
 
         # i = 1
         # directory_url = urls[i]

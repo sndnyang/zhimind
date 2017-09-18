@@ -2,13 +2,14 @@ var timerId;
 var keyWords = null;
 
 function filterProfessors(col, value) {
-    var newList = [];
+    var newList = [], prefix = t+'-';
     for (var i in filterList) {
         if (!value) {
             newList.push(filterList[i]);
             continue;
         }
-        if (col in filterList[i] && filterList[i][col].toLowerCase().indexOf(value) > -1) {
+        if (col in filterList[i] && (filterList[i][col].toLowerCase().indexOf(value) > -1
+                || filterList[i][col].toString().substr(0, prefix.length) == prefix)) {
             newList.push(filterList[i]);
         }
     }
@@ -347,6 +348,21 @@ function getProcess() {
     });  
 }
 
+function showKeyWordsList(data, showTags) {
+    keyWords = data.keywords;
+    var json = keyWords;
+    
+    for (var i in showTags) {
+        var e = showTags[i];
+        var group = $('<div class="input-group input-group-sm"></div>');
+        var span = $("<span class='input-group-addon'>{0} </span>".format(e));
+        var input = '<input type="text" name="{0}" value="{1}" class="form-control">'.format(e, json[e]);
+        group.append(span);
+        group.append(input);
+        $("#keyWords").append(group);
+    }
+}
+
 function showKeyWords(data, step) {
     $("#keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
     if (step == "1") {
@@ -362,18 +378,7 @@ function showKeyWords(data, step) {
                 '招生意向关键词', '长期招生关键词']
         $("#keyWords").append("<p>先根据关键词过滤不可能的URL,再选择可能的</p>");
     }
-    keyWords = data.keywords;
-    var json = keyWords;
-    
-    for (var i in showTags) {
-        var e = showTags[i];
-        var group = $('<div class="input-group input-group-sm"></div>');
-        var span = $("<span class='input-group-addon'>{0} </span>".format(e));
-        var input = '<input type="url" name="{0}" value="{1}" class="form-control">'.format(e, json[e]);
-        group.append(span);
-        group.append(input);
-        $("#keyWords").append(group);
-    }
+    showKeyWordsList(data, showTags);
 }
 
 function fillResearchInformationByGrid(no, item) {

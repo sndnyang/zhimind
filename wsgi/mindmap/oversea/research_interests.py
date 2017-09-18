@@ -7,7 +7,7 @@ import traceback
 from flask import request, render_template, session, json, Blueprint, g
 from sqlalchemy.exc import InvalidRequestError
 from wtforms import StringField, validators
-from sqlalchemy import asc
+from sqlalchemy import asc, or_
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.exc import IntegrityError
 
@@ -61,7 +61,8 @@ def get_professor_list(school, major):
     if tag:
         results = Professor.query.filter(Professor.interests.any(name=tag))
     else:
-        results = Professor.query.filter_by(major=major)
+        rule = or_(Professor.major==major, Professor.major.like("%s-%%" % major))
+        results = Professor.query.filter(rule)
     if school != '0':
         results = results.filter_by(school=school)
     if position:

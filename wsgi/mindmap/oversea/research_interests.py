@@ -122,6 +122,7 @@ def query_add_interests(tag, major):
         if result is None and len(tag) < 50:
             result = Interests(tag, major)
             db.session.add(result)
+            db.session.commit()
         return result
     except MultipleResultsFound:
         return None
@@ -237,9 +238,10 @@ def submit_professors(college_name, major, directory_url):
             if ele.get('tags'):
                 for tag in ele.get('tags', []):
                     tag_obj = query_add_interests(tag, major)
-                    if professor and tag_obj:
+                    exist = Professor.query.filter(Professor.interests.any(name=tag))
+                    # app.logger.info("tag %s exist in %s? %s" % (tag, ele.get("name"), str(exist is not None)))
+                    if professor and tag_obj and not exist:
                         professor.interests.append(tag_obj)
-                        db.session.flush()
         except IntegrityError:
             app.logger.info(" professor %s roll back" % ele.get("name"))
             db.session.rollback()

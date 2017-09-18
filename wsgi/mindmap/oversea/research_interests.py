@@ -174,10 +174,10 @@ def validate_and_extract(form):
         if verification_code != code_text:
             return u'Error at 验证码错误', None, None, None
 
-    major = form['major']
-    college_name = form['college_name']
-    directory_url = form['directory_url']
-    professor_url = form['professor_url']
+    major = form.get('major', "0")
+    college_name = form.get('college_name', "")
+    directory_url = form.get('directory_url', "")
+    professor_url = form.get('professor_url', "")
     
     if major == '0' or not college_name.strip() or not directory_url.strip()\
        or not professor_url.strip():

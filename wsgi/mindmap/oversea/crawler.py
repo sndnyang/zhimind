@@ -102,7 +102,6 @@ def get_and_store_page(page_url, force=False):
     :rtype: string
     """
     # if debug_level.find("open") > 0: print("now open page url %s" % page_url)
-    page_url = page_url.split("&")[0]
     try:
         parts = page_url.split("/")[2].split(".")
         university_name = parts[-2]
@@ -120,9 +119,12 @@ def get_and_store_page(page_url, force=False):
     if fname.find("index") > -1:
         fname = '_'.join(page_url.split('/')[3:])
 
+    if len(fname) > 20:
+        fname = fname[:20]
+
     file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
 
-    # if debug_level.find("save") > 0: print("now open page url %s" % file_name)
+    # if debug_level.find("open") > 0: print("now open page url %s" % file_name)
     if os.path.isfile(file_name) and not force:
         with open(file_name) as fp:
             html = fp.read()
@@ -135,7 +137,16 @@ def get_and_store_page(page_url, force=False):
             # if os.environ.get("DEBUG_MODE"):
             #     r = requests.get(page_url, proxies=proxies, verify=False)
             # else:
-            r = requests.get(page_url, verify=False)
+            if '?' in page_url:
+                query = page_url.split('?')[1]
+                page_url = page_url.split('?')[0]
+                params = {}
+                for e in query.split("&"):
+                    parts = e.split("=")
+                    params[parts[0]] = parts[1]
+                r = requests.get(page_url, params=params, verify=False)
+            else:
+                r = requests.get(page_url, verify=False)
             html = r.content
         except (ConnectionError, HTTPError):
             html = "Error at " + page_url
@@ -164,19 +175,20 @@ def find_all_anchor(soup):
 
 
 def find_example_index(l, a, index):
-    # logger.info("diff '%s'    with" % a)
+    logger.info("diff '%s'    with" % a)
+    # if debug_level.find("list") > 0: print a
     a = a.strip()
     for i in range(len(l)):
         href = l[i].get("href")
         if not href:
             continue
         href = format_url(l[i].get("href"), index)
-        # logger.info("diff '%s' " % href)
-        # if debug_level.find("list") > 0: print href, a
+        logger.info("diff '%s' " % href)
+        # if debug_level.find("list") > 0: print href
         if href.strip() == a:
-            # logger.info("find %s at %d" % (href, i))
+            logger.info("find %s at %d" % (href, i))
             return i
-    # logger.info("find it at %d" % i)
+    logger.info("find it at %d" % i)
     return -1
 
 
@@ -190,6 +202,100 @@ def filter_research_interests(alist):
             continue
         result.append(e)
     return result
+
+
+def load_key(config, default='key.json'):
+    with open(os.path.join(os.path.dirname(__file__), default)) as fp:
+        key_words = json.loads(fp.read(), strict=False)
+    if os.path.isfile(config):
+        with open(config) as fp:
+            key_words.update(json.loads(fp.read(), strict=False))
+    if key_words is None:
+        return u"Error at 爬虫关键词文件读取错误"
+    return key_words
+
+def save_json_file(fpath, data):
+    if not fpath:
+        return u"Error at 爬虫关键词文件路径错误"
+    try:
+        with open(fpath, 'w') as fp:
+            json.dump(data, fp)
+    except:
+        return "Error at 写入定制关键词失败"
+    return None
+
+def load_url_list(config):
+    access_urls = {"target": []}
+    if os.path.isfile(config):
+        with open(config) as fp:
+            access_urls = json.loads(fp.read(), strict=False)
+    if access_urls is None:
+        return u"Error at 爬虫爬取记录文件读取错误"
+    return access_urls
+
+
+def filter_url(e, index_url, key_words, access_urls):
+    href = e.get("href")
+    domain = re.search('(\w+).edu', index_url).group(1)
+    if not href:
+        return False
+    if href.find("mailto") > -1 or href.find("#") > -1:
+        return False
+    if href.find("javascript:void") > -1:
+        return False
+    # if debug_level.find("filter") > 0: print("filter %s" % href)
+    href = format_url(href, index_url)
+    # if debug_level.find("filter") > 0: print("format to %s" % href)
+    if href in access_urls['target']:
+        return False
+    if contain_keys(href, key_words[u'招生录取URL不可能包含'] + key_words[
+                    u'院系教员URL不可能包含']):
+        return False
+    if href.find(domain) == -1:
+        return False
+    # if not contain_keys(href, key_words[u'招生录取URL可能包含'] + key_words[
+    #                 u'院系教员URL可能包含'], True):
+    #     return False
+    e['href'] = href
+    return True
+
+class CollegeCrawler:
+    """
+    """
+    def __init__(self, name, index_url):
+        self.name = name
+        self.index_url = index_url
+        self.university_name = re.search('(\w+).edu', self.index_url).group(1)
+        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name)
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+        self.config = os.path.join(dir_path, 'college_key.json')
+        self.key_words = load_key(self.config, 'college_key.json')
+        self.access_file = os.path.join(dir_path, 'access_url.json')
+        self.access_url = load_url_list(self.access_file)
+        if len(self.access_url['target']) == 0:
+            self.access_url['target'] = [index_url]
+
+    def crawl_bfs(self, url_list, force=False):
+        final_list = []
+        for url in url_list:
+            html = get_and_store_page(url, force)
+            if html.startswith("Error at "):
+                return "Error to load %s " % url
+            soup = BeautifulSoup(html, 'html.parser')
+            a_list = find_all_anchor(soup)
+            print len(a_list)
+            final_list += filter(lambda e: filter_url(e, self.index_url, 
+                                                      self.key_words, 
+                                                      self.access_url), a_list)
+
+        return final_list
+
+    def save_key(self):
+        return save_json_file(self.config, self.key_words)
+
+    def save_url(self, config):
+        return save_json_file(self.access_file, self.access_url)
 
 
 class ResearchCrawler:
@@ -208,8 +314,7 @@ class ResearchCrawler:
             os.makedirs(dir_path)
         self.config = os.path.join(dir_path, 'key.json')
 
-        self.key_words = None
-        self.load_key()
+        self.key_words = load_key(self.config)
 
     def open_page(self, page_url, force=False):
         """
@@ -224,7 +329,7 @@ class ResearchCrawler:
         if redirect:
             redir = redirect['content'].split("=")[1]
             page_url = format_url(redir, page_url)
-            if debug_level.find("open") > 0: print("now refres %s" % page_url)
+            # if debug_level.find("open") > 0: print("now refres %s" % page_url)
             html = get_and_store_page(page_url, force)
             # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
@@ -277,27 +382,8 @@ class ResearchCrawler:
             result.append(person)
         return result
 
-    def load_key(self):
-
-        with open(os.path.join(os.path.dirname(__file__), 'key.json')) as fp:
-            self.key_words = json.loads(fp.read(), strict=False)
-        if os.path.isfile(self.config):
-            with open(self.config) as fp:
-                self.key_words.update(json.loads(fp.read(), strict=False))
-        if self.key_words is None:
-            return u"Error at 爬虫关键词文件读取错误"
-        return None
-
     def save_key(self):
-        if not self.config:
-            return u"Error at 爬虫关键词文件路径错误"
-
-        try:
-            with open(self.config, 'w') as fp:
-                json.dump(self.key_words, fp)
-        except:
-            return "Error at 写入定制关键词失败"
-        return None
+        return save_json_file(self.config, self.key_words)
 
     def filter_list(self, e):
         href = e.get('href')
@@ -324,15 +410,14 @@ class ResearchCrawler:
         potential_name += key_words[u'个人主页URL可能包含']
 
         potential_name = [e for e in potential_name if len(e) > 2 and
-                          not contain_keys(e,
-                                           key_words[u'教员URL可能包含'] +
+                          not contain_keys(e, key_words[u'教员URL可能包含'] +
                                            key_words[u'教员URL不可能包含'] +
                                            [self.university_name] +
                                            re.findall("(\w+)", self.url) +
                                            re.findall("([A-Z]*[a-z]+)", self.url)
                                            )
                           ]
-        # if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
+        if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''
@@ -343,11 +428,11 @@ class ResearchCrawler:
             if not href or len(href) < 5:
                 continue
             href = urllib2.unquote(href)
-            # if debug_level.find("website") > 0: print(' href: ' + str(href))
+            if debug_level.find("website") > 0: print(' href: ' + str(href))
 
             suffix = href.split('.')[-1]
             if len(suffix) < 5 and contain_keys(suffix, self.key_words[u'文件而不是网页']):
-                # if debug_level.find("website") > 0: print(' is a file')
+                if debug_level.find("website") > 0: print(' is a file')
                 continue
 
             if faculty_page and mail:
@@ -374,7 +459,7 @@ class ResearchCrawler:
                     faculty_page = href
                     page_name = a.get_text()
 
-        # if debug_level.find("website") > 0: print(' final link: ' + faculty_page)
+        if debug_level.find("website") > 0: print(' final link: ' + faculty_page)
         return faculty_page, mail, page_name
 
     def find_faculty_list(self, l, faculty_url):

@@ -61,7 +61,7 @@ def get_professor_list(school, major):
     if tag:
         results = Professor.query.filter(Professor.interests.any(name=tag))
     else:
-        rule = or_(Professor.major==major, Professor.major.like("%s-%%" % major))
+        rule = or_(Professor.major == major, Professor.major.like("%s-%%" % major))
         results = Professor.query.filter(rule)
     if school != '0':
         results = results.filter_by(school=school)
@@ -216,7 +216,7 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
         link_list.append(crawl.dive_into_page(link, flag))
         i += 1
         # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
-        app.logger.info('process of %s %s' % (directory_url, major)+ " %d,%d" % (count, i))
+        app.logger.info('process of %s %s' % (directory_url, major) + " %d,%d" % (count, i))
     app.logger.info('research process %s %s ' % (directory_url, major) + "  finish")
     app.redis.set('%s-%s' % (directory_url, major), link_list)
     return link_list
@@ -228,7 +228,8 @@ def submit_professors(college_name, major, directory_url):
         professor = None
         try:
             if ele.get("name", None):
-                professor = query_add_professor(ele.get("name"), college_name, major)
+                name = ele.get("name").strip()
+                professor = query_add_professor(name, college_name, major)
                 if professor:
                     professor.position = ele.get("position")
                     professor.term = ele.get("term")
@@ -238,9 +239,13 @@ def submit_professors(college_name, major, directory_url):
             if ele.get('tags'):
                 for tag in ele.get('tags', []):
                     tag_obj = query_add_interests(tag, major)
-                    exist = Professor.query.filter(Professor.interests.any(name=tag))
+                    exist = Professor.query.filter_by(name=name, 
+                                                      school=college_name, 
+                                                      major=major)\
+                                     .filter(Professor.interests.any(name=tag)
+                                             ).one_or_none()
                     # app.logger.info("tag %s exist in %s? %s" % (tag, ele.get("name"), str(exist is not None)))
-                    if professor and tag_obj and not exist:
+                    if professor and tag_obj and exist is None:
                         professor.interests.append(tag_obj)
         except IntegrityError:
             app.logger.info(" professor %s roll back" % ele.get("name"))

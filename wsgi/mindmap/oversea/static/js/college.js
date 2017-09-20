@@ -565,6 +565,77 @@ function filterByMajor(type) {
     pageIt(newList, "major", 0);
 }
 
+function showCollegeKeyWords(data) {
+    
+    var showTags = ['招生录取URL不可能包含', '招生录取URL可能包含', 
+                    '院系教员URL不可能包含', '院系教员URL可能包含'];
+    $("#keyWords").html("<p>爬虫抽取信息关键词(以逗号,隔开， 正则表达式匹配):</p>");
+    
+    showKeyWordsList(data, showTags);
+}
+
+function extract_uniq_part(parts, id) {
+    var uniq_parts = [];
+    for (var i in parts) {
+        var flag = false, re = new RegExp("\\b" + parts[i] + "\\b","i");
+        for (var j in filterList.list) {
+            if (j == id)
+                continue;
+            if (filterList.list[j].match(re)) {
+                console.log(parts[i] + ' contains in ' + filterList.list[j]);
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            console.log(parts[i] + ' is uniq');
+            uniq_parts.push(parts[i]);
+        }
+    }
+    return uniq_parts;
+}
+
+function delete_btn_update(obj) {
+    var ele = $(obj).parent().parent(), url = $($(ele.children("td")[2]).children("a")[0]).html(),
+        id = $(ele.children("td")[0]).html();
+    console.log(url);
+    var parts = url.split(/\W/g);
+    console.log(parts);
+
+    var uniq_parts = extract_uniq_part(parts, id);
+    var input = $($("#keyWords").children("div").children("input")[0]),
+        words = input.val();
+    for (var i in uniq_parts) {
+        words = uniq_parts[i] + ',' + words;
+    }
+    input.val(words);
+    ele.remove();
+}
+
+function showCollegeCrawlerResult(data) {
+    var showTags, list = data.list, table = $("<table class='table table-striped'></table>");
+    showCollegeKeyWords(data);
+
+
+    for (var i in list) {
+        var tr = $("<tr></tr>"), td = $("<td></td>"), toggle = null;
+        var url = list[i].split("|")[0], name = list[i].split("|")[1];
+        var btn = $("<a class='btn btn-danger'>删除该链接</a>");
+        btn.attr("onclick", "delete_btn_update(this)");
+        td.append("<span>链接URL为：</span>");
+        td.append('<a href="{0}" target="_blank">{1}</a>'.format(url, url));
+        tr.append("<td>{0}</td>".format(i));
+        tr.append("<td>链接名字显示为：{0}</td>".format(name));
+        tr.append(td);
+        tr.append($("<td></td>").append(btn));
+        table.append(tr);
+        if (toggle) {
+            table.append(toggle);
+        }
+    }
+    $("#crawlResult").append(table);
+}
+
 function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
@@ -578,10 +649,17 @@ function submitRedirect(obj, type, url) {
                 return;
             }
             console.log(data.info);
+            if (type.indexOf("college") > -1) {
+                $("#loadingDiv").remove();
+                filterList = data;
+                showCollegeCrawlerResult(data);
+                document.getElementById("vericode")
+                    .setAttribute('src','/verifycode?random='+Math.random());
+                return;
+            }
             if (type.indexOf("crawler") > -1) {
                 $("#loadingDiv").remove();
                 if (type.split("-")[1] != '3') {
-                    var list = data.list;
                     filterList = data;
                     showCrawlerResult(data, type.split("-")[1]);
                     document.getElementById("vericode")

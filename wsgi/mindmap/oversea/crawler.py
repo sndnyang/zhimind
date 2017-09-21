@@ -432,9 +432,14 @@ class ResearchCrawler:
     def get_personal_website(self, l, page_url, name):
         potential_name = []
         if name:
-            potential_name += [e[:5] for e in name.split()]
-            potential_name += [e for e in name.split()]
+            p = name.split()
+            potential_name += [e[:5] for e in p]
+            potential_name += [e for e in p]
+            if len(p) == 2:
+                potential_name.append(p[0][0]+p[1])
+                potential_name.append(p[0]+p[1][0])
         key_words = self.key_words
+        potential_name += key_words[u'个人主页URL可能包含']
 
         potential_name = [e for e in potential_name if len(e) > 2 and
                           not contain_keys(e, key_words[u'教员URL可能包含'] +
@@ -444,8 +449,7 @@ class ResearchCrawler:
                                            re.findall("([A-Z]*[a-z]+)", self.url)
                                            )
                           ]
-        potential_name += key_words[u'个人主页URL可能包含']
-        if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
+        # if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''

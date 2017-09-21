@@ -347,9 +347,8 @@ class ResearchCrawler:
                 name = origin_url.split("?")[0][:-1] + '-2'
             # if debug_level.find("open") > 0: print("now refres %s" % page_url)
             html = get_and_store_page(page_url, force=force, major=major, 
-                                      university_name=self.university_name,
+                                      university=self.university_name,
                                       name=name)
-            # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
         elif soup.find("frameset"):
             frames = soup.find_all("frame")
@@ -368,7 +367,6 @@ class ResearchCrawler:
                 html = get_and_store_page(page_url, force=force, major=major,
                                           university=self.university_name,
                                           name=name)
-                # if debug_level.find("debug") > 0: print "open url", page_url
                 soup = BeautifulSoup(html, 'html.parser')
         elif e:
             origin_url = page_url

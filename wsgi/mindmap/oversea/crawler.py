@@ -435,7 +435,6 @@ class ResearchCrawler:
             potential_name += [e[:5] for e in name.split()]
             potential_name += [e for e in name.split()]
         key_words = self.key_words
-        potential_name += key_words[u'个人主页URL可能包含']
 
         potential_name = [e for e in potential_name if len(e) > 2 and
                           not contain_keys(e, key_words[u'教员URL可能包含'] +
@@ -445,7 +444,8 @@ class ResearchCrawler:
                                            re.findall("([A-Z]*[a-z]+)", self.url)
                                            )
                           ]
-        # if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
+        potential_name += key_words[u'个人主页URL可能包含']
+        if debug_level.find("website") > 0: print('potential name: ' + str(potential_name))
 
         faculty_page = ''
         page_name = ''

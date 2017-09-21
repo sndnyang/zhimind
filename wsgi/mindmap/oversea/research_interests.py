@@ -326,7 +326,7 @@ def custom_crawler_step(step):
             task = CrawlTask(college, major, directory_url, prof_url)
             db.session.add(task)
         else:
-            task.major = major
+            task = CrawlTask.query.filter_by(school=college, major=major)
             task.school_url = directory_url
             task.example = prof_url
         result = submit_professors(college, major, directory_url)

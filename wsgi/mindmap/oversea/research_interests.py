@@ -159,8 +159,18 @@ def is_exist_college(c_list, name):
     return False
 
 
+@research_page.route('/research_task.html')
+def research_task():
+    meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
+            'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
+            'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
+    tasks = CrawlTask.query.all()
+    return render_template('research_task.html', meta=meta, tasks=tasks)
+
+
+@research_page.route('/custom_crawler.html/<task_id>')
 @research_page.route('/custom_crawler.html')
-def custom_crawler():
+def custom_crawler(task_id=None):
     verification_code = StringField(u'验证码', 
                                     validators=[validators.DataRequired(),
                                                 validators.Length
@@ -168,8 +178,11 @@ def custom_crawler():
     meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
+    task = {'school': '', 'example': '', 'school': '', 'major': '0'}
+    if task_id:
+        task = CrawlTask.query.get(task_id)
     return render_template('custom_crawler.html', meta=meta, temp=0,
-                           veri=verification_code, types="research")
+                           veri=verification_code, types="research", task=task)
 
 
 def validate_and_extract(form):

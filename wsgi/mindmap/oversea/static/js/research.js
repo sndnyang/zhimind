@@ -255,6 +255,7 @@ function interests_modify(obj, id, val) {
     });   
 }
 function getMajorInterestsList() {
+    $("#collegeList").html("");
     var major = parseInt($("#majorName").val());
     if (major == 0) {
         $("#researchName").html("<option value=''>不限</option>");

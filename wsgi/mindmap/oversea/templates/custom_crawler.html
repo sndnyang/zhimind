@@ -17,7 +17,7 @@
                 <form method="post" action="{{ url_for('research_page.custom_crawler') }}" id="research">
                     <input type="hidden" name="id">
                     <label for="college_name">学校:</label>
-                    <input id="collegeName" name="college_name" list="collegeNameList" class="form-control"/>
+                    <input id="collegeName" name="college_name" list="collegeNameList" class="form-control" value="{{ task.school }}"/>
                     <datalist id="collegeNameList"></datalist>
                     <label for="major">专业:</label>
                     {{ render_major() }}
@@ -25,9 +25,9 @@
                     <div class="container-fluid">
                         <div class="col-md-12 col-lg-7">
                             <label for="directory_url">教授目录主页</label>
-                            <input type="url" id="directoryUrl" name="directory_url" class="form-control">
+                            <input type="url" id="directoryUrl" name="directory_url" class="form-control" value="{{ task.school_url }}">
                             <label for="professor_url">请提供第一个有个人主页的学者的链接</label>
-                            <input type="url" id="professorUrl" name="professor_url" class="form-control">
+                            <input type="url" id="professorUrl" name="professor_url" class="form-control" value="{{ task.example }}">
                         </div>
                         <div class="col-md-12 col-lg-5">
                             <p>示例</p>
@@ -84,21 +84,19 @@ var wait = 60;
 function refresh(obj) {
     obj.setAttribute('src','/verifycode?random='+Math.random());
 }
-
-
 </script>
 <script>
 $(document).ready(function(){
     $("#step1").click(function() {
-        $("#research").attr("action", "custom_crawler/1");
+        $("#research").attr("action", "/oversea/custom_crawler/1");
         submitRedirect($("#research"), "crawler-1", "{{url_for('research_page.research_index')}}");
     });
     $("#step2").click(function() {
-        $("#research").attr("action", "custom_crawler/2");
+        $("#research").attr("action", "/oversea/custom_crawler/2");
         submitRedirect($("#research"), "crawler-2", "{{url_for('research_page.research_index')}}");
     });
     $("#step3").click(function() {
-        $("#research").attr("action", "custom_crawler/3");
+        $("#research").attr("action", "/oversea/custom_crawler/3");
         submitRedirect($("#research"), "crawler-3", "{{url_for('research_page.research_index')}}");
     });
     $("#resetSubmit").click(function() {
@@ -107,6 +105,8 @@ $(document).ready(function(){
         $("#crawlResult").html("");
         $("#researchSubmit").html("重新提交");
     });
+
+    $("#majorName").val('{{task.major}}');
 });
 
 

@@ -429,7 +429,7 @@ class ResearchCrawler:
             href = a.get('href')
             if not href or len(href) < 5:
                 continue
-            href = urllib2.unquote(href)
+            href = urllib2.unquote(href.strip())
             # if debug_level.find("website") > 0: print(' href: ' + str(href))
 
             suffix = href.split('.')[-1]
@@ -458,7 +458,7 @@ class ResearchCrawler:
                     if '@' not in mail:
                         mail = re.sub("AT", "@", mail)
                 else:
-                    faculty_page = href
+                    faculty_page = href.strip()
                     page_name = a.get_text()
 
         # if debug_level.find("website") > 0: print(' final link: ' + faculty_page)

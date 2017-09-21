@@ -97,33 +97,34 @@ def format_url(href, source_url):
     return full_url
 
 
-def get_and_store_page(page_url, force=False, major='1-1'):
+def extract_name_from_url(page_url, dir_name):
+    fname = page_url.split('/')[-1]
+    if fname == '':
+        fname = page_url.split('/')[-2]
+    if fname.find("index") > -1:
+        fname = '_'.join(page_url.split('/')[3:])
+    if len(fname) > 20:
+        fname = fname[:20]
+    file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
+    return file_name
+
+def get_and_store_page(page_url, university, major='1-1',force=False, 
+                       name=''):
     """
 
     :rtype: string
     """
     # if debug_level.find("open") > 0: print("now open page url %s" % page_url)
-    try:
-        parts = page_url.split("/")[2].split(".")
-        university_name = parts[-2]
-    except IndexError:
-        return "Error at %s " % page_url
-
-    dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name, major)
+    dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university, major)
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
 
-    fname = page_url.split('/')[-1]
-    if fname == '':
-        fname = page_url.split('/')[-2]
+    if name:
+        file_name = extract_name_from_url(name, dir_name)
+    else:
+        file_name = extract_name_from_url(page_url, dir_name)
 
-    if fname.find("index") > -1:
-        fname = '_'.join(page_url.split('/')[3:])
-
-    if len(fname) > 20:
-        fname = fname[:20]
-
-    file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
+    # if debug_level.find("open") > 0: print("now save it to %s" % file_name)
 
     # if debug_level.find("open") > 0: print("now open page url %s" % file_name)
     if os.path.isfile(file_name) and not force:
@@ -280,7 +281,8 @@ class CollegeCrawler:
     def crawl_bfs(self, url_list, force=False):
         final_list = []
         for url in url_list:
-            html = get_and_store_page(url, force)
+            html = get_and_store_page(url, force=force,
+                                      university=self.university_name)
             if html.startswith("Error at "):
                 return "Error to load %s " % url
             soup = BeautifulSoup(html, 'html.parser')
@@ -322,17 +324,31 @@ class ResearchCrawler:
 
         """
         # if debug_level.find("debug") > 0: print "open url", page_url
-        html = get_and_store_page(page_url, force, major=major)
+        html = get_and_store_page(page_url, force=force, major=major,
+                                  university=self.university_name)
         if html.startswith("Error at "):
             return "Error to load %s " % html, None
         soup = BeautifulSoup(html, 'html.parser')
         redirect = soup.find(attrs={"http-equiv": "refresh"})
+        e = None
+        iframes = soup.find_all("iframe")
+        for e in iframes:
+            if e.parent.name != 'noscript':
+                break
+        else:
+            e = None
         if redirect and not contain_keys(redirect['content'].split("=")[1],
                                          ['your', 'browser'], True):
             redir = redirect['content'].split("=")[1]
+            origin_url = page_url
             page_url = format_url(redir, page_url)
+            name = ''
+            if self.university_name+'.edu' not in page_url.split("?")[0]:
+                name = origin_url.split("?")[0][:-1] + '-2'
             # if debug_level.find("open") > 0: print("now refres %s" % page_url)
-            html = get_and_store_page(page_url, force, major=major)
+            html = get_and_store_page(page_url, force=force, major=major, 
+                                      university_name=self.university_name,
+                                      name=name)
             # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
         elif soup.find("frameset"):
@@ -343,18 +359,28 @@ class ResearchCrawler:
                 if contain_keys(e.get("src"), self.key_words["frameset_pass"]):
                     continue
                 # if debug_level.find("debug") > 0: print("frame import ", e.get("src"))
+                origin_url = page_url
                 page_url = format_url(e.get("src"), page_url)
+                name = ''
+                if self.university_name+'.edu' not in page_url.split("?")[0]:
+                    name = origin_url.split("?")[0][:-1] + '-2'
                 # if debug_level.find("open") > 0: print("now frameset %s" % page_url)
-                html = get_and_store_page(page_url, force, major=major)
+                html = get_and_store_page(page_url, force=force, major=major,
+                                          university=self.university_name,
+                                          name=name)
                 # if debug_level.find("debug") > 0: print "open url", page_url
                 soup = BeautifulSoup(html, 'html.parser')
-        elif soup.find("iframe") and (not soup.find("body") or
-                                              len([e for e in soup.body.contents
-                                                   if e and str(e).strip()]) == 1):
-            e = soup.find("iframe")
+        elif e:
+            origin_url = page_url
+            # if debug_level.find("open") > 0: print(" origin %s " % page_url)
             page_url = format_url(e.get("src"), page_url)
-            # if debug_level.find("open") > 0: print("i frame %s" % page_url)
-            html = get_and_store_page(page_url, force, major=major)
+            name = ''
+            if self.university_name+'.edu' not in page_url.split("?")[0]:
+                name = origin_url.split("?")[0][:-1] + '-2'
+            # if debug_level.find("open") > 0: print("i frame %s and %s" % (page_url, name))
+            html = get_and_store_page(page_url, force=force, major=major,
+                                      university=self.university_name,
+                                      name=name)
             soup = BeautifulSoup(html, 'html.parser')
         return html, soup
 

@@ -325,6 +325,10 @@ def custom_crawler_step(step):
         if task is None:
             task = CrawlTask(college, major, directory_url, prof_url)
             db.session.add(task)
+        else:
+            task.major = major
+            task.school_url = directory_url
+            task.example = prof_url
         result = submit_professors(college, major, directory_url)
         if result.startswith("Error"):
             return json.dumps({'error': result}, ensure_ascii=False)

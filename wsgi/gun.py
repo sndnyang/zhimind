@@ -18,3 +18,5 @@ workers = multiprocessing.cpu_count() * 2
 worker_class = 'gunicorn.workers.ggevent.GeventWorker'
 
 x_forwarded_for_header = 'X-FORWARDED-FOR'
+
+timeout=300

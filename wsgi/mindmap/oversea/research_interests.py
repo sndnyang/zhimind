@@ -289,7 +289,7 @@ def custom_crawler_step(step):
     if major is None:
         return json.dumps({'error': college}, ensure_ascii=False)
     task = query_and_create_task(college, major)
-    crawl = ResearchCrawler(directory_url, prof_url)
+    crawl = ResearchCrawler(directory_url, prof_url, major)
     flag = update_key_words(request.form, crawl)
     if flag:
         return json.dumps({'error': flag}, ensure_ascii=False)
@@ -341,7 +341,7 @@ def submitted_research():
             return json.dumps({'error': result}, ensure_ascii=False)
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
-    crawl = ResearchCrawler(directory_url, prof_url)
+    crawl = ResearchCrawler(directory_url, prof_url, major)
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
     link_list = crawl_directory(crawl, faculty_list, major,  directory_url, count, False)
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)

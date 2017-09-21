@@ -305,12 +305,12 @@ class ResearchCrawler:
     如研究兴趣、招生机会
     """
 
-    def __init__(self, directory_url, example):
+    def __init__(self, directory_url, example, major='1-1'):
         self.example = example
         self.url = directory_url
         self.university_name = re.search('(\w+).edu', self.url).group(1)
         self.domain = '/'.join(directory_url.split("/")[:3])
-        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name)
+        dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name, major)
         if not os.path.isdir(dir_path):
             os.makedirs(dir_path)
         self.config = os.path.join(dir_path, 'key.json')
@@ -335,9 +335,11 @@ class ResearchCrawler:
             html = get_and_store_page(page_url, force, major=major)
             # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
-        elif soup.find("frameset") and not soup.find("body"):
+        elif soup.find("frameset"):
             frames = soup.find_all("frame")
+            # if debug_level.find("frame") > 0: print("frame get %d", len(frames))
             for e in frames[1:]:
+                # if debug_level.find("frame") > 0: print("frame get ", e.get("src"))
                 if contain_keys(e.get("src"), self.key_words["frameset_pass"]):
                     continue
                 # if debug_level.find("debug") > 0: print("frame import ", e.get("src"))
@@ -801,6 +803,7 @@ class ResearchCrawler:
                 if tags:
                     person[u'研究方向部分原文'] = tag_text
 
+                # if debug_level.find("website") > 0: print 'website page open position',faculty_page
                 position, term, position_text = self.get_open_position(page_soup)
                 if position:
                     person['position'] = position

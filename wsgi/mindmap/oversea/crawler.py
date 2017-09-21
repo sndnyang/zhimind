@@ -97,7 +97,7 @@ def format_url(href, source_url):
     return full_url
 
 
-def get_and_store_page(page_url, force=False):
+def get_and_store_page(page_url, force=False, major='1-1'):
     """
 
     :rtype: string
@@ -109,9 +109,9 @@ def get_and_store_page(page_url, force=False):
     except IndexError:
         return "Error at %s " % page_url
 
-    dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name)
+    dir_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'), 'data', university_name, major)
     if not os.path.isdir(dir_name):
-        os.mkdir(dir_name)
+        os.makedirs(dir_name)
 
     fname = page_url.split('/')[-1]
     if fname == '':
@@ -317,12 +317,12 @@ class ResearchCrawler:
 
         self.key_words = load_key(self.config)
 
-    def open_page(self, page_url, force=False):
+    def open_page(self, page_url, force=False, major='1-1'):
         """
 
         """
         # if debug_level.find("debug") > 0: print "open url", page_url
-        html = get_and_store_page(page_url, force)
+        html = get_and_store_page(page_url, force, major=major)
         if html.startswith("Error at "):
             return "Error to load %s " % html, None
         soup = BeautifulSoup(html, 'html.parser')
@@ -332,7 +332,7 @@ class ResearchCrawler:
             redir = redirect['content'].split("=")[1]
             page_url = format_url(redir, page_url)
             # if debug_level.find("open") > 0: print("now refres %s" % page_url)
-            html = get_and_store_page(page_url, force)
+            html = get_and_store_page(page_url, force, major=major)
             # if debug_level.find("debug") > 0: print "open url", page_url
             soup = BeautifulSoup(html, 'html.parser')
         elif soup.find("frameset") and not soup.find("body"):
@@ -343,7 +343,7 @@ class ResearchCrawler:
                 # if debug_level.find("debug") > 0: print("frame import ", e.get("src"))
                 page_url = format_url(e.get("src"), page_url)
                 # if debug_level.find("open") > 0: print("now frameset %s" % page_url)
-                html = get_and_store_page(page_url)
+                html = get_and_store_page(page_url, force, major=major)
                 # if debug_level.find("debug") > 0: print "open url", page_url
                 soup = BeautifulSoup(html, 'html.parser')
         elif soup.find("iframe") and (not soup.find("body") or
@@ -352,13 +352,13 @@ class ResearchCrawler:
             e = soup.find("iframe")
             page_url = format_url(e.get("src"), page_url)
             # if debug_level.find("open") > 0: print("i frame %s" % page_url)
-            html = get_and_store_page(page_url)
+            html = get_and_store_page(page_url, force, major=major)
             soup = BeautifulSoup(html, 'html.parser')
         return html, soup
 
-    def crawl_faculty_list(self, directory_url, example):
+    def crawl_faculty_list(self, directory_url, example, major='1-1'):
 
-        content, soup = self.open_page(directory_url)
+        content, soup = self.open_page(directory_url, major=major)
         if content.startswith("Error at "):
             return 0, "Error to load %s " % content
         anchors = find_all_anchor(soup)

@@ -52,6 +52,7 @@ def contain_keys(href, keys, is_name=False, return_obj=False):
             if return_obj:
                 return r
             return True
+    # if debug_level.find("contain") > 0: print words
     r = re.search(r'\b%s\b' % words, href, re.I)
     if r:
         if return_obj:
@@ -177,12 +178,12 @@ def find_all_anchor(soup):
 def find_example_index(l, a, index):
     logger.info("diff '%s'    with" % a)
     # if debug_level.find("list") > 0: print a
-    a = a.strip()
+    a = a.strip().replace(" ", "%20")
     for i in range(len(l)):
         href = l[i].get("href")
         if not href:
             continue
-        href = format_url(l[i].get("href"), index)
+        href = format_url(l[i].get("href"), index).replace(" ", "%20")
         logger.info("diff '%s' " % href)
         # if debug_level.find("list") > 0: print href
         if href.strip() == a:
@@ -326,7 +327,8 @@ class ResearchCrawler:
             return "Error to load %s " % html, None
         soup = BeautifulSoup(html, 'html.parser')
         redirect = soup.find(attrs={"http-equiv": "refresh"})
-        if redirect:
+        if redirect and not contain_keys(redirect['content'].split("=")[1],
+                                         ['your', 'browser'], True):
             redir = redirect['content'].split("=")[1]
             page_url = format_url(redir, page_url)
             # if debug_level.find("open") > 0: print("now refres %s" % page_url)

@@ -592,7 +592,7 @@ class ResearchCrawler:
                 tag = re.sub(r"[+.*#_]", ' ', tag)
                 tag = re.sub(r"[{}\[\]%&'=\"]", ',', tag)
                 tag = re.sub(r"[-]", ' ', tag)
-                tag = re.sub(r"[/\\|]", ' ', tag)
+                tag = re.sub(r"[/\\|]", ' and ', tag)
                 tag = re.sub(r"(\s+)", " ", tag)
                 and_tags = [e.strip() for e in re.sub(r"\band\b", ",", tag).split(",") if e]
                 for i in range(1, len(and_tags)):

@@ -145,6 +145,8 @@ def get_and_store_page(page_url, university, major='1-1',force=False,
                 params = {}
                 for e in query.split("&"):
                     parts = e.split("=")
+                    if len(parts) < 2:
+                        continue
                     params[parts[0]] = parts[1]
                 r = requests.get(page_url, params=params, verify=False)
             else:
@@ -299,6 +301,18 @@ class CollegeCrawler:
 
     def save_url(self, config):
         return save_json_file(self.access_file, self.access_url)
+
+
+def select_line_part(line, flags):
+    pos = 0
+    for flag in flags:
+        obj = re.search("(%s)" % flag, line, re.I)
+        if not obj:
+            continue
+        new_pos = obj.span(1)
+        if new_pos[0] > pos:
+            pos = new_pos[0] + len(flag)
+    return line[pos:]
 
 
 class ResearchCrawler:
@@ -530,14 +544,6 @@ class ResearchCrawler:
             count += 1
         return count, faculty_list
 
-    def select_line_part(self, line):
-        pos = 0
-        for flag in self.key_words[u'一段研究兴趣的起始词']:
-            new_pos = line.find(flag)
-            if new_pos > pos:
-                pos = new_pos + len(flag)
-        return line[pos:]
-
     def replace_words(self, line):
         line = re.sub("\s+", " ", line)
         line = line.replace("(", "").replace(")", "")
@@ -576,7 +582,7 @@ class ResearchCrawler:
             temp_sent += sent + "<br>"
             if contain_keys(sent, self.key_words[u'该句开始不再是研究兴趣'], True):
                 break
-            sent = replace_html(self.select_line_part(re.sub("\s+", " ", sent)))
+            sent = replace_html(re.sub("\s+", " ", sent))
             sent = self.replace_words(sent)
             # if debug_level.find("extract") > 0: print("convert to %s" % sent)
             for x in re.split("[,:;?!]", sent):
@@ -611,7 +617,7 @@ class ResearchCrawler:
             tag_text.append(temp_sent)
         return tags
 
-    def extract_from_sibling(self, node, tags, tag_text):
+    def extract_from_sibling(self, node, tags, tag_text, words):
 
         slog = node.string.strip()
         node = node.parent
@@ -620,15 +626,15 @@ class ResearchCrawler:
 
         # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))
 
-        text = re.sub("[\n\r]", ".", unicode(node.get_text(".", strip=True)))
+        text = re.sub("[\n\r]+", " ", unicode(node.get_text(".", strip=True)))
+        text = select_line_part(text, self.key_words[u'一段研究兴趣的起始词'])
+
         # text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node).strip(), re.M)
         # if debug_level.find("sibling") > 0: print(" now text is " + text)
 
-        line = text[text.find(slog) + len(slog):]
-        # if debug_level.find("sibling") > 0: print(" now line is " + line)
-        # if debug_level.find("interests") > 0: print(" now line is " + line)
+        # if debug_level.find("interests") > 0: print(" now line is " + text)
 
-        tags = self.extract_from_line(line, tags, tag_text)
+        tags = self.extract_from_line(text, tags, tag_text)
         # if debug_level.find("interests") > 0: print(" now tags is " + str(tags))
 
         return tags
@@ -638,7 +644,7 @@ class ResearchCrawler:
             # if debug_level.find('interests') > 0: print('search the words %s ' % words)
             r = re.search(words, result[0], re.I).group(1).lower()
             if len(result[0]) > result[0].lower().find(r) + len(r) + 15:
-                line = self.select_line_part(re.sub("\n", ".", result[0]))
+                line = select_line_part(re.sub("\n", ".", result[0]), self.key_words[u'一段研究兴趣的起始词'])
                 # if debug_level.find('interests') > 0: print('from the line %s ' % line)
                 tags = self.extract_from_line(line, tags, tag_text)
                 # if debug_level.find('interests') > 0: print("line %d ge" % len(tags))
@@ -646,7 +652,7 @@ class ResearchCrawler:
                     return tags, tag_text
             node = result[0]
             # if debug_level.find('interests') > 0: print(' to find sibling %s ' % str(node))
-            tags = self.extract_from_sibling(node, tags, tag_text)
+            tags = self.extract_from_sibling(node, tags, tag_text, words)
             return tags, tag_text
         elif len(result) > 1:
             # 多个的情况太复杂，不处理了
@@ -657,12 +663,12 @@ class ResearchCrawler:
                         or isinstance(node.parent, Comment):
                     continue
                 if len(node) > 30:
-                    node = self.select_line_part(re.sub("\n", ".", node))
+                    node = select_line_part(re.sub("\n", ".", node), self.key_words[u'一段研究兴趣的起始词'])
                     # if debug_level.find("debug") > 0: print(" extract from line %s " % node)
                     tags = self.extract_from_line(node, tags, tag_text)
                     # if debug_level.find("debug") > 0: print(" extract from line %d  ge " % len(tags))
                     return tags, tag_text
-                tags = self.extract_from_sibling(node, tags, tag_text)
+                tags = self.extract_from_sibling(node, tags, tag_text, words)
                 # if debug_level.find("debug") > 0: print("extract from sibling %d  ge " % len(tags), tags)
                 return tags, tag_text
         return tags, tag_text
@@ -703,7 +709,7 @@ class ResearchCrawler:
                     return research_tags, tag_text
 
             # if debug_level.find("debug") > 0: print(' ' * 2 * debug_level + "need to sibling")
-            tags = self.extract_from_sibling(nodes[0], tags, tag_text)
+            tags = self.extract_from_sibling(nodes[0], tags, tag_text, words)
             return tags, tag_text
         elif len(nodes) < 5:
             if website == '':
@@ -716,7 +722,7 @@ class ResearchCrawler:
                         # if debug_level.find("debug") > 0: print (" from the line " + node)
                         tags = self.extract_from_line(node, tags, tag_text)
                         continue
-                    tags = self.extract_from_sibling(node, tags, tag_text)
+                    tags = self.extract_from_sibling(node, tags, tag_text, words)
             elif website:
                 for node in nodes:
                     if node.parent.name != "a":

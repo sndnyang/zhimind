@@ -621,7 +621,7 @@ class ResearchCrawler:
 
         slog = node.string.strip()
         node = node.parent
-        while node.get_text().strip() == slog:
+        while replace_html(node.get_text()).strip() == slog:
             node = node.parent
 
         # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))

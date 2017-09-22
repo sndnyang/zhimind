@@ -627,7 +627,6 @@ class ResearchCrawler:
         # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))
 
         text = re.sub("[\n\r]+", " ", unicode(node.get_text(".", strip=True)))
-        text = replace_html(text)
         text = select_line_part(text, self.key_words[u'一段研究兴趣的起始词'])
 
         # text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node).strip(), re.M)

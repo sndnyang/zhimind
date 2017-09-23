@@ -619,7 +619,7 @@ class ResearchCrawler:
 
     def extract_from_sibling(self, node, tags, tag_text, words):
 
-        slog = node.string.strip()
+        slog = replace_html(node.string.strip())
         node = node.parent
         while replace_html(node.get_text()).strip() == slog:
             node = node.parent

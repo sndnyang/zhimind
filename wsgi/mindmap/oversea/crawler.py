@@ -490,9 +490,8 @@ class ResearchCrawler:
 
             if faculty_page and mail:
                 break
-
             
-            if href in page_url or onsocial(href):
+            if href in page_url or page_url in href or onsocial(href):
                 # if debug_level.find("website") > 0: print(' is social network')
                 continue
 

@@ -59,7 +59,7 @@
                         {% endif %}
                         {% if not g.user.is_authenticated %}
                         <li>
-                            <a href="{{ url_for('user.login') }}">登录</a>
+                            <a href="{{ url_for('user.login', next=request.url) }}">登录</a>
                         </li>
                         <li>
                             <a href="{{ url_for('user.register') }}">注册</a>

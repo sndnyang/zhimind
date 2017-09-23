@@ -23,7 +23,12 @@ log_file_name = os.path.join(os.environ.get('OPENSHIFT_PYTHON_LOG_DIR', '.'),
 hdlr = logging.FileHandler(log_file_name, mode='a')
 hdlr.setLevel(logging.INFO)
 hdlr.setFormatter(fmter)
+
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.INFO)
+# ch.setFormatter(fmter)
 logger.addHandler(hdlr)
+# logger.addHandler(ch)
 logger.setLevel(logging.INFO)
 
 
@@ -180,7 +185,7 @@ def find_all_anchor(soup):
 
 def find_example_index(l, a, index):
     logger.info("diff '%s'    with" % a)
-    # if debug_level.find("list") > 0: print a
+    if debug_level.find("list") > 0: print a
     a = a.strip().replace(" ", "%20")
     for i in range(len(l)):
         href = l[i].get("href")
@@ -188,8 +193,9 @@ def find_example_index(l, a, index):
             continue
         href = format_url(l[i].get("href"), index).replace(" ", "%20")
         logger.info("diff '%s' " % href)
-        # if debug_level.find("list") > 0: print href
+        if debug_level.find("list") > 0: print href
         if href.strip() == a:
+            if debug_level.find("list") > 0: print ("find %s at %d" % (href, i))
             logger.info("find %s at %d" % (href, i))
             return i
     logger.info("find it at %d" % i)
@@ -404,7 +410,7 @@ class ResearchCrawler:
         anchors = find_all_anchor(soup)
         # if debug_level.find("list") > 0: print directory_url, len(anchors)
         index = find_example_index(anchors, example, directory_url)
-        # if debug_level.find("list") > 0: print directory_url, len(anchors[index:]), 
+        if debug_level.find("list") > 0: print directory_url, len(anchors[index:]), 
 
         # 第一个教授主页的作用主要在这里——如果能再来一个更好
         # 求共同祖先
@@ -431,6 +437,7 @@ class ResearchCrawler:
         href = e.get('href')
         if not href or len(href) < 5:
             return True
+        if debug_level.find("list") > 0: print href
         if href:
             if href.startswith('mailto:'):
                 return True
@@ -520,9 +527,9 @@ class ResearchCrawler:
         for e in l:
             if self.filter_list(e):
                 continue
-
             href = e.get('href').strip()
             faculty_link = format_url(href, self.url)
+            if debug_level.find("list") > 0: print faculty_link
 
             if faculty_link == faculty_url:
                 continue
@@ -621,13 +628,16 @@ class ResearchCrawler:
 
         slog = replace_html(node.string.strip())
         node = node.parent
-        while replace_html(node.get_text()).strip() == slog:
+        pnode_text = replace_html(node.get_text()).strip()
+        while pnode_text.endswith(slog):
             node = node.parent
+            pnode_text = replace_html(node.get_text()).strip()
 
         # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))
 
         text = re.sub("[\n\r]+", " ", unicode(node.get_text(".", strip=True)))
-        text = select_line_part(text, self.key_words[u'一段研究兴趣的起始词'])
+        text = select_line_part(text, words[1:-1].split("|") + 
+                                self.key_words[u'一段研究兴趣的起始词'])
 
         # text = re.sub("(</?\w+[^>]*>)+", ".", unicode(node).strip(), re.M)
         # if debug_level.find("sibling") > 0: print(" now text is " + text)
@@ -643,8 +653,11 @@ class ResearchCrawler:
         if len(result) == 1:
             # if debug_level.find('interests') > 0: print('search the words %s ' % words)
             r = re.search(words, result[0], re.I).group(1).lower()
+            # if debug_level.find('interests') > 0: print(' r %s ' % r)
             if len(result[0]) > result[0].lower().find(r) + len(r) + 15:
-                line = select_line_part(re.sub("\n", ".", result[0]), self.key_words[u'一段研究兴趣的起始词'])
+                line = select_line_part(re.sub("\n", ".", result[0]), 
+                                        words[1:-1].split("|") + 
+                                        self.key_words[u'一段研究兴趣的起始词'])
                 # if debug_level.find('interests') > 0: print('from the line %s ' % line)
                 tags = self.extract_from_line(line, tags, tag_text)
                 # if debug_level.find('interests') > 0: print("line %d ge" % len(tags))
@@ -663,7 +676,8 @@ class ResearchCrawler:
                         or isinstance(node.parent, Comment):
                     continue
                 if len(node) > 30:
-                    node = select_line_part(re.sub("\n", ".", node), self.key_words[u'一段研究兴趣的起始词'])
+                    node = select_line_part(re.sub("\n", ".", node), 
+                                            words[1:-1].split("|") + self.key_words[u'一段研究兴趣的起始词'])
                     # if debug_level.find("debug") > 0: print(" extract from line %s " % node)
                     tags = self.extract_from_line(node, tags, tag_text)
                     # if debug_level.find("debug") > 0: print(" extract from line %d  ge " % len(tags))
@@ -680,6 +694,7 @@ class ResearchCrawler:
         # 先用 完整的 research interest 找
         result = soup.find_all(string=re.compile("research\s+interest", re.I))
         # if debug_level.find('interests') > 0: print("re in has %d at %s" % (len(result), website))
+        # logger.info("re in has %d at %s" % (len(result), website))
         tags, tag_text = self.find_paragraph_interests(result, tags, tag_text, "(interest)")
         if result and tags:
             return tags, tag_text

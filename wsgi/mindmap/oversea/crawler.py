@@ -229,7 +229,7 @@ def save_json_file(fpath, data):
         return u"Error at 爬虫关键词文件路径错误"
     try:
         with open(fpath, 'w') as fp:
-            json.dump(data, fp)
+            json.dump(data, fp, ensure_ascii=False, indent=2)
     except:
         return "Error at 写入定制关键词失败"
     return None

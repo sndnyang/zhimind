@@ -14,21 +14,37 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    {% if g %}
+                            {% if g.user.is_authenticated and g.user.get_name() == "sndnyang" %}
                     <th></th>
+                    {% endif %}
+                        {% endif %}
                     <th>学校</th>
                     <th>专业</th>
+                    {% if g %}
+                            {% if g.user.is_authenticated %}
                     <th>主页</th>
                     <th>首例</th>
+                    {% endif %}
+                        {% endif %}
                 </tr>
                 </thead>
                 <tbody id="collegeList">
                     {% for task in tasks %}
                     <tr>
+                        {% if g %}
+                            {% if g.user.is_authenticated and g.user.get_name() == "sndnyang" %}
                         <td><a class="btn btn-success" href="{{url_for('research_page.custom_crawler', task_id=task.id)}}" target="_blank">重爬</a></td>
+                            {% endif %}
+                        {% endif %}
                         <td>{{ task.school }}</td>
                         <td>{{ task.major }}</td>
+                        {% if g %}
+                            {% if g.user.is_authenticated %}
                         <td>{{ task.school_url }}</td>
                         <td>{{ task.example }}</td>
+                        {% endif %}
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

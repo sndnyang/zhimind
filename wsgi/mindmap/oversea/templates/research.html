@@ -11,11 +11,9 @@
                 <h1>研究方向招生信息汇总</h1>
                 <a href="{{ url_for('uni_major_page.major_page') }}.html" class="btn btn-primary">专业信息汇总</a>
                 <a href="{{ url_for('uni_major_page.college_page') }}.html" class="btn btn-primary">学校信息汇总</a>
-                {% if g %}
-                    {% if g.user.is_authenticated %}
-                    <a href="{{ url_for('research_page.research_task') }}" class="btn btn-primary">爬虫任务</a>
-                    {% endif %}
-                {% endif %}
+                
+                <a href="{{ url_for('research_page.research_task') }}" class="btn btn-primary">已爬取院系</a>
+                    
             </div>
             <div class="col-sm-2">
                 <div class="form-group">

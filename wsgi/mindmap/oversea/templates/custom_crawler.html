@@ -10,8 +10,8 @@
         <div class="col-md-10 col-md-offset-1">
             <div class="pagetitle">
                 <h1>提交学校目录信息</h1>
-                <a href="research_form.html" class="btn btn-info">使用默认爬虫</a>
-                <a href="research.html" class="btn btn-info">退出</a>
+                <a href="{{ url_for('research_page.research_form') }}" class="btn btn-info">使用默认爬虫</a>
+                <a href="{{ url_for('research_page.research_index') }}.html" class="btn btn-info">退出</a>
             </div>
             <div id="main">
                 <form method="post" action="{{ url_for('research_page.custom_crawler') }}" id="research">

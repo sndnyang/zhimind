@@ -491,6 +491,7 @@ class ResearchCrawler:
             if faculty_page and mail:
                 break
 
+            
             if href in page_url or onsocial(href):
                 # if debug_level.find("website") > 0: print(' is social network')
                 continue
@@ -500,7 +501,9 @@ class ResearchCrawler:
                 continue
 
             if contain_keys(href, potential_name, True) or \
-                    contain_keys(a.get_text(), potential_name, True):
+                    contain_keys(a.get_text(), potential_name + 
+                                 self.key_words[u'教授个人主页可能显示为'],
+                                 True):
                 # if debug_level.find("website") > 0: print(' search it ok : ' + href)
                 if href.find('@') > -1 or href.find("mailto") > 0:
                     mail = href

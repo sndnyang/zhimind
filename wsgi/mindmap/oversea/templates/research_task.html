@@ -14,21 +14,21 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <th></th>
                     <th>学校</th>
                     <th>专业</th>
                     <th>主页</th>
                     <th>首例</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody id="collegeList">
                     {% for task in tasks %}
                     <tr>
+                        <td><a class="btn btn-success" href="{{url_for('research_page.custom_crawler', task_id=task.id)}}" target="_blank">重爬</a></td>
                         <td>{{ task.school }}</td>
                         <td>{{ task.major }}</td>
                         <td>{{ task.school_url }}</td>
                         <td>{{ task.example }}</td>
-                        <td><a class="btn btn-success" href="{{url_for('research_page.custom_crawler', task_id=task.id)}}" target="_blank">重爬</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

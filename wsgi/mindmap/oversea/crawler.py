@@ -169,7 +169,7 @@ def get_and_store_page(page_url, university, major='1-1',force=False,
 
 
 def onsocial(href):
-    for e in ['facebook', 'twitter', 'google', 'youtube', 'calendar', 'linkedin']:
+    for e in ['facebook', 'twitter', 'youtube', 'calendar', 'linkedin']:
         if e in href:
             return True
     return False

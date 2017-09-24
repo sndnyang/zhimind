@@ -310,6 +310,11 @@ def custom_crawler_step(step):
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url, major=major)
 
     if step == 1:
+        if task is None:
+            task = CrawlTask(college, major, directory_url, prof_url)
+            db.session.add(task)
+            db.session.commit()
+
         link_list = []
         for link in faculty_list:
             link_list.append(link.get("href") + "|" + str(link.get_text()))
@@ -322,13 +327,12 @@ def custom_crawler_step(step):
         return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 3:
-        if task is None:
-            task = CrawlTask(college, major, directory_url, prof_url)
-            db.session.add(task)
-        else:
+        if task:
             task = CrawlTask.query.filter_by(school=college, major=major)
-            task.school_url = directory_url
-            task.example = prof_url
+            if task.school_url != directory_url or task.example != prof_url:
+                task.school_url = directory_url
+                task.example = prof_url
+                db.session.commit()
         result = submit_professors(college, major, directory_url)
         if result.startswith("Error"):
             return json.dumps({'error': result}, ensure_ascii=False)

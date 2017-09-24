@@ -413,8 +413,6 @@ function fillResearchInformationByGrid(no, item) {
             if (i == 0 || i == parts.length-1) {
                 if (parts[i].length > 6)
                     parts[i] = parts[i].substring(0, 5);
-            } else if (parts[i].length > 4) {
-                parts[i] = parts[i].substring(0, 2) + '.';
             }
             temp += parts[i] + ' ';
         }

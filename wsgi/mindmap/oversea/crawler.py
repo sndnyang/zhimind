@@ -618,7 +618,7 @@ class ResearchCrawler:
 
         text = re.sub("[\n\r]+", " ", unicode(node.get_text(".", strip=True)))
         if words == "interest":
-            text = select_line_part(text, ["research\*interst"] + 
+            text = select_line_part(text, ["research\*interest"] + 
                                     self.key_words[u'一段研究兴趣的起始词'])
         else: 
             text = select_line_part(text, self.key_words[words] + 
@@ -638,7 +638,7 @@ class ResearchCrawler:
         key_words = self.key_words[u'一段研究兴趣的起始词']
         if words == 'interest':
             pos_words = "(interest)"
-            key_words += ["research\*interst"]
+            key_words += ["research\*interest"]
         else:
             pos_words = "(%s)" % '|'.join(e for e in self.key_words[words])
             key_words += self.key_words[words]

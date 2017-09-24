@@ -215,14 +215,13 @@ def query_and_create_task(college, major):
             college_set = getCollegeRedis()
             app.redis.set('college', college_set)
             flag = is_exist_college(entity, college_set)
+
         if not flag:
             return u'Error at 数据有误，不存在该学校，请确认校名或联系开发者'
-        task = CrawlTask.query.filter_by(school=college, major=major).one_or_none()
-        if task:
-            return u'Error at 该校该专业爬取任务已存在，数据错误问题请联系开发者'
+        return CrawlTask.query.filter_by(school=college, major=major).one_or_none()
+        
     except MultipleResultsFound:
         return u'Error at 数据有误，存在多所同名学校，请联系开发者'
-    return task
 
 
 def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
@@ -307,6 +306,9 @@ def custom_crawler_step(step):
     if major is None:
         return json.dumps({'error': college}, ensure_ascii=False)
     task = query_and_create_task(college, major)
+    if isinstance(task, unicode) and task.startswith("Error at"):
+        return json.dumps({'error': task}, ensure_ascii=False)
+
     crawl = ResearchCrawler(directory_url, prof_url, major)
     flag = update_key_words(request.form, crawl)
     if flag:
@@ -332,12 +334,10 @@ def custom_crawler_step(step):
         return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 3:
-        if task:
-            task = CrawlTask.query.filter_by(school=college, major=major)
-            if task.school_url != directory_url or task.example != prof_url:
-                task.school_url = directory_url
-                task.example = prof_url
-                db.session.commit()
+        if task and (task.school_url != directory_url or task.example != prof_url):
+            task.school_url = directory_url
+            task.example = prof_url
+            db.session.commit()
         result = submit_professors(college, major, directory_url)
         if result.startswith("Error"):
             return json.dumps({'error': result}, ensure_ascii=False)

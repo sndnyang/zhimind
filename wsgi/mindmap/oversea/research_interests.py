@@ -122,7 +122,7 @@ def process():
 
 def query_add_interests(tag, major):
     try:
-        result = Interests.query.filter_by(name=tag, major=major).one_or_none()
+        result = Interests.query.filter_by(name=tag, major=major.split('-')[0]).one_or_none()
         if result is None and len(tag) < 50:
             result = Interests(tag, major)
             db.session.add(result)
@@ -394,7 +394,7 @@ def modify_interests():
 
     try:
         old_interest = Interests.query.get(tid)
-        new_interest = Interests.query.filter_by(name=name).one_or_none()
+        new_interest = Interests.query.filter_by(name=name, major=old_interest.major).one_or_none()
         if action == "1":
             if old_interest is None:
                 return json.dumps({'error': 'not find id %s name %s'%(tid,name)}, ensure_ascii=False)

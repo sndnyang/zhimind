@@ -306,6 +306,10 @@ function getMajorInterestsList() {
                         data.list[i].name != data.list[i].category_name) {
                         continue;
                     }
+                    if (i > 0 && data.list[i].name == data.list[i-1].name &&
+                        data.list[i].category_name == data.list[i-1].category_name) {
+                        continue;
+                    }
                     if (data.list[i].zh) 
                         $("#researchName").append('<option value="{0}">{1}</option>'.format(
                             data.list[i].name, data.list[i].zh));

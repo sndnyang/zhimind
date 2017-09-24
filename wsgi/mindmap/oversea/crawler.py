@@ -635,7 +635,7 @@ class ResearchCrawler:
         return tags
 
     def find_paragraph_interests(self, result, tags, tag_text, words):
-        key_words = self.key_words[u'一段研究兴趣的起始词']
+        key_words = self.key_words[u'一段研究兴趣的起始词'][:]
         if words == 'interest':
             pos_words = "(interest)"
             key_words += ["research\*interest"]

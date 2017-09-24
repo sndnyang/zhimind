@@ -741,7 +741,7 @@ class ResearchCrawler:
                     return research_tags, tag_text
 
             # if debug_level.find("debug") > 0: print(' ' * 2 * debug_level + "need to sibling")
-            tags = self.extract_from_sibling(nodes[0], tags, tag_text, words)
+            tags = self.extract_from_sibling(nodes[0], tags, tag_text, u'其他可能的研究兴趣单词')
             return tags, tag_text
         elif len(nodes) < 5:
             if website == '':
@@ -754,7 +754,7 @@ class ResearchCrawler:
                         # if debug_level.find("debug") > 0: print (" from the line " + node)
                         tags = self.extract_from_line(node, tags, tag_text)
                         continue
-                    tags = self.extract_from_sibling(node, tags, tag_text, words)
+                    tags = self.extract_from_sibling(node, tags, tag_text, u'其他可能的研究兴趣单词')
             elif website:
                 for node in nodes:
                     if node.parent.name != "a":

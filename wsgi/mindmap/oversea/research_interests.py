@@ -230,10 +230,15 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
     i = 0
     link_list = []
     for link in faculty_list:
-        link_list.append(crawl.dive_into_page(link, flag))
-        i += 1
-        # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
-        app.logger.info('process of %s %s' % (directory_url, major) + " %d,%d" % (count, i))
+        try:
+            link_list.append(crawl.dive_into_page(link, flag))
+            i += 1
+            # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
+            app.logger.info('process of %s %s' % (directory_url, major) + " %d,%d" % (count, i))
+        except:
+            app.logger.info(traceback.print_exc())
+            app.logger.info('process of %s %s fail' % (directory_url, major) + " %d,%d" % (count, i))
+            break
     app.logger.info('research process %s %s ' % (directory_url, major) + "  finish")
     app.redis.set('%s-%s' % (directory_url, major), link_list)
     return link_list

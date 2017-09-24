@@ -27,7 +27,7 @@
             <label for="program_name">项目名(默认空):</label>
             <input type="text" name="program_name"><hr />
             <label for="site_url">学校主页:</label>
-            <input type="url" name="site_url"><hr />
+            <input type="url" name="site_url" id="directoryUrl"><hr />
             <label for="gpa">GPA要求:
             <input type="text" name="gpa">
             <label for="gpa_url">GPA页面:</label>
@@ -203,7 +203,7 @@ $(document).ready(function(){
 
     }
     $("#majors").submit(function() {
-        return submitRedirect(this, "college", "{{url_for('uni_major_page.major_page')}}");
+        return submitRedirect(this, "major", "{{url_for('uni_major_page.major_page')}}");
     });
 });
 </script>

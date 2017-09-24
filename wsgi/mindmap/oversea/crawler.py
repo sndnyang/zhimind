@@ -647,7 +647,7 @@ class ResearchCrawler:
             # if debug_level.find('interests') > 0: print('search the words %s ' % words)
             r = re.search(pos_words, result[0], re.I).group(1).lower()
             # if debug_level.find('interests') > 0: print(' r %s ' % r)
-            if len(result[0]) > result[0].lower().find(r) + len(r) + 15:
+            if len(result[0]) > result[0].lower().find(r) + len(r) + 35:
                 line = select_line_part(re.sub("\n", ".", result[0]),
                                         key_words
                                         )

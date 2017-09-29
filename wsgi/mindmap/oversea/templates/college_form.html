@@ -82,14 +82,14 @@ $(document).ready(function(){
             }
         });
     } else {
-        var p = $('<input type="text" name="name">');
+        var p = $('<input type="text" name="name" class="form-control">');
         if (param != "new") {
             p.val(param);
         }
         $(".name-div").html(p);
     }
     $("#college").submit(function() {
-        return submitRedirect(this, "college", "{{url_for('uni_major_page.college_page')}}");
+        return submitRedirect(this, "university", "{{url_for('uni_major_page.college_page')}}");
     });
 });
 </script>

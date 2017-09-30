@@ -321,6 +321,8 @@ def custom_crawler_step(step):
         return json.dumps({'error': flag}, ensure_ascii=False)
 
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url, major=major)
+    if not isinstance(faculty_list, list):
+        return json.dumps({'error': faculty_list})
 
     if step == 1:
         link_list = []

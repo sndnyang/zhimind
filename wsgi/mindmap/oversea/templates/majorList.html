@@ -107,8 +107,9 @@
 {% endif %}
 <script>
 getProperty("detail_major");
-getDataList("{{ url_for('uni_major_page.major_page') }}", {{ temp }});
-
+setTimeout(function() {
+    getDataList("{{ url_for('uni_major_page.major_page') }}", {{ temp }});
+}, 500);
 </script>
 
 {% endblock %}

@@ -66,8 +66,8 @@
 <script type="text/javascript" src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 {% endif %}
 <script>
-getDataList("{{ url_for('uni_major_page.college_page') }}", {{ temp }});
-getProperty("");
+    getProperty("");
+    getDataList("{{ url_for('uni_major_page.college_page') }}", {{ temp }});
 </script>
 
 {% endblock %}

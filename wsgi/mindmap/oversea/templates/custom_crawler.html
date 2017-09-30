@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-{% from "major_category.html" import render_major %}
+{% from "major_detail.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <link href="/static/css/loader.css" rel="stylesheet" media="screen" type="text/css"/>
 <script type="text/javascript" src="{{url_for('research_page.static', filename='js/research.js')}}"></script>
@@ -108,7 +108,6 @@ $(document).ready(function(){
 
     $("#majorName").val('{{task.major}}');
 });
-
-
+getProperty("detail_major");
 </script>
 {% endblock %}

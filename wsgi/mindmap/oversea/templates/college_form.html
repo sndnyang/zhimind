@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-{% from "major_category.html" import render_major %}
+{% from "major_detail.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <script src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
@@ -92,5 +92,6 @@ $(document).ready(function(){
         return submitRedirect(this, "university", "{{url_for('uni_major_page.college_page')}}");
     });
 });
+getProperty("detail_major");
 </script>
 {% endblock %}

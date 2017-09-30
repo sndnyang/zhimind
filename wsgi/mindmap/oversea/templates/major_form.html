@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-{% from "major_category.html" import render_major %}
+{% from "major_detail.html" import render_major %}
 <script src="//cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <script src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 <div class="container-fluid">
@@ -179,32 +179,13 @@ $(document).ready(function(){
                     addOneInfo(item['label'+i], item['input'+i], i);
                 }
             }
-        });
-        
-    } else {
-        $.ajax({
-            method: "get",
-            url : '/static/data/college.json',
-            contentType: 'application/json',
-            dataType: "json",
-            success : function (result){
-                var data = result.sort(compare('name', true, false));
-                for (var i in data) {
-                    var item = data[i].name, 
-                        option = $('<option value="{0}">{1}</option>'.format(item, item));
-
-                    if (param === item) {
-                        option.attr("selected", true); 
-                    }
-                    $('#collegeName').append(option);
-                }
-            }
-        });
-
+        });   
     }
+    
     $("#majors").submit(function() {
         return submitRedirect(this, "major", "{{url_for('uni_major_page.major_page')}}");
     });
 });
+getProperty("detail_major");
 </script>
 {% endblock %}

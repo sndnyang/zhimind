@@ -106,7 +106,9 @@
 <script type="text/javascript" src="{{url_for('uni_major_page.static', filename='js/college.js')}}"></script>
 {% endif %}
 <script>
+getProperty("detail_major");
 getDataList("{{ url_for('uni_major_page.major_page') }}", {{ temp }});
+
 </script>
 
 {% endblock %}

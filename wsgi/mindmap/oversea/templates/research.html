@@ -90,7 +90,7 @@
     <script type="text/javascript" src="{{url_for('research_page.static', filename='js/college.js')}}"></script>
     <script>
         getDataList("{{ url_for('research_page.research_index') }}", {{ temp }});
-        getProperty();
+        getProperty("catego_major");
     </script>
 </div>
 {% endblock %}

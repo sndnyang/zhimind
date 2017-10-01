@@ -23,7 +23,7 @@ research_page = Blueprint('research_page', __name__,
                           template_folder=os.path.join(
                              os.path.dirname(__file__), 'templates'),
                           static_folder="static")
-
+version = 1
 
 @research_page.route('/research.html')
 @research_page.route('/research')
@@ -32,7 +32,7 @@ def research_index():
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     return render_template('research.html', meta=meta, temp=0,
-                           types="research")
+                           types="research", version=version)
 
 
 def convertToDict(ele, tags):
@@ -107,8 +107,8 @@ def research_form():
                                     validators=[validators.DataRequired(),
                                                 validators.Length
                                                 (4, 4, message=u'填写4位验证码')])
-    return render_template('research_form.html', veri=verification_code, meta=meta,
-                           types="research")
+    return render_template('research_form.html', veri=verification_code, 
+                           meta=meta, types="research", version=version)
 
 
 @research_page.route('/getResearchProgress', methods=['POST'])
@@ -165,7 +165,8 @@ def research_task():
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     tasks = CrawlTask.query.all()
-    return render_template('research_task.html', meta=meta, tasks=tasks)
+    return render_template('research_task.html', meta=meta, tasks=tasks,
+                           version=version)
 
 
 @research_page.route('/custom_crawler.html/<task_id>')
@@ -182,7 +183,8 @@ def custom_crawler(task_id=None):
     if task_id:
         task = CrawlTask.query.get(task_id)
     return render_template('custom_crawler.html', meta=meta, temp=0,
-                           veri=verification_code, types="research", task=task)
+                           veri=verification_code, types="research",
+                           task=task, version=version)
 
 
 def validate_and_extract(form):
@@ -382,7 +384,7 @@ def interests_page():
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     return render_template('interests.html', meta=meta, temp=0,
-                           types="research")
+                           types="research", version=version)
 
 
 @research_page.route('/togglePosition', methods=['POST'])

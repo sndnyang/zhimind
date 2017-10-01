@@ -186,6 +186,6 @@ $(document).ready(function(){
         return submitRedirect(this, "major", "{{url_for('uni_major_page.major_page')}}");
     });
 });
-getProperty("detail_major");
+getProperty("detail_major", function(){});
 </script>
 {% endblock %}

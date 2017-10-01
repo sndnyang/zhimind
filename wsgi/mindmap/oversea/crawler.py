@@ -416,9 +416,9 @@ class ResearchCrawler:
             soup = BeautifulSoup(html, 'html.parser')
         return html, soup
 
-    def crawl_faculty_list(self, directory_url, example, major='1-1'):
+    def crawl_faculty_list(self, directory_url, example, force=False, major='1-1'):
 
-        content, soup = self.open_page(directory_url, major=major)
+        content, soup = self.open_page(directory_url, force=force, major=major)
         if content.startswith("Error at "):
             return 0, "Error to load %s " % content
         anchors = find_all_anchor(soup)

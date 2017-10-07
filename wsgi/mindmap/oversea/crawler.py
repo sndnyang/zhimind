@@ -168,7 +168,7 @@ def find_example_index(l, a, index):
         if not href:
             continue
         href = urlparse.urljoin(index, l[i].get("href")).replace(" ", "%20")
-        logger.info("diff '%s' " % href)
+        # logger.info("diff '%s' " % href)
         # if debug_level.find("list") > 0: print href
         if href.strip() == a:
             # if debug_level.find("list") > 0: print ("find %s at %d" % (href, i))

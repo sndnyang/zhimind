@@ -575,8 +575,10 @@ class ResearchCrawler:
         line = re.sub("\s+", " ", line)
 
         line = line.replace("(", "").replace(")", "")
-        for x in self.key_words[u'非研究兴趣的词'] + nltk.corpus.stopwords.words('english'):
-            if x in string.ascii_letters + string.digits:
+        for x in nltk.corpus.stopwords.words('english'):
+            line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
+        for x in self.key_words[u'非研究兴趣的词']:
+            if x.isalnum() and len(x) > 1:
                 line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
             else:
                 line = re.sub(unicode(x), "", line)

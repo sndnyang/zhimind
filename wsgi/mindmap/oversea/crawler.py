@@ -83,9 +83,9 @@ def extract_name_from_url(page_url, dir_name):
         fname = page_url.split('/')[-2]
     if fname.find("index") > -1:
         fname = '_'.join(page_url.split('/')[3:])
-    if len(fname) > 20:
-        fname = fname[:20]
     file_name = re.sub("[?%=]", "", dir_name + '/' + fname + '.html')
+    if len(fname) > 30:
+        fname = fname[:30]
     return file_name
 
 

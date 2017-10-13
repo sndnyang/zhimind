@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import string
 import logging
 import urllib2
 import urlparse

@@ -572,9 +572,15 @@ class ResearchCrawler:
 
     def replace_words(self, line):
         line = re.sub("\s+", " ", line)
+
         line = line.replace("(", "").replace(")", "")
         for x in self.key_words[u'非研究兴趣的词'] + nltk.corpus.stopwords.words('english'):
-            line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
+            if x.isalnum():
+                line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
+            else:
+                print x
+                print unicode(x)
+                line = re.sub(unicode(x), "", line)
         return line
 
     def get_open_position(self, soup):

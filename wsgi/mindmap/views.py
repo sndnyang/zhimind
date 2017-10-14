@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+
+import os
 import json
 import traceback
 import StringIO
@@ -111,9 +113,17 @@ def page_not_found(error):
             'keywords': u'zhimind 启发式学习 智能学习 在线教育'}
     return render_template('404.html', meta=meta, error=error)
 
+ 
 @app.route("/qnfile/<fname>")
 def qnfile(fname):
-    real_link = "http://7xt8es.com1.z0.glb.clouddn.com/%s?v=%s" % (
-                '/'.join(e for e in fname.split('-')), str(random.randint(1, 10000)))
-    r = requests.get(real_link)
-    return json.dumps(json.loads(r.content, strict=False), ensure_ascii=False)
+    fpname = os.path.join(os.path.dirname(__file__), "qnfile", fname)
+    if os.path.isfile(fpname):
+        fp = open(fpname)
+        content = json.load(fp, strict=False)
+        fp.close()
+    else:
+        real_link = "http://7xt8es.com1.z0.glb.clouddn.com/%s?v=%s" % (
+                    '/'.join(e for e in fname.split('-')), str(random.randint(1, 10000)))
+        r = requests.get(real_link)
+        content = json.loads(r.content, strict=False)
+    return json.dumps(content, ensure_ascii=False)

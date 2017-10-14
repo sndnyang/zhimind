@@ -23,7 +23,7 @@ research_page = Blueprint('research_page', __name__,
                           template_folder=os.path.join(
                              os.path.dirname(__file__), 'templates'),
                           static_folder="static")
-version = 2
+version = 3
 
 @research_page.route('/research.html')
 @research_page.route('/research')
@@ -427,6 +427,9 @@ def query_position():
             return json.dumps({'error': '%s and %s not open' % 
                                (prof.school_url, prof.home_page)}, 
                                ensure_ascii=False)
+        prof.position = p
+        prof.term = t
+        db.session.commit()
 
     except MultipleResultsFound:
         return json.dumps({'error': 'school %s, major %s find multiple, email me!'

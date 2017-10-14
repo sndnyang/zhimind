@@ -755,29 +755,31 @@ $(document).ready(function () {
         return false;
     });
 
-    $.ajax({
-        method: "get",
-        url : "/oversea/collegeList",
-        contentType: 'application/json',
-        dataType: "json",
-        success : function (result){
-            result.sort(compare('name', true, false));
-            collegeList = result;
-            var param = unescape(document.URL.split('/')[5]);
-            if (param == "new") {
-                var data = collegeList;
-                for (var i in data) {
-                    var item = data[i].name, 
-                        option = $('<option value="{0}">{1}</option>'.format(item, item));
+    if (document.URL.indexOf("college") == -1) {
+        $.ajax({
+            method: "get",
+            url : "/oversea/collegeList?type=simple",
+            contentType: 'application/json',
+            dataType: "json",
+            success : function (result){
+                result.sort(compare('name', true, false));
+                collegeList = result;
+                var param = unescape(document.URL.split('/')[5]);
+                if (param == "new") {
+                    var data = collegeList;
+                    for (var i in data) {
+                        var item = data[i].name, 
+                            option = $('<option value="{0}">{1}</option>'.format(item, item));
 
-                    if (param === item) {
-                        option.attr("selected", true); 
+                        if (param === item) {
+                            option.attr("selected", true); 
+                        }
+                        $('#collegeName').append(option);
                     }
-                    $('#collegeName').append(option);
                 }
             }
-        }
-    });
+        });
+    }
 
     $("#directoryUrl").on("paste", function(){
         setTimeout(function() {
@@ -807,9 +809,21 @@ $(document).ready(function () {
 
     $("#collegeName").keyup(function (event) {
         var text = $("#collegeName").val().toLowerCase();
+        $("#collegeNameList").html("");
+        for (var i in collegeList) {
+            if (!('cn' in collegeList[i].info))
+                continue;
+            var item = collegeList[i].info.cn, name = collegeList[i].name;
+            if (item.indexOf(text) > -1 ) {
+                console.log(name);
+                var option = $('<option value="{0}">{1}</option>'.format(name, item));
+                $("#collegeNameList").append(option);
+            }
+        }
+
         if (text.length == 3 || (text.length == 2 &&
                     (text[0] == 'u' || text[0] == 'c' || text[1] == 'u' || text[1] == 'c'))) {
-            $("#collegeNameList").html("");
+            
             for (var i in collegeList) {
                 var item = collegeList[i].name;
                 if (item.toLowerCase().indexOf("("+text) > 0) {
@@ -819,7 +833,6 @@ $(document).ready(function () {
             }
         }
         if (text.length > 3 && "university".indexOf(text) == -1 && "college".indexOf(text) == -1) {
-            $("#collegeNameList").html("");
             for (var i in collegeList) {
                 var item = collegeList[i].name;
                 if (item.toLowerCase().indexOf(text) >= 0) {

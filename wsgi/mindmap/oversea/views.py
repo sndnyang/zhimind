@@ -19,7 +19,7 @@ uni_major_page = Blueprint('uni_major_page', __name__,
                              os.path.dirname(__file__), 'templates'),
                          static_folder="static")
 
-version = 2
+version = 3
 
 @uni_major_page.route('/college.html')
 @uni_major_page.route('/college')
@@ -96,7 +96,7 @@ def getCollegeRedis():
     name_list = []
 
     try:
-        data = json.load(open(fname))
+        # data = json.load(open(fname))
         # uni_major_page = University.query.paginate(int(pageno), 25).items
         uni_major_page = University.query.all()
         for e in uni_major_page:
@@ -107,16 +107,34 @@ def getCollegeRedis():
     return college_set
 
 
+def get_simple_college_data(college_set):
+    temp = []
+    for e in college_set:
+        info = {}
+        if 'webpage' in e['info']:
+            info['webpage'] = e['info']['webpage']
+        if 'cn' in e['info']:
+            info['cn'] = e['info']['cn']
+        temp.append({'name': e['name'], 'info': info})
+    return temp
+
+
 @uni_major_page.route('/collegeList')
 @uni_major_page.route('/collegeList/<int:pageno>')
 def collegeListPage(pageno = 1):
     entity = app.redis.get('college')
+
+    simple = request.args.get('type', None)
     if entity and eval(entity):
         entity = eval(entity)
+        if simple:
+            entity = get_simple_college_data(entity)
         return json.dumps(entity, ensure_ascii=False)
 
     college_set = getCollegeRedis()
     app.redis.set('college', college_set)
+    if simple:
+        college_set = get_simple_college_data(college_set)
 
     return json.dumps(college_set, ensure_ascii=False)
 

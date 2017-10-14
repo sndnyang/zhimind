@@ -454,15 +454,17 @@ class ResearchCrawler:
         href = e.get('href')
         if not href or len(href) < 5:
             return True
+        href = urlparse.urljoin(self.url, href.strip())
+
         # if debug_level.find("list") > 0: print href
         if href:
             if href.startswith('mailto:'):
                 return True
             if contain_keys(href, self.key_words[u'教员URL不可能包含']):
-                # if debug_level.find("debug") > 0: print " %s filter in not prof" % href
+                # if debug_level.find("list") > 0: print " %s filter in not prof" % href
                 return True
             if not contain_keys(href, self.key_words[u'教员URL可能包含']):
-                # if debug_level.find("debug") > 0: print " %s filter in keys" % href
+                # if debug_level.find("list") > 0: print " %s filter in keys" % href
                 return True
 
         return False

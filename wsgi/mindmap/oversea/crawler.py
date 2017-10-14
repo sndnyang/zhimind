@@ -334,7 +334,7 @@ def select_line_part(line, flags):
             continue
         new_pos = obj.span(1)
         if new_pos[0] > pos:
-            pos = new_pos[0] + len(flag)
+            pos = new_pos[1]
     return line[pos:]
 
 
@@ -581,7 +581,7 @@ class ResearchCrawler:
         for x in nltk.corpus.stopwords.words('english'):
             line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
         for x in self.key_words[u'非研究兴趣的词']:
-            if x.isalnum() and len(x) > 1:
+            if x.isalnum() and (len(x) > 1 or (len(x) == 1 and x in string.ascii_lowercase)):
                 line = re.sub(r'\b%s\b' % x + '(?i)', ',', line, re.I)
             else:
                 line = re.sub(unicode(x), "", line)
@@ -695,7 +695,6 @@ class ResearchCrawler:
         if len(result) == 1:
             # if debug_level.find('interests') > 0: print('search the words %s ' % words)
             r = re.search(pos_words, result[0], re.I).group(1).lower()
-            # if debug_level.find('interests') > 0: print(' r %s ' % r)
             if len(result[0]) > result[0].lower().find(r) + len(r) + 35:
                 line = select_line_part(re.sub("\n", ".", result[0]),
                                         key_words

@@ -23,7 +23,7 @@ research_page = Blueprint('research_page', __name__,
                           template_folder=os.path.join(
                              os.path.dirname(__file__), 'templates'),
                           static_folder="static")
-version = 3
+version = 4
 
 @research_page.route('/research.html')
 @research_page.route('/research')
@@ -56,6 +56,9 @@ def research_list_page():
 @research_page.route('/getProfessorsList/<school>/<major>', methods=['POST'])
 def get_professor_list(school, major):
     research_set = []
+    if major == "NaN":
+        return json.dumps({'error': u"请选择专业"}, ensure_ascii=False)
+
     tag = request.json.get("tag", None)
     position = request.json.get("position", None)
     if tag:

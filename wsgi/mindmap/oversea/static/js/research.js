@@ -102,7 +102,7 @@ function getProfessorsList(col) {
         filterProfessors('school', '');
         return;
     }
-    if (major == '0') {
+    if (major == '0' || major == '') {
         alert("起码先选择专业");
         return;
     }

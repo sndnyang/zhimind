@@ -923,7 +923,7 @@ function getProperty(type, callback) {
         updateCollegeConfig(storedCollegeFile, type);
     }
     var params = getSharpParam();
-    if ("专业" in params) {
+    if (params && "专业" in params) {
         $("#majorName").find("option[value='{0}']".format(params["专业"])).attr("selected",true);
     }
     var url = '/qnfile/zcollege-college.txt';
@@ -939,7 +939,7 @@ function getProperty(type, callback) {
             } else {
                 alert("同步参数文件，使用本地缓存数据，一直没有则请翻墙？或将www换成http://proxy试试?");
             }
-            if ("专业" in params) {
+            if (params && "专业" in params) {
                 $("#majorName").find("option[value='{0}']".format(params["专业"])).attr("selected",true);
             }
             callback();

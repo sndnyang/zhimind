@@ -827,7 +827,7 @@ $(document).ready(function () {
     $("#collegeName").keyup(function (event) {
         var text = $("#collegeName").val().toLowerCase();
         $("#collegeNameList").html("");
-        if (text.length == 1 && !(/[0-9a-z]/i.test(text))) {
+        if ((text.length == 1 && !(/[0-9a-z]/i.test(text))) || text.length > 1) {
             for (var i in collegeList) {
                 if (!('cn' in collegeList[i].info))
                     continue;

@@ -778,6 +778,11 @@ $(document).ready(function () {
             dataType: "json",
             success : function (result){
                 result.sort(compare('name', true, false));
+                if (!result || result.length < 800) {
+                    alert("同步学校列表失败，使用本地缓存数据，一直没有则请翻墙？或将www换成http://proxy试试?");
+                    return;
+                }
+
                 collegeList = result;
                 localStorage.setItem("CollegeList", JSON.stringify(result));
                 var param = unescape(document.URL.split('/')[5]);
@@ -922,8 +927,13 @@ function getProperty(type, callback) {
         contentType: 'application/json',
         dataType: "json",
         success : function (data) {
-            localStorage.setItem("CollegeFile", JSON.stringify(data));
-            updateCollegeConfig(data, type);            
+            if (data && 'sort' in data) {
+                localStorage.setItem("CollegeFile", JSON.stringify(data));
+                updateCollegeConfig(data, type);
+            } else {
+                alert("同步参数文件，使用本地缓存数据，一直没有则请翻墙？或将www换成http://proxy试试?");
+            }
+
             callback();
         }
     });

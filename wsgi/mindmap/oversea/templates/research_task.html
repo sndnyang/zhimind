@@ -37,7 +37,7 @@
                         <td><a class="btn btn-success" href="{{url_for('research_page.custom_crawler', task_id=task.id)}}" target="_blank">重爬</a></td>
                             {% endif %}
                         {% endif %}
-                        <td><a href="/oversea/research.html#学校={{ task.school }}&专业={{ task.major }}">{{ task.school }}(打开后需点击查询)</a></td>
+                        <td><a href="/oversea/research.html#学校={{ task.school }}&专业={{ task.major.split('-')[0] }}">{{ task.school }}(打开后需点击查询)</a></td>
                         <td>{{ task.major }}</td>
                         {% if g %}
                             {% if g.user.is_authenticated %}

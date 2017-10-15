@@ -1,8 +1,10 @@
-var rankBy = 'Q.S.';
+var rankBy = 'name';
 var filterList = null;
-var collegeList = null;
+var collegeList = JSON.parse(localStorage.getItem("CollegeList"));
 var major_map = null;
 var detail_major = null;
+
+var storedCollegeFile = JSON.parse(localStorage.getItem("CollegeFile"));
 
 function filterCollege(l, col, t) {
     var data = [], prefix = t+'-';
@@ -169,8 +171,8 @@ function fillCollegeInformation(item, i, n, backend) {
     name = fillName(item.name);
 
     temp = '';
-    if (item.info && (item.info['城市'] || item.info['city']))
-        temp = item.info['城市'] || item.info['city'];
+    if (item.info && (item.info['国家'] || item.info['nation']))
+        temp = item.info['国家'] || item.info['nation'];
     nation = $('<td>{0}</td>'.format(temp));
 
     temp = '';
@@ -755,6 +757,10 @@ $(document).ready(function () {
         return false;
     });
 
+    if (storedCollegeFile) {
+       updateCollegeConfig(storedCollegeFile);
+    }
+
     if (document.URL.indexOf("college") == -1) {
         $.ajax({
             method: "get",
@@ -764,6 +770,7 @@ $(document).ready(function () {
             success : function (result){
                 result.sort(compare('name', true, false));
                 collegeList = result;
+                localStorage.setItem("CollegeList", JSON.stringify(result));
                 var param = unescape(document.URL.split('/')[5]);
                 if (param == "new") {
                     var data = collegeList;
@@ -815,7 +822,7 @@ $(document).ready(function () {
                 continue;
             var item = collegeList[i].info.cn, name = collegeList[i].name;
             if (item.indexOf(text) > -1 ) {
-                console.log(name);
+                console.log(collegeList[i]);
                 var option = $('<option value="{0}">{1}</option>'.format(name, item));
                 $("#collegeNameList").append(option);
             }
@@ -869,6 +876,36 @@ function sortMajorIndex(a, b) {
     return a-b;
 }
 
+function updateCollegeConfig(data, type) {
+    var t = '<option value="{0}">{1}</option>';
+    $("#degreeName").html("");
+    for (var i in data.nation) {
+        var nation = data.nation[i];
+        $("#degreeName").append($(t.format(nation, nation))); 
+    }
+    $("#sortName").html("");
+    for (var i in data['sort']) {
+        var rank = data['sort'][i];
+        $("#sortName").append($(t.format(rank, rank))); 
+    }
+
+    detail_major = data["detail_major"];
+    $("#majorName").html("");
+    if (type != "") {
+        major_map = data[type];
+
+        var keys = [];
+        for (var i in major_map) {
+            keys.push(i);
+        }
+        keys.sort(sortMajorIndex);
+        for (var i in keys) {
+            var option = t.format(keys[i], major_map[keys[i]]);
+            $("#majorName").append(option);
+        }
+    }
+}
+
 function getProperty(type, callback) {
     var url = '/qnfile/zcollege-college.txt';
     $.ajax({
@@ -877,29 +914,8 @@ function getProperty(type, callback) {
         contentType: 'application/json',
         dataType: "json",
         success : function (data) {
-            var t = '<option value="{0}">{1}</option>';
-            for (var i in data.nation) {
-                var nation = data.nation[i];
-                $("#degreeName").append($(t.format(nation, nation))); 
-            }
-            for (var i in data['sort']) {
-                var rank = data['sort'][i];
-                $("#sortName").append($(t.format(rank, rank))); 
-            }
-            detail_major = data["detail_major"];
-            if (type != "") {
-                major_map = data[type];
-
-                var keys = [];
-                for (var i in major_map) {
-                    keys.push(i);
-                }
-                keys.sort(sortMajorIndex);
-                for (var i in keys) {
-                    var option = t.format(keys[i], major_map[keys[i]]);
-                    $("#majorName").append(option);
-                }
-            }
+            localStorage.setItem("CollegeFile", JSON.stringify(data));
+            updateCollegeConfig(data, type);            
             callback();
         }
     });

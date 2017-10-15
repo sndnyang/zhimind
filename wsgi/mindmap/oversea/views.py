@@ -19,7 +19,7 @@ uni_major_page = Blueprint('uni_major_page', __name__,
                              os.path.dirname(__file__), 'templates'),
                          static_folder="static")
 
-version = 3
+version = 5
 
 @uni_major_page.route('/college.html')
 @uni_major_page.route('/college')
@@ -244,12 +244,14 @@ def submitted_college():
     session['code_text'] = code_string
     try:
         name = request.form['name']
+        app.logger.info(request.form.keys())
         info = {u'city': request.form.get('cityinput', '')}
-        for i in range(len(request.form.keys())/2):
+        for i in range(len(request.form.keys())):
             if 'label%d' % (i+1) not in request.form:
-                break
+                continue
             info['label%d' % (i+1)] = request.form['label%d' % (i+1)]
             info['input%d' % (i+1)] = request.form['input%d' % (i+1)]
+            # info[request.form['label%d' % (i+1)]] = request.form['input%d' % (i+1)] 
 
         if not name:
             return json.dumps({'error': u'校名缺失'}, ensure_ascii=False)

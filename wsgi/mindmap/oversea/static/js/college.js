@@ -766,10 +766,6 @@ $(document).ready(function () {
         return false;
     });
 
-    if (storedCollegeFile) {
-       updateCollegeConfig(storedCollegeFile);
-    }
-
     if (document.URL.indexOf("college") == -1) {
         $.ajax({
             method: "get",
@@ -831,13 +827,15 @@ $(document).ready(function () {
     $("#collegeName").keyup(function (event) {
         var text = $("#collegeName").val().toLowerCase();
         $("#collegeNameList").html("");
-        for (var i in collegeList) {
-            if (!('cn' in collegeList[i].info))
-                continue;
-            var item = collegeList[i].info.cn, name = collegeList[i].name;
-            if (item.indexOf(text) > -1 ) {
-                var option = $('<option value="{0}">{1}</option>'.format(name, item));
-                $("#collegeNameList").append(option);
+        if (text.length == 1 && !(/[0-9a-z]/i.test(text))) {
+            for (var i in collegeList) {
+                if (!('cn' in collegeList[i].info))
+                    continue;
+                var item = collegeList[i].info.cn, name = collegeList[i].name;
+                if (item.indexOf(text) > -1 ) {
+                    var option = $('<option value="{0}">{1}</option>'.format(name, item));
+                    $("#collegeNameList").append(option);
+                }
             }
         }
 
@@ -903,10 +901,10 @@ function updateCollegeConfig(data, type) {
     }
 
     detail_major = data["detail_major"];
-    $("#majorName").html("");
-    if (type != "") {
-        major_map = data[type];
 
+    if (type && type != "") {
+        $("#majorName").html("");
+        major_map = data[type];
         var keys = [];
         for (var i in major_map) {
             keys.push(i);
@@ -920,6 +918,11 @@ function updateCollegeConfig(data, type) {
 }
 
 function getProperty(type, callback) {
+
+    if (storedCollegeFile && 'sort' in storedCollegeFile) {
+        updateCollegeConfig(storedCollegeFile, type);
+    }
+
     var url = '/qnfile/zcollege-college.txt';
     $.ajax({
         method: "get",

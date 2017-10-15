@@ -19,7 +19,7 @@ uni_major_page = Blueprint('uni_major_page', __name__,
                              os.path.dirname(__file__), 'templates'),
                          static_folder="static")
 
-version = 7
+version = 10
 
 @uni_major_page.route('/college.html')
 @uni_major_page.route('/college')
@@ -115,6 +115,11 @@ def get_simple_college_data(college_set):
             info['webpage'] = e['info']['webpage']
         if 'cn' in e['info']:
             info['cn'] = e['info']['cn']
+        for t in e['info']:
+            if t.startswith("label") and (e['info'][t] == 'cn' or
+                                          e['info'][t] == 'webpage'):
+                c = t.replace("label", "input")
+                info[e['info'][t]] = e['info'][c]
         temp.append({'name': e['name'], 'info': info})
     return temp
 

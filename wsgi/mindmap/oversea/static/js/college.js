@@ -1,4 +1,4 @@
-var rankBy = 'name';
+var rankBy = 'Q.S.';
 var filterList = null;
 var collegeList = JSON.parse(localStorage.getItem("CollegeList"));
 var major_map = null;
@@ -293,8 +293,13 @@ function fillItemInfo(toggle, item) {
                 if (temp == 'yes')
                     temp = '需要';
             }
-            toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
-                        temp)));
+            if (item['label' + j] != "webpage") {
+                toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
+                            temp)));
+            } else {
+                toggle.append($('<p>{0} : {1}</p>'.format(item['label' + j], 
+                              '<a href="{0}">链接</a>'.format(temp))));
+            }
         }
         else {
             var key = e, value = item[e];
@@ -479,9 +484,13 @@ function sortCollege(name, col, ininfo) {
     var ranks = $("#sortName option").map(function() {return this.value;}).get();
     if (ranks.indexOf(col) > -1) {
         rankBy = col;
+        if (col == "name") {
+            rankBy = "Q.S.";
+        }
         $("#rankName").html(rankBy.replace(/\./g, '') + '排名');
     }
     if (col == 'fall') col = 'deadline';
+    if (col == 'name') ininfo = false;
     data.sort(compare(col, false, ininfo));
     var params = getSharpParam();
     if (params)
@@ -822,7 +831,6 @@ $(document).ready(function () {
                 continue;
             var item = collegeList[i].info.cn, name = collegeList[i].name;
             if (item.indexOf(text) > -1 ) {
-                console.log(collegeList[i]);
                 var option = $('<option value="{0}">{1}</option>'.format(name, item));
                 $("#collegeNameList").append(option);
             }
@@ -881,12 +889,12 @@ function updateCollegeConfig(data, type) {
     $("#degreeName").html("");
     for (var i in data.nation) {
         var nation = data.nation[i];
-        $("#degreeName").append($(t.format(nation, nation))); 
+        $("#degreeName").append($(t.format(nation != "不限"?nation: "", nation))); 
     }
     $("#sortName").html("");
     for (var i in data['sort']) {
         var rank = data['sort'][i];
-        $("#sortName").append($(t.format(rank, rank))); 
+        $("#sortName").append($(t.format(rank != "校名"?rank: "name", rank))); 
     }
 
     detail_major = data["detail_major"];

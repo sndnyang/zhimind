@@ -92,7 +92,10 @@
         getProperty("catego_major", function() {
             getDataList("{{ url_for('research_page.research_index') }}", {{ temp }});
         });
-        
+        var params = getSharpParam();
+        if ("学校" in params) {
+            $("#collegeName").val(params["学校"]);
+        }
     </script>
 </div>
 {% endblock %}

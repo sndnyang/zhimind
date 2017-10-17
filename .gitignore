@@ -86,3 +86,5 @@ share/
 *.conf
 
 crawler/
+
+socks5_proxy_wrapper

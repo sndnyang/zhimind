@@ -567,37 +567,43 @@ function filterByName(obj, type) {
 }
 
 function filterMajorByAll() {
-    var degree = parseInt($("#degreeName").val()), 
+    var nation = $("#nationName").val(), 
+        degree = parseInt($("#degreeName").val()), 
         major = parseInt($("#majorName").val()),
         evalue = $("#evalueName").val(),
         transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
 
     var params = getSharpParam() || {};
-    if (degree != "") {
+    var newList = filterList;
+    if (nation && nation != "") {
+        params["国家"] = nation;
+        newList = filterCollege(filterList, '国家', nation);
+    }
+    if (degree && degree != "") {
         params["学历"] = degree;
+        newList = filterCollege(filterList, 'degree', degree);
     }
-    if (major != 0) {
+    if (major && major != 0) {
         params["专业"] = major;
+        newList = filterCollege(filterList, 'major', major);
     }
-    if (evalue != "") {
+    if (evalue && evalue != "") {
         params["成绩单认证"] = degree;
+        newList = filterCollege(filterList, 'evalue', evalue);
     }
-    if (rl != "0") {
+    if (rl && rl != "0") {
         params["推荐信"] = degree;
+        newList = filterCollege(filterList, 'rl', rl);
+    }
+    if (transcript && transcript != "") {
+        params["成绩单邮寄"] = nation;
+        newList = filterCollege(filterList, 'input0', transcript);
     }
 
     var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));
     window.location.href = temp;
 
-    var newList = filterCollege(filterCollege(
-        filterCollege(
-            filterCollege(
-                filterCollege(filterList, 'evalue', evalue),
-                 'input0', transcript),
-            'degree', degree),
-        'major',major),
-    'rl', rl);
     return newList;
 }
 function filterByMajor(type) {
@@ -806,16 +812,14 @@ $(document).ready(function () {
                 var p = parts[i], flag = false;
                 if (p == 'edu' || p == 'www')
                     continue;
-                var re = new RegExp("\\b" + p + ".edu\\b","i");
+                var re = new RegExp("\\b" + p + "\\b","i");
                 for (var j in collegeList) {
                     var univ = collegeList[j];
-                    if ('info' in univ && 'webpage' in univ.info) {
-                        if (univ.info.webpage.match(re)) {
+                    if (('info' in univ && 'webpage' in univ.info && univ.info.webpage.match(re)) || univ.name.match(re)) {
                             console.log(p+ ' contains in ' + univ.name);
                             $("#collegeName").val(univ.name);
                             flag = true;
                             break;
-                        }
                     }
                 }
                 if (flag)

@@ -361,7 +361,8 @@ class ResearchCrawler:
     def __init__(self, directory_url, example, major='1-1'):
         self.example = example
         self.url = directory_url
-        self.university_name = re.search('(\w+).edu', self.url).group(1)
+        domain = self.url.split("/")[2].split(".")
+        self.university_name = domain[-2] if domain[-2] != 'edu' else domain[-3]
         self.domain = '/'.join(directory_url.split("/")[:3])
         dir_path = os.path.join(os.path.dirname(__file__), 'crawler', self.university_name, major)
         if not os.path.isdir(dir_path):

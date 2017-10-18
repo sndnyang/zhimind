@@ -686,9 +686,36 @@ function showCollegeCrawlerResult(data) {
     $("#crawlResult").append(table);
 }
 
+function validateForm(formData, jqForm, options, type) {
+    var checkStatus = jqForm.valid();
+    console.log(checkStatus);
+    if (checkStatus) {
+        if ($("#approveIt").val() == 0 || type.indexOf("crawler") > -1) {
+            $("#crawlResult").html("");
+            // timerId = window.setInterval(getProcess, 2000);  
+            
+            // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
+            var loadingDiv = createLoadingDiv('正在处理中，估计需要几分钟~~~没开发进度监视');
+            
+            // 呈现loading效果
+            $(".container-fluid").append(loadingDiv);
+            timerId = setTimeout(function() {
+                if (typeof($("#loadingDiv")) != "undefined") {
+                    alert("三分钟仍然没结束，太慢了~~~");
+                    $("#loadingDiv").remove();
+                }
+            }, 18000);
+        }
+    }
+    return checkStatus;
+}
+
 function submitRedirect(obj, type, url) {
     var options = {
         dataType: 'json',
+        beforeSubmit: function (formData, jqForm, ops) {
+            return validateForm(formData, jqForm, ops, type);
+        },
         success: function (data) {
             $("#loadingDiv").remove();
             if (data.error) {
@@ -696,9 +723,11 @@ function submitRedirect(obj, type, url) {
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
                 $("#loadingDiv").remove();
+                window.clearInterval(timerId);
                 return;
             }
             console.log(data.info);
+            window.clearInterval(timerId);
             if (type.indexOf("college") > -1) {
                 $("#loadingDiv").remove();
                 filterList = data;
@@ -748,20 +777,6 @@ function submitRedirect(obj, type, url) {
             $("#loadingDiv").remove();
         }
     };
-    if ($("#approveIt").val() == 0 || type.indexOf("crawler") > -1) {
-        $("#crawlResult").html("");
-        // timerId = window.setInterval(getProcess, 2000);  
-        
-        // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
-        var loadingDiv = createLoadingDiv('正在处理中，估计需要几分钟~~~没开发进度监视');
-        
-        // 呈现loading效果
-        $(".container-fluid").append(loadingDiv);
-        /* setTimeout(function() {
-            if (typeof($("#loadingDiv")) != "undefined")
-                $("#loadingDiv").remove();
-        }, 18000);*/
-    }
 
     $(obj).ajaxSubmit(options);
     return false;

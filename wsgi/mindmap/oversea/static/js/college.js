@@ -889,10 +889,10 @@ function sortMajorIndex(a, b) {
 
 function updateCollegeConfig(data, type) {
     var t = '<option value="{0}">{1}</option>';
-    $("#degreeName").html("");
+    $("#nationName").html("");
     for (var i in data.nation) {
         var nation = data.nation[i];
-        $("#degreeName").append($(t.format(nation != "不限"?nation: "", nation))); 
+        $("#nationName").append($(t.format(nation != "不限"?nation: "", nation))); 
     }
     $("#sortName").html("");
     for (var i in data['sort']) {

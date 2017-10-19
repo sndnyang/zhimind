@@ -19,7 +19,7 @@ uni_major_page = Blueprint('uni_major_page', __name__,
                              os.path.dirname(__file__), 'templates'),
                          static_folder="static")
 
-version = 14
+version = 15
 
 @uni_major_page.route('/college.html')
 @uni_major_page.route('/college')

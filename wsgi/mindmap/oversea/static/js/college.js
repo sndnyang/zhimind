@@ -1,3 +1,4 @@
+var timeId = null;
 var rankBy = 'Q.S.';
 var filterList = null;
 var collegeList = JSON.parse(localStorage.getItem("CollegeList"));
@@ -688,18 +689,17 @@ function showCollegeCrawlerResult(data) {
 
 function validateForm(formData, jqForm, options, type) {
     var checkStatus = jqForm.valid();
-    console.log(checkStatus);
     if (checkStatus) {
         if ($("#approveIt").val() == 0 || type.indexOf("crawler") > -1) {
             $("#crawlResult").html("");
-            // timerId = window.setInterval(getProcess, 2000);  
+            // timeId = window.setInterval(getProcess, 2000);  
             
             // var loadingDiv = createLoadingDiv('总共{0}位可能学者，正在爬取第{0}位')
             var loadingDiv = createLoadingDiv('正在处理中，估计需要几分钟~~~没开发进度监视');
             
             // 呈现loading效果
             $(".container-fluid").append(loadingDiv);
-            timerId = setTimeout(function() {
+            timeId = setTimeout(function() {
                 if (typeof($("#loadingDiv")) != "undefined") {
                     alert("三分钟仍然没结束，太慢了~~~");
                     $("#loadingDiv").remove();
@@ -723,11 +723,11 @@ function submitRedirect(obj, type, url) {
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
                 $("#loadingDiv").remove();
-                window.clearInterval(timerId);
+                window.clearInterval(timeId);
                 return;
             }
             console.log(data.info);
-            window.clearInterval(timerId);
+            window.clearInterval(timeId);
             if (type.indexOf("college") > -1) {
                 $("#loadingDiv").remove();
                 filterList = data;

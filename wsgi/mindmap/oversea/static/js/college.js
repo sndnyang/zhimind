@@ -717,7 +717,7 @@ function validateForm(formData, jqForm, options, type) {
                     alert("三分钟仍然没结束，太慢了~~~");
                     $("#loadingDiv").remove();
                 }
-            }, 18000);
+            }, 180000);
         }
     }
     return checkStatus;

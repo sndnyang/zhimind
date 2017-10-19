@@ -679,11 +679,10 @@ class ResearchCrawler:
             pnode_text = replace_html(node.get_text()).strip()
 
         # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))
-        # if debug_level.find("sibling") > 0: print("%s' '%s" % (node.get_text(), slog))
 
         text = re.sub("[\n\r]+", " ", unicode(node.get_text(".", strip=True)))
         if words == "interest":
-            text = select_line_part(text, ["research\s*interest"] + 
+            text = select_line_part(text, ["research\s*interests?"] + 
                                     self.key_words[u'一段研究兴趣的起始词'])
         else: 
             text = select_line_part(text, self.key_words[words] + 
@@ -727,11 +726,21 @@ class ResearchCrawler:
         elif len(result) > 1:
             # 多个的情况太复杂，不处理了
             for node in result:
-                # if debug_level.find('comment') > 0: print("type is " + str(type(node.parent)) + ' ' + str(type(node)))
-                # if debug_level.find("debug") > 0: print node.name, node.parent.name
-                if node.parent.name == 'a' or isinstance(node, Comment) \
-                        or isinstance(node.parent, Comment):
+                # if debug_level.find('comment') > 0: print("type is " + str(type(node.parent)) + ' ' + str(type(node)) + ' ' + node.parent.name)
+                if isinstance(node,Comment) or isinstance(node.parent,Comment):
                     continue
+                toggle = node.parent.get("data-toggle", None)
+                if node.parent.name == 'a' and toggle is None:
+                    continue
+
+                if toggle:
+                    href = node.parent.get("href", "#")[1:]
+                    while node.parent:
+                        node = node.parent
+                        if node.find(id=href):
+                            node = node.find(id=href).get_text(".")
+                            break
+
                 if len(node) > 30:
                     node = select_line_part(re.sub("\n", ".", node), 
                                             key_words)

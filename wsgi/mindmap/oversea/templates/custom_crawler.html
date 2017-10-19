@@ -20,18 +20,18 @@
 
                 <form method="post" action="{{ url_for('research_page.custom_crawler') }}" id="research">
                     <input type="hidden" name="id">
-                    <label for="college_name">学校:</label>
-                    <input id="collegeName" name="college_name" list="collegeNameList" class="form-control" value="{{ task.school }}"/>
-                    <datalist id="collegeNameList"></datalist>
-                    <label for="major">专业:</label>
-                    {{ render_major() }}
+                    <label for="directory_url">教授目录主页</label>
+                    <input type="url" id="directoryUrl" name="directory_url" class="form-control" value="{{ task.school_url }}" placeholder="输入链接，自动查找学校名">
+                    <label for="professor_url">请提供第一个有个人主页的学者的链接</label>
+                    <input type="url" id="professorUrl" name="professor_url" class="form-control" value="{{ task.example }}">
                     <hr>
                     <div class="container-fluid">
                         <div class="col-md-12 col-lg-7">
-                            <label for="directory_url">教授目录主页</label>
-                            <input type="url" id="directoryUrl" name="directory_url" class="form-control" value="{{ task.school_url }}">
-                            <label for="professor_url">请提供第一个有个人主页的学者的链接</label>
-                            <input type="url" id="professorUrl" name="professor_url" class="form-control" value="{{ task.example }}">
+                            <label for="college_name">学校:</label>
+                            <input id="collegeName" name="college_name" list="collegeNameList" class="form-control" value="{{ task.school }}"/>
+                            <datalist id="collegeNameList"></datalist>
+                            <label for="major">专业:</label>
+                            {{ render_major() }}
                         </div>
                         <div class="col-md-12 col-lg-5">
                             <p>示例</p>
@@ -122,9 +122,9 @@ $(document).ready(function() {
         $("#crawlResult").html("");
         $("#researchSubmit").html("重新提交");
     });
-
+});
+getProperty("detail_major", function() {
     $("#majorName").val('{{task.major}}');
 });
-getProperty("detail_major", function(){});
 </script>
 {% endblock %}

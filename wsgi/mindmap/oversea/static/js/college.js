@@ -410,6 +410,19 @@ function compare(property, isstring, ininfo) {
     }
 }
 
+function convertKV(list) {
+    for (var i in list) {
+        var info = list[i].info;
+        for (var j in info) {
+            if (j.startsWith("label")) {
+                var t = j.substring(5, j.length);
+                list[i].info[info[j]] = list[i].info["input" + t];
+            }
+        }
+    }
+    return list;
+}
+
 function getDataList(name, n) {
     if (n == 0) n = ''; 
     $.ajax({
@@ -420,10 +433,10 @@ function getDataList(name, n) {
         success : function (result){
             // var data = result.sort(sortName);
             var data = result.sort(compare('name', true, false));
-            if (name === "college")
-                data = data.sort(compare('Q.S.', false, true));
+            if (name.indexOf("college") > -1)
+                data = convertKV(data);
             // collegeList = result;
-            filterList = result;
+            filterList = data;
             pageIt(data, name, n);
         }
     });
@@ -570,7 +583,7 @@ function filterByName(obj, type) {
 function filterMajorByAll() {
     var nation = $("#nationName").val(), 
         degree = parseInt($("#degreeName").val()), 
-        major = parseInt($("#majorName").val()),
+        major = $("#majorName").val(),
         evalue = $("#evalueName").val(),
         transcript = $("#transcriptName").val(),
         rl = parseInt($("#rlName").val());
@@ -579,27 +592,27 @@ function filterMajorByAll() {
     var newList = filterList;
     if (nation && nation != "") {
         params["国家"] = nation;
-        newList = filterCollege(filterList, '国家', nation);
+        newList = filterCollege(newList, '国家', nation);
     }
     if (degree && degree != "") {
         params["学历"] = degree;
-        newList = filterCollege(filterList, 'degree', degree);
+        newList = filterCollege(newList, 'degree', degree);
     }
     if (major && major != 0) {
         params["专业"] = major;
-        newList = filterCollege(filterList, 'major', major);
+        newList = filterCollege(newList, 'major', major);
     }
     if (evalue && evalue != "") {
         params["成绩单认证"] = degree;
-        newList = filterCollege(filterList, 'evalue', evalue);
+        newList = filterCollege(newList, 'evalue', evalue);
     }
     if (rl && rl != "0") {
         params["推荐信"] = degree;
-        newList = filterCollege(filterList, 'rl', rl);
+        newList = filterCollege(newList, 'rl', rl);
     }
     if (transcript && transcript != "") {
         params["成绩单邮寄"] = nation;
-        newList = filterCollege(filterList, 'input0', transcript);
+        newList = filterCollege(newList, 'input0', transcript);
     }
 
     var temp = "{0}#{1}".format(document.URL.split("#")[0], jsonToSharpParam(params));

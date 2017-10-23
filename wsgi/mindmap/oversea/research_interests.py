@@ -318,11 +318,10 @@ def custom_crawler_step(step):
     if isinstance(task, unicode) and task.startswith("Error at"):
         return json.dumps({'error': task}, ensure_ascii=False)
 
-    if task is None:
+    if task is None and os.environ.get("DEBUG_MODE"):
         task = CrawlTask(college, major, directory_url, prof_url)
         db.session.add(task)
         db.session.commit()
-
 
     crawl = ResearchCrawler(directory_url, prof_url, major)
     flag = update_key_words(request.form, crawl)
@@ -349,6 +348,11 @@ def custom_crawler_step(step):
         return json.dumps({'info': u'成功', "list": link_list, 'keywords': crawl.key_words},
                           ensure_ascii=False)
     elif step == 3:
+        if task is None:
+            task = CrawlTask(college, major, directory_url, prof_url)
+            db.session.add(task)
+            db.session.commit()
+
         if task and (task.school_url != directory_url or task.example != prof_url):
             task.school_url = directory_url
             task.example = prof_url

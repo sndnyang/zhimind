@@ -731,16 +731,15 @@ function submitRedirect(obj, type, url) {
         },
         success: function (data) {
             $("#loadingDiv").remove();
+            window.clearInterval(timeId);
             if (data.error) {
                 alert(data.error);
                 document.getElementById("vericode")
                     .setAttribute('src','/verifycode?random='+Math.random());
                 $("#loadingDiv").remove();
-                window.clearInterval(timeId);
                 return;
             }
             console.log(data.info);
-            window.clearInterval(timeId);
             if (type.indexOf("college") > -1) {
                 $("#loadingDiv").remove();
                 filterList = data;
@@ -834,25 +833,25 @@ $(document).ready(function () {
 
     $("#directoryUrl").on("paste", function(){
         setTimeout(function() {
-            var url = $("#directoryUrl").val();
-            var parts = url.split("/")[2].split(".");
-            for (var i in parts) {
-                var p = parts[i], flag = false;
-                if (p == 'edu' || p == 'www')
-                    continue;
-                var re = new RegExp("\\b" + p + "\\b","i");
-                for (var j in collegeList) {
-                    var univ = collegeList[j];
-                    if (('info' in univ && 'webpage' in univ.info && univ.info.webpage.match(re)) || univ.name.match(re)) {
-                            console.log(p+ ' contains in ' + univ.name);
-                            $("#collegeName").val(univ.name);
-                            flag = true;
-                            break;
-                    }
-                }
-                if (flag)
+            var p = null, url = $("#directoryUrl").val(),
+                parts = url.split("/")[2].split(".");
+            if (parts[parts.length-1] == 'edu') {
+                p = parts[parts.length-2];
+            } else if (parts[parts.length-2] == 'edu' || parts[parts.length-2].length == 2) {
+                p = parts[parts.length-3];
+            } 
+
+            if (p == 'edu' || p == 'www' || p == 'cs' || p == 'ee' || p == 'ece')
+                return;
+            var re = new RegExp("\\b" + p + "\\b","i");
+            for (var j in collegeList) {
+                var univ = collegeList[j];
+                if (('info' in univ && 'webpage' in univ.info && univ.info.webpage.match(re)) || univ.name.match(re)) {
+                    console.log(p+ ' contains in ' + univ.name);
+                    $("#collegeName").val(univ.name);
                     break;
-            }
+                }
+            }            
         });
     });
 

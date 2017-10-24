@@ -1,4 +1,5 @@
 ﻿var unit = [];
+var errorTime = 0;
 var serverData = [];
 var limit = localStorage.getItem("limit") || 20;
 var currentBook = localStorage.getItem("talkbook");
@@ -161,7 +162,7 @@ function pageTemplate(lines, pagination) {
         micContain.attr("onmouseup", "uploadAudio(this)");
         micContain.append(micphone);
         
-        input.attr("placeholder", "输入英文,回车,tab跳转,支持语音");
+        input.attr("placeholder", "输入英文,回车,三次机会,tab跳转,支持语音");
         // input.attr("list", "dataList"+i);
 
         inputGroup.append(input);
@@ -248,12 +249,13 @@ function compareSentence(obj) {
     var parts = findCorrect(origin_sets, user_inputs);
     // console.log(parts);
 
-    if (parts.length * 2 < origin_sets.length) {
+    if (parts.length * 2 < origin_sets.length && errorTime < 3) {
         // 肯定有更好的方法及别的提示
         cmp_div.html($("<span>用户输入错误太高， 请再试</span>"));
+        errorTime++;
         return;
     }
-
+    errorTime = 0;
     var origin_line = markWordByColor("原版", origin_sets, parts),
         user_line = markWordByColor("输入", user_inputs, parts);
     

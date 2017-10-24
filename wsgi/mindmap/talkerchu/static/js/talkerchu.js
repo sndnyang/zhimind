@@ -228,7 +228,7 @@ function markWordByColor(head, l, parts) {
     var stopped = ['oh','hey','hi','ok','Oops','Hmm','Huh','Umm','Aha','or','and','no','yes','i','you'];
     for (var i in l) {
         var span = $("<span>{0}</span>".format(l[i]));
-        if (parts.indexOf(l[i]) > -1 || stopped.indexOf(l1[i]) > -1) {
+        if (parts.indexOf(l[i]) > -1 || stopped.indexOf(l[i]) > -1) {
             span.attr("class", 'samePart'); 
         }
         div.append(span);

@@ -40,7 +40,10 @@ def checkChoice():
         comments = eval(app.redis.get(tid))['comment'][no]
 
     if g.user is None or not g.user.is_authenticated:
-        user = request.remote_addr
+        if request.headers.getlist("X-Forwarded-For"):
+           user = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+           user = request.remote_addr
     else:
         user = g.user.get_name()
     logger.info("choice\t%s\t%s:%s\t%s\t%s\t%s" %
@@ -99,7 +102,10 @@ def checkAnswer():
         comments = eval(app.redis.get(tid))['comment'][no]
 
     if g.user is None or not g.user.is_authenticated:
-        user = request.remote_addr
+        if request.headers.getlist("X-Forwarded-For"):
+           user = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+           user = request.remote_addr
     else:
         user = g.user.get_name()
     temp = '@'.join(answers)
@@ -155,7 +161,10 @@ def cmp_math():
         comments = eval(app.redis.get(tid))['comment'][no]
 
     if g.user is None or not g.user.is_authenticated:
-        user = request.remote_addr
+        if request.headers.getlist("X-Forwarded-For"):
+           user = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+           user = request.remote_addr
     else:
         user = g.user.get_name()
     logger.info("math\t%s\t%s:%s\t%s\t%s\t%s" %
@@ -193,7 +202,10 @@ def checkProcess():
         comments = eval(app.redis.get(tid))['comment'][no]
 
     if g.user is None or not g.user.is_authenticated:
-        user = request.remote_addr
+        if request.headers.getlist("X-Forwarded-For"):
+           user = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+           user = request.remote_addr
     else:
         user = g.user.get_name()
     logger.info("proc\t%s\t%s\t%s\t%s" % (user, tid, no, '@'.join(l)))

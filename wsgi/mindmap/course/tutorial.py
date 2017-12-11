@@ -12,7 +12,8 @@ from flask_login import login_required
 from flask_msearch import Search
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from whoosh.index import LockError
-from jieba.analyse import ChineseAnalyzer
+# from jieba.analyse import ChineseAnalyzer
+from analyzer import ChineseAnalyzer
 
 from mindmap import app, db
 from utility import *
@@ -26,12 +27,13 @@ tutorial_page = Blueprint('tutorial_page', __name__,
                           template_folder=os.path.join(
                               os.path.dirname(__file__), 'templates'))
 
-search = Search(db=db, analyzer=ChineseAnalyzer())
 
 try:
     if not os.environ.get("DEBUG_MODE"):
+        search = Search(db=db)#, analyzer=ChineseAnalyzer())
         search.init_app(app)
         search.create_index(update=True)
+        pass
     else:
         pass
 except LockError:

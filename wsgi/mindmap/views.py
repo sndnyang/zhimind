@@ -48,7 +48,8 @@ def recommendlist():
             .add_columns(MindMap.id, MindMap.title, User.username)\
             .limit(100).all()
         tutorials = Tutorial.query.join(User)\
-            .add_columns(Tutorial.id, Tutorial.type, Tutorial.title, User.username)\
+            .add_columns(Tutorial.id, Tutorial.type, Tutorial.title, 
+                         Tutorial.slug, User.username)\
             .limit(100).all()
         # .order_by(desc(Tutorial.like)).limit(100)
     except NoResultFound:
@@ -58,7 +59,7 @@ def recommendlist():
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
     return render_template('recommendlist.html', maps=mind_maps,
-                           tutorials=tutorials, meta=meta)
+                           tutorials=tutorials[::-1], meta=meta)
 
 
 @app.route('/user/<nickname>')
@@ -84,7 +85,7 @@ def get_user(nickname):
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
     return render_template('user.html', user=user, maps=mind_maps,
-                           tutorials=tutorials, isSelf=user.get_id() == g.user.get_id(),
+                           tutorials=tutorials[::-1], isSelf=user.get_id() == g.user.get_id(),
                            meta=meta)
 
 

@@ -1,0 +1,25 @@
+{% extends "login_base.html" %}
+{% block main %}
+
+{% from "_formhelpers.html" import render_field %}
+
+<div class="col-sm-6 col-sm-offset-3 form-box">
+        <div class="form-top">
+            
+        </div>
+        <div class="form-bottom">
+<form role="form" action="" method="post" class="login-form form-horizontal">
+    {{ render_field(form.appname) }}
+    {{ render_field(form.username) }}
+    {{ render_field(form.hint) }}
+    {{ render_field(form.password) }}
+    {{ render_field(form.confirm) }}
+    {{ render_field(form.cover) }}
+    {{ render_field(form.submit) }}
+</form>
+</div>
+    </div>
+</div>
+
+<script src="/static/js/placeholder.js"></script>
+{% endblock %}

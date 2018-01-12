@@ -113,3 +113,5 @@ def get_token():
                           ensure_ascii=False)
     auth_token = create_access_token(identity=g.user.get_id())
     return json.dumps({'token': auth_token}, ensure_ascii=False)
+
+

@@ -5,6 +5,7 @@ var error_times = 0,
     currentLesson = 1,
     global_link = 'currentLesson',
     match = {},
+    lang = 'zh',
     option_match = {},
     gewu_content = '';
 
@@ -15,6 +16,12 @@ md.renderer.rules.emoji = function(token, idx) {
   return twemoji.parse(token[idx].content);
 };
 
+var translate = {
+    'next': {'en': 'next', 'zh': '下一段'},
+    'prev': {'en': 'prev', 'zh': '上一段'},
+    'submit': {'en': 'submit', 'zh': '提交验证'},
+    'skip': {'en': 'skip', 'zh': '跳过本题'}
+}
 
 var Preview = {
     preview: null,     // filled in by Init below
@@ -226,8 +233,8 @@ function renderQuestion(temp, quiz_count) {
     div = $('<div class="process"></div>');
     feedback = $('<div class="hidden"></div>');
     response = $('<div class="math-container"></div>'),
-    submit = $('<button class="btn btn-info">提交验证</button>');
-    skip = $('<button class="btn btn-danger">跳过本题</button>');
+    submit = $('<button class="btn btn-info">{0}</button>'.format(translate['submit'][lang]));
+    skip = $('<button class="btn btn-danger">{0}</button>'.format(translate['skip'][lang]));
 
     type = temp.match(typep)[0];
     type = type.substring(2, type.length-1).trim();
@@ -473,13 +480,16 @@ function generate_lesson(div, html, root, count) {
         reg.lastIndex = match.index + 1;
     }
 
+
     for (var i in matches) {
         count += 1;
         var lesson_div = $('<div></div>'),
             nextclick = 'onclick="updateLesson('+(count+1)+')"',
             prevclick = 'onclick="previousLesson('+(count-1)+')"',
-            next_button = $('<button '+nextclick+'>下一段</button>'),
-            prev_button = $('<button '+prevclick+'>上一段</button>'),
+            next_temp = '<button {0}>{1}</button>'.format(nextclick, translate['next'][lang]),
+            prev_temp = '<button {0}>{1}</button>'.format(prevclick, translate['prev'][lang]),
+            next_button = $(next_temp),
+            prev_button = $(prev_temp),
             lesson = matches[i].substring(0, matches[i].length-4);
         
         lesson_div.attr('class', 'lesson lesson'+count);
@@ -523,6 +533,7 @@ function loadTutorial(link) {
                 return;
             } 
 
+            lang = data.lang;
             var tutorial = $("#tutorial"),
                 html = '';
             
@@ -538,7 +549,7 @@ function loadTutorial(link) {
             } else {
                 html = md.render(qa_parse(content))+"<h1>";
             }
-            global_lesson_count = generate_lesson(tutorial, html, root, 0);
+            global_lesson_count = generate_lesson(tutorial, html, root, 0, lang);
             
             if (root === "practice") {
                 draw();

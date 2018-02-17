@@ -132,7 +132,14 @@ def convert(link):
 
     session[link] = {'answer': entity['answer'],
                      'comment': entity['comment']}
-    response['content'] = entity['response']
+    content = entity['response']
+    response['content'] = content
+    response['lang'] = 'zh'
+    meta_lines = content.split("\n")[:10]
+    for line in meta_lines:
+        l = line.lower()
+        if not l.find('lang'):
+            response['lang'] = ' '.join(l.split(":")[1].split(",")).strip()
     response['status'] = True
     return json.dumps(response, ensure_ascii=False)
 

@@ -87,4 +87,5 @@ share/
 
 crawler/
 
-socks5_proxy_wrapper
+socks5_proxy_wrappertcl/
+tcl/

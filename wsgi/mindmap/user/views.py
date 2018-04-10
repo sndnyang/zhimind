@@ -10,7 +10,7 @@ from flask_login import logout_user, login_user, login_required
 from flask_jwt_extended import JWTManager, create_access_token
 
 from mindmap import app, login_manager
-from forms import *
+from ..forms import *
 from ..models import *
 
 jwt = JWTManager(app)

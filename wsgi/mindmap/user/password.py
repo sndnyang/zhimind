@@ -2,18 +2,15 @@
 
 import os
 import json
-import traceback
 
-from flask import request, flash, url_for, redirect, render_template, g, \
-    session, Blueprint
+from flask import request, flash, url_for, redirect, render_template, g, Blueprint
 
-from flask_login import logout_user, login_user, login_required
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_login import login_required
 from sqlalchemy import and_
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 
-from mindmap import app, login_manager
+from mindmap import app
 from forms import *
 from models import *
 
@@ -86,25 +83,4 @@ def checkMima():
 
     return json.dumps(result, ensure_ascii=False)
 
-
-
-class ResView(ModelView):
-    can_delete = False
-    can_create = True
-    can_edit = False
-    # columns_labels = dict()
-    column_exclude_list = (
-        'user_id',
-        'password',
-        'registered_on'
-    )
-
-
-admin = Admin(app, 
-        index_view=AdminIndexView(
-            name="导航栏",
-            url="/mimagly"
-            ))
-
-admin.add_view(ResView(Account, db.session, name=u"账号"))
 

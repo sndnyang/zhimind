@@ -8,14 +8,16 @@ import StringIO
 import requests
 from sqlalchemy.orm.exc import NoResultFound
 
+from flask_admin.contrib.sqla import ModelView
+from flask_admin import Admin, AdminIndexView
 from flask import flash, url_for, redirect, render_template, g, session
-
 from flask_login import current_user
 
-from mindmap import app
+from mindmap import app, db
 from mindmappage.models import MindMap
 from course.models import Tutorial
 from models import User
+from user.models import Account
 from validation import *
 
 
@@ -128,3 +130,45 @@ def qnfile(fname):
         r = requests.get(real_link)
         content = json.loads(r.content, strict=False)
     return json.dumps(content, ensure_ascii=False)
+
+
+@app.route("/search_awesome/<tag>")
+def awesome_dict(tag):
+    # rule = or_(AwesomeItem.name == tag, AwesomeItem.cn == tag, AwesomeItem.parent.any(name=tag),
+    #            AwesomeItem.parent.any(cn=tag))
+    # results = AwesomeItem.query.filter(rule)
+    # item_set = []
+    # for ele in results:
+    #     tags = [(tag.name, tag.cn) for tag in ele.parent]
+    #     item_set.append(convert_awesome_item(ele, tags))
+    # return json.dumps({"list": item_set}, ensure_ascii=False)
+    pass
+
+
+# class ItemView(ModelView):
+#     can_delete = True
+#     can_create = True
+#     can_edit = True
+#     # columns_labels = dict()
+#     column_exclude_list = (
+#         'id',
+#     )
+#     column_filters = ('name', 'cn', 'category')
+#     column_searchable_list = ('name', 'cn', 'category')
+
+
+class ResView(ModelView):
+    can_delete = False
+    can_create = True
+    can_edit = False
+    # columns_labels = dict()
+    column_exclude_list = (
+        'user_id',
+        'password',
+        'registered_on'
+    )
+
+
+admin = Admin(app, index_view=AdminIndexView(name="导航栏", url="/mimagly"))
+
+admin.add_view(ResView(Account, db.session, name=u"账号"))

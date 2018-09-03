@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # coding=utf-8
- 
+
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy import UniqueConstraint
 
@@ -35,8 +35,8 @@ class College(db.Model):
     int_docum_url = db.Column(db.String(250))
     info = db.Column(JSON)
     __table_args__ = (UniqueConstraint('name', 'degree', 'major', 'program_name',
-                      name='_degree_major'),)
-    
+                                       name='_degree_major'),)
+
     def __init__(self, name, degree, major, site_url, pname=''):
         self.name = name
         self.degree = degree
@@ -91,7 +91,7 @@ class TempCollege(db.Model):
     docum_url = db.Column(db.String(250))
     int_docum_url = db.Column(db.String(250))
     info = db.Column(JSON)
-    
+
     def __init__(self, name, degree, major, site_url):
         self.name = name
         self.degree = degree
@@ -122,11 +122,11 @@ class TempUniversity(db.Model):
 
 
 professor_interests_table = db.Table('professor_interests', db.Model.metadata,
-                                     db.Column('professor_id', db.String, 
-                                        db.ForeignKey('Professor.professor_id')),
-                                     db.Column('interests_id', db.String, 
-                                        db.ForeignKey('Interests.interests_id'))
-                                    )
+                                     db.Column('professor_id', db.String,
+                                               db.ForeignKey('Professor.professor_id')),
+                                     db.Column('interests_id', db.String,
+                                               db.ForeignKey('Interests.interests_id'))
+                                     )
 
 
 class Professor(db.Model):
@@ -140,9 +140,9 @@ class Professor(db.Model):
     position = db.Column(db.Boolean)
     term = db.Column(db.String(20))
     interests = db.relationship('Interests', secondary=professor_interests_table,
-        backref=db.backref('Professor', lazy='dynamic'))
+                                backref=db.backref('Professor', lazy='dynamic'))
     __table_args__ = (UniqueConstraint('name', 'school', 'major',
-                      name='_professor_uniq'),)
+                                       name='_professor_uniq'),)
 
     def __init__(self, name, school, major):
         self.name = name
@@ -172,7 +172,7 @@ class CrawlTask(db.Model):
     school_url = db.Column(db.String(150))
     example = db.Column(db.String(150))
     __table_args__ = (UniqueConstraint('school', 'major',
-                      name='_school_major_uniq'),)
+                                       name='_school_major_uniq'),)
 
     def __init__(self, school, major, url, example):
         self.school = school

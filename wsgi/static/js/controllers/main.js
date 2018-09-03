@@ -4,7 +4,7 @@
 var module = angular.module('controller', []);
 
 module.controller('MainCtrl', function ($scope, $http, $compile) {
-
+    resizeCanvas();
     $scope.root = null;
     $scope.fileName = "mindMap";
     $scope.current_node = null;
@@ -282,20 +282,17 @@ module.directive('mindMap', function ($compile) {
             if(!(source != null)){
                 return;
             }
-
             // Compute the new tree layout.
-
             var nodes = tree.nodes(root).reverse();
             //console.log(nodes.length);
 
-            var deepest = 0,
-                generationGutter = w;
+            var deepest = 0, generationGutter = w;
 
             // Normalize for fixed-depth.
             nodes.forEach(function(d){
                 if(deepest < d.depth){
                     deepest = d.depth;
-                }			
+                }
             });
 
             generationGutter = Math.floor(w/(deepest+1));
@@ -311,7 +308,6 @@ module.directive('mindMap', function ($compile) {
           //    toolTip.style("opacity", "0");
           //})
 
-
             // Enter any new nodes at the parent's previous position.
             var nodeEnter = node.enter().append("g")
                 .attr("class", "node")
@@ -322,7 +318,6 @@ module.directive('mindMap', function ($compile) {
                     toggle(d);
                     update(d);
                     //centerNode(d);
-
                 })
                 .on("mouseover", function(d, i){
                     showToolTip(d);

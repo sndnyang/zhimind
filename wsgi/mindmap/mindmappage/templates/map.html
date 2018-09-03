@@ -24,7 +24,7 @@
 <input id="tab2" type="radio" name="tabs">
 <label for="tab2">目录</label>
 
-<section id="content1">
+<section id="content1" style="padding: 0">
 <div id="content-sans-footer">
 
 <div ng-init='init("{{ mapid }}")' ng-controller="MainCtrl" class="minMapWrap">
@@ -50,19 +50,16 @@
     <div class="mindMap" mind-map="root" ng-keyup="keyup($event.keyCode)" tabindex="1"></div>
 </div>
 
-
 <div id="top" data-toggle="tooltip" data-placement="left" title="" data-original-title="回到顶部" style="display: block;">
-    <a href="javascript:;">
+    <a href="javascript:void(0)">
         <div class="arrow"></div>
         <div class="stick"></div>
     </a>
 </div>
 </div>
 </section>
-<section id="content2">
-
+<section id="content2" style="padding: 0">
     <div id="mainMap">
     </div>
-
 </section>
 {% endblock %}

@@ -39,7 +39,7 @@
     <label for="tab3">练习</label>
 
     <input id="tab4" type="radio" name="tabs">
-    <label for="tab4">代码块</label>
+    <label for="tab4">知识卡片</label>
 
     <section id="content1">
         <div class="container-fluid">
@@ -97,7 +97,7 @@
                 <div class="col-md-10 col-md-offset-1">
                     <ul class="list-group">
                         {% for tutorial in tutorials %}
-                        {% if tutorial.type == "code" %}
+                        {% if tutorial.type == "quizlet" %}
 
                         {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
 

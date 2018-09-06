@@ -13,9 +13,6 @@
     <input id="tab3" type="radio" name="tabs">
     <label for="tab3">练习</label>
 
-    <input id="tab4" type="radio" name="tabs">
-    <label for="tab4">代码块</label>
-
     <section id="content1">
         <div class="container-fluid">
             <div class="row-fluid">
@@ -61,25 +58,6 @@
                     <ul class="list-group">
                         {% for tutorial in tutorials %}
                         {% if tutorial.type == "practice" %}
-                        <a href="/user/{{ tutorial.username }}">
-                            {{ tutorial.username }}
-                        </a> 发布了:
-                        {{ render_li(tutorial, tutorials.index(tutorial), isSelf) }}
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="content4">
-        <div class="container-fluid">
-            <div class="row-fluid">
-                <div class="col-md-10 col-md-offset-1">
-                    <ul class="list-group">
-                        {% for tutorial in tutorials %}
-                        {% if tutorial.type == "code" %}
                         <a href="/user/{{ tutorial.username }}">
                             {{ tutorial.username }}
                         </a> 发布了:

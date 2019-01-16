@@ -30,4 +30,4 @@ gunicorn==19.7.1
 supervisor==3.3.3
 baidu-aip==2.2.5.2
 beautifulsoup4==4.5.3
-Flask-Admin==1.5.0
+Flask-Admin==1.5.3

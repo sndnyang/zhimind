@@ -50,8 +50,8 @@ def research_list_page():
 
     tags = [tag.name for tag in Dr_Ji.interests]
     research_set = [convert_to_dict(Dr_Ji, tags)]
-    results = Professor.query.filter_by(position=True).limit(9)
-    for ele in results:
+    results = Professor.query.filter_by(position=True).all()
+    for ele in random.sample(results, 9):
         tags = [tag.name for tag in ele.interests]
         research_set.append(convert_to_dict(ele, tags))
     return json.dumps(research_set, ensure_ascii=False)

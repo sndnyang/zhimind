@@ -21,9 +21,10 @@ from views import getCollegeRedis
 
 research_page = Blueprint('research_page', __name__,
                           template_folder=os.path.join(
-                             os.path.dirname(__file__), 'templates'),
+                              os.path.dirname(__file__), 'templates'),
                           static_folder="static")
 version = 18
+
 
 @research_page.route('/research.html')
 @research_page.route('/research')
@@ -35,8 +36,8 @@ def research_index():
                            types="research", version=version)
 
 
-def convertToDict(ele, tags):
-    data = {'id': ele.id, 'name': ele.name, 'school': ele.school, 
+def convert_to_dict(ele, tags):
+    data = {'id': ele.id, 'name': ele.name, 'school': ele.school,
             'major': ele.major,
             'link': ele.school_url, 'website': ele.home_page,
             'position': ele.position, 'term': ele.term, 'tags': tags}
@@ -45,11 +46,14 @@ def convertToDict(ele, tags):
 
 @research_page.route('/researchList')
 def research_list_page():
-    research_set = []
-    results = Professor.query.filter_by(position=True).limit(20)
-    for ele in results:        
+    Dr_Ji = Professor.query.get('d90451de-6253-4c0f-8f49-239d4b2d3e3a')
+
+    tags = [tag.name for tag in Dr_Ji.interests]
+    research_set = [convert_to_dict(Dr_Ji, tags)]
+    results = Professor.query.filter_by(position=True).limit(19)
+    for ele in results:
         tags = [tag.name for tag in ele.interests]
-        research_set.append(convertToDict(ele, tags))
+        research_set.append(convert_to_dict(ele, tags))
     return json.dumps(research_set, ensure_ascii=False)
 
 
@@ -72,10 +76,10 @@ def get_professor_list(school, major):
     if position:
         results = results.filter_by(position=True)
 
-    for ele in results:        
+    for ele in results:
         tags = [tag.name for tag in ele.interests]
-        research_set.append(convertToDict(ele, tags))
-    research_set.sort(key=lambda x:x['name'])
+        research_set.append(convert_to_dict(ele, tags))
+    research_set.sort(key=lambda x: x['name'])
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -84,9 +88,9 @@ def get_professor_by_interests(major, interest):
     research_set = []
     rule = or_(Professor.interests.any(name=interest), Professor.interests.any(category_name=interest))
     results = Professor.query.filter(rule).filter_by(major=major).all()
-    for ele in results:        
+    for ele in results:
         tags = [tag.name for tag in ele.interests]
-        research_set.append(convertToDict(ele, tags))
+        research_set.append(convert_to_dict(ele, tags))
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -97,8 +101,8 @@ def get_major_interests_list(major):
     results = Interests.query.filter(rule).order_by(asc(Interests.name)).all()
     # results = Interests.query.filter_by(major=major)
     for ele in results:
-        research_set.append({'id': ele.id, 'name': ele.name, 'zh': ele.zh_name, 
-                            'category_name': ele.category_name})
+        research_set.append({'id': ele.id, 'name': ele.name, 'zh': ele.zh_name,
+                             'category_name': ele.category_name})
     return json.dumps({"list": research_set}, ensure_ascii=False)
 
 
@@ -107,11 +111,11 @@ def research_form():
     meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
-    verification_code = StringField(u'验证码', 
+    verification_code = StringField(u'验证码',
                                     validators=[validators.DataRequired(),
                                                 validators.Length
                                                 (4, 4, message=u'填写4位验证码')])
-    return render_template('research_form.html', veri=verification_code, 
+    return render_template('research_form.html', veri=verification_code,
                            meta=meta, types="research", version=version)
 
 
@@ -121,7 +125,7 @@ def process():
     if not url:
         return json.dumps({'error': "%s not received" % url}, ensure_ascii=False)
 
-    return json.dumps({'info': session['research_process'+url]}, ensure_ascii=False)
+    return json.dumps({'info': session['research_process' + url]}, ensure_ascii=False)
 
 
 def query_add_interests(tag, major):
@@ -138,11 +142,11 @@ def query_add_interests(tag, major):
 
 def query_add_professor(name, college_name, major):
     try:
-        result = Professor.query.filter_by(name=name, school=college_name, 
+        result = Professor.query.filter_by(name=name, school=college_name,
                                            major=major).one_or_none()
         if result is None:
             if len(name) > 29:
-                words = re.findall("(\w+)", name)
+                words = re.findall(r"(\w+)", name)
                 name = words[0] + ' ' + words[-1]
             if len(college_name) > 59:
                 college_name = college_name[:57] + '..)'
@@ -176,14 +180,14 @@ def research_task():
 @research_page.route('/custom_crawler.html/<task_id>')
 @research_page.route('/custom_crawler.html')
 def custom_crawler(task_id=None):
-    verification_code = StringField(u'验证码', 
+    verification_code = StringField(u'验证码',
                                     validators=[validators.DataRequired(),
                                                 validators.Length
                                                 (4, 4, message=u'填写4位验证码')])
     meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
             'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
-    task = {'school': '', 'example': '', 'school': '', 'major': '1-1'}
+    task = {'school': '', 'example': '', 'major': '1-1'}
     if task_id:
         task = CrawlTask.query.get(task_id)
     return render_template('custom_crawler.html', meta=meta, temp=0,
@@ -192,7 +196,7 @@ def custom_crawler(task_id=None):
 
 
 def validate_and_extract(form):
-    if not (g.user and g.user.is_authenticated and 
+    if not (g.user and g.user.is_authenticated and
             g.user.get_name() == 'sndnyang'):
         verification_code = form['verification_code']
         code_text = session['code_text']
@@ -203,7 +207,7 @@ def validate_and_extract(form):
     college_name = form.get('college_name', "")
     directory_url = form.get('directory_url', "")
     professor_url = form.get('professor_url', "")
-    
+
     if major == '0' or not college_name.strip() or not directory_url.strip()\
        or not professor_url.strip():
         return u'Error at 信息不全', None, None, None
@@ -225,7 +229,7 @@ def query_and_create_task(college, major):
         if not flag:
             return u'Error at 数据有误，不存在该学校，请确认校名或联系开发者'
         return CrawlTask.query.filter_by(school=college, major=major).one_or_none()
-        
+
     except MultipleResultsFound:
         return u'Error at 数据有误，存在多所同名学校，请联系开发者'
 
@@ -240,7 +244,7 @@ def crawl_directory(crawl, faculty_list, major, directory_url, count, flag):
             link_list.append(crawl.dive_into_page(link, flag))
             # app.redis.set('process of %s %s' % (directory_url, major), "%d,%d" % (count, i))
             app.logger.info('process of %s %s' % (link.get("href"), major) + " %d,%d" % (count, i))
-        except:
+        except BaseException:
             app.logger.info(traceback.print_exc())
             app.logger.info('process of %s %s fail' % (link.get("href"), major) + " %d,%d" % (count, i))
         i += 1
@@ -268,11 +272,11 @@ def submit_professors(college_name, major, directory_url):
             if ele.get('tags'):
                 for tag in ele.get('tags', []):
                     tag_obj = query_add_interests(tag, major)
-                    exist = Professor.query.filter_by(name=name, 
-                                                      school=college_name, 
+                    exist = Professor.query.filter_by(name=name,
+                                                      school=college_name,
                                                       major=major)\
-                                     .filter(Professor.interests.any(name=tag)
-                                             ).one_or_none()
+                        .filter(Professor.interests.any(name=tag)
+                                ).one_or_none()
                     # app.logger.info("tag %s exist in %s? %s" % (tag, ele.get("name"), str(exist is not None)))
                     if professor and tag_obj and exist is None:
                         professor.interests.append(tag_obj)
@@ -363,7 +367,7 @@ def custom_crawler_step(step):
         return json.dumps({'info': u'成功'}, ensure_ascii=False)
 
     return json.dumps("Error , step 4 ?")
-        
+
 
 @research_page.route('/research_submitted', methods=['POST'])
 def submitted_research():
@@ -388,7 +392,7 @@ def submitted_research():
 
     crawl = ResearchCrawler(directory_url, prof_url, major)
     count, faculty_list = crawl.crawl_faculty_list(directory_url, prof_url)
-    link_list = crawl_directory(crawl, faculty_list, major,  directory_url, count, False)
+    link_list = crawl_directory(crawl, faculty_list, major, directory_url, count, False)
     return json.dumps({'info': u'成功', "list": link_list}, ensure_ascii=False)
 
 
@@ -407,9 +411,6 @@ def query_position():
     if not pid:
         return json.dumps({'error': 'pid %s not right' % pid}, ensure_ascii=False)
 
-    p = None
-    t = ""
-    text = ""
     try:
         prof = Professor.query.get(pid)
         school = prof.school
@@ -419,7 +420,7 @@ def query_position():
 
         if not task:
             return json.dumps({'error': 'school %s, major %s find multiple, email me!'
-                                % (school, major)}, ensure_ascii=False)
+                               % (school, major)}, ensure_ascii=False)
 
         url = request.json.get("url")
         if url:
@@ -427,30 +428,29 @@ def query_position():
             db.session.commit()
 
         crawler = ResearchCrawler(prof.school_url, "", major)
-        p, t, text = crawler.query_position_status(prof.school_url, 
+        p, t, text = crawler.query_position_status(prof.school_url,
                                                    prof.home_page)
-        
+
         if p is None and text.startswith('Error'):
-            return json.dumps({'error': '%s and %s not open' % 
-                               (prof.school_url, prof.home_page)}, 
-                               ensure_ascii=False)
+            return json.dumps({'error': '%s and %s not open' %
+                               (prof.school_url, prof.home_page)},
+                              ensure_ascii=False)
         prof.position = p
         prof.term = t
         db.session.commit()
 
     except MultipleResultsFound:
-        return json.dumps({'error': 'school %s, major %s find multiple, email me!'
-                            % (school, major)}, ensure_ascii=False)
+        return json.dumps({'error': 'pid %s find multiple, email me!' % pid}, ensure_ascii=False)
 
-    return json.dumps({'status': True, "position": p, "term": t, "text": text}, 
+    return json.dumps({'status': True, "position": p, "term": t, "text": text},
                       ensure_ascii=False)
 
 
 def delete_tag_in_relation(ele, tid):
     cursor = db.session.query(professor_interests_table)\
-               .filter(professor_interests_table.c.professor_id==ele.id,
-                       professor_interests_table.c.interests_id==tid)
-    es = cursor.all()
+               .filter(professor_interests_table.c.professor_id == ele.id,
+                       professor_interests_table.c.interests_id == tid)
+    # es = cursor.all()
     # print "%s professor_id = '%s' and interests_id = '%s'" % (ele.name, ele.id, tid)
     cursor.delete(synchronize_session=False)
 
@@ -470,7 +470,7 @@ def modify_interests():
         new_interest = Interests.query.filter_by(name=name, major=old_interest.major).one_or_none()
         if action == "1":
             if old_interest is None:
-                return json.dumps({'error': 'not find id %s name %s'%(tid,name)}, ensure_ascii=False)
+                return json.dumps({'error': 'not find id %s name %s' % (tid, name)}, ensure_ascii=False)
             results = Professor.query.filter(Professor.interests.any(name=old_interest.name)).all()
             for ele in results:
                 delete_tag_in_relation(ele, tid)
@@ -478,8 +478,8 @@ def modify_interests():
             db.session.delete(old_interest)
         else:
             if old_interest is None:
-                return json.dumps({'error': 'not find id %s name %s'%(tid,name)}, ensure_ascii=False)
-            
+                return json.dumps({'error': 'not find id %s name %s' % (tid, name)}, ensure_ascii=False)
+
             if old_interest.name != name and new_interest is None:
                 old_interest.name = name
                 zh = request.json.get('zh')

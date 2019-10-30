@@ -431,8 +431,9 @@ function getDataList(name, n) {
         contentType: 'application/json',
         dataType: "json",
         success : function (result){
-            // var data = result.sort(sortName);
-            var data = result.sort(compare('name', true, false));
+            var data = result;
+            if (name !== "/oversea/research")
+                data = result.sort(compare('name', true, false));
             if (name.indexOf("college") > -1)
                 data = convertKV(data);
             // collegeList = result;

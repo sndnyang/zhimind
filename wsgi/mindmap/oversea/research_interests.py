@@ -23,7 +23,7 @@ research_page = Blueprint('research_page', __name__,
                           template_folder=os.path.join(
                               os.path.dirname(__file__), 'templates'),
                           static_folder="static")
-version = 18
+version = 1
 
 
 @research_page.route('/research.html')
@@ -50,7 +50,7 @@ def research_list_page():
 
     tags = [tag.name for tag in Dr_Ji.interests]
     research_set = [convert_to_dict(Dr_Ji, tags)]
-    results = Professor.query.filter_by(position=True).limit(19)
+    results = Professor.query.filter_by(position=True).limit(9)
     for ele in results:
         tags = [tag.name for tag in ele.interests]
         research_set.append(convert_to_dict(ele, tags))

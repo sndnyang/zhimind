@@ -29,8 +29,8 @@ version = 1
 @research_page.route('/research.html')
 @research_page.route('/research')
 def research_index():
-    meta = {'title': u'学者研究兴趣 知维图 -- 互联网学习实验室',
-            'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生与否',
+    meta = {'title': u'高校教授招生意向及研究方向数据库',
+            'description': u'学者研究兴趣信息库，主要就是学校、主页、研究方向、招生意向',
             'keywords': u'zhimind 美国 大学 CS 研究方向 research interests 招生'}
     return render_template('research.html', meta=meta, temp=0,
                            types="research", version=version)

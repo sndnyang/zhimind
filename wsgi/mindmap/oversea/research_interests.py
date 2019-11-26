@@ -48,10 +48,10 @@ def convert_to_dict(ele, tags):
 def research_list_page():
     Dr_Ji = Professor.query.get('d90451de-6253-4c0f-8f49-239d4b2d3e3a')
 
-    tags = [tag.name for tag in Dr_Ji.interests]
-    research_set = [convert_to_dict(Dr_Ji, tags)]
+    tags = []
+    research_set = []
     results = Professor.query.filter_by(position=True).all()
-    for ele in random.sample(results, 9):
+    for ele in random.sample(results, 10):
         tags = [tag.name for tag in ele.interests]
         research_set.append(convert_to_dict(ele, tags))
     return json.dumps(research_set, ensure_ascii=False)

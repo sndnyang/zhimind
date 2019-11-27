@@ -46,8 +46,6 @@ def convert_to_dict(ele, tags):
 
 @research_page.route('/researchList')
 def research_list_page():
-    Dr_Ji = Professor.query.get('d90451de-6253-4c0f-8f49-239d4b2d3e3a')
-
     tags = []
     research_set = []
     results = Professor.query.filter_by(position=True).all()

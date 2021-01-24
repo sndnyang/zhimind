@@ -37,23 +37,24 @@ def register():
             return render_template('register.html', form=form, meta=meta)
 
         code_text = session['code_text']
-
-        if form.code.data == code_text:
-            user = User(username, request.form['password'], request.form['email'])
-            try:
-                db.session.add(user)
-                db.session.commit()
-                flash('User successfully registered')
-                return redirect(url_for('user.login'))
-            except:
-                db.session.rollback()
-                flash(u'注册失败')
-        else:
-            flash(u'验证码错误')
+        flash(u'实验用，实在是顾不过来')
+        # if form.code.data == code_text:
+        #     user = User(username, request.form['password'], request.form['email'])
+        #     try:
+        #         db.session.add(user)
+        #         db.session.commit()
+        #         flash('User successfully registered')
+        #         return redirect(url_for('user.login'))
+        #     except:
+        #         db.session.rollback()
+        #         flash(u'注册失败')
+        # else:
+        #     flash(u'验证码错误')
     meta = {'title': u'注册 知维图 -- 互联网学习实验室',
             'description': u'知维图--试图实现启发引导式智能在线学习，数学与计算机领域',
             'keywords': u'zhimind mindmap 思维导图 启发式学习 智能学习 在线教育'}
-    return render_template('register.html', form=form, meta=meta)
+    return redirect(url_for('index'))
+    # return render_template('register.html', form=form, meta=meta)
 
 
 @user_page.route('/login', methods=['GET', 'POST'])

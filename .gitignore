@@ -91,3 +91,6 @@ socks5_proxy_wrappertcl/
 socks5_proxy_wrapper
 tcl/
 etc/
+
+*.zip
+zhimind_com_certificate
